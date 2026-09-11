@@ -8,7 +8,16 @@ typedef struct {
     SDL_Texture *static_tex;
     SDL_Texture *six_am;
     SDL_Texture *death;
-    SDL_Texture *title;
+
+    /* Title-screen components from the exported Fusion asset bank. */
+    SDL_Texture *title_bg;
+    SDL_Texture *title_new;
+    SDL_Texture *title_continue;
+    SDL_Texture *title_6night;
+    SDL_Texture *title_custom;
+    SDL_Texture *title_arrow;
+    SDL_Texture *title_star;
+
     SDL_Texture *newspaper;
     SDL_Texture *final_screen;
 } FnaeVisuals;

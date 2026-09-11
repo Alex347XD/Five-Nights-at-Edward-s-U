@@ -4,7 +4,6 @@
 
 static SDL_Texture *load_png(SDL_Renderer *r, const char *path) {
     SDL_Surface *s = IMG_Load(path);
-
     if (!s) {
         fprintf(stderr, "FAILED TO LOAD IMAGE: %s\n", path);
         fprintf(stderr, "SDL_image error: %s\n", IMG_GetError());
@@ -12,7 +11,6 @@ static SDL_Texture *load_png(SDL_Renderer *r, const char *path) {
     }
 
     SDL_Texture *t = SDL_CreateTextureFromSurface(r, s);
-
     if (!t) {
         fprintf(stderr, "FAILED TO CREATE TEXTURE: %s\n", path);
         fprintf(stderr, "SDL error: %s\n", SDL_GetError());
@@ -35,43 +33,74 @@ static SDL_Texture *load_id(SDL_Renderer *r, int id) {
 int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     memset(v, 0, sizeof *v);
 
-    /*
-     * These are real extracted images from the supplied FNaE asset bank:
-     * 227 = office scene
-     * 211/212 = volcano/Hell camera scene variants
-     * 350/379 = forest camera scene variants
-     * 312 = dinosaur exhibit scene
-     * 2/4/7 = title/final/newspaper-sized screens
-     */
+    /* Real extracted gameplay assets. */
     v->office = load_id(r, 227);
     v->cams[0] = load_id(r, 211);
     v->cams[1] = load_id(r, 350);
     v->cams[2] = load_id(r, 227);
     v->cams[3] = load_id(r, 312);
-
     v->static_tex = load_id(r, 46);
-    v->title = load_id(r, 2);
     v->six_am = load_id(r, 4);
+    v->death = load_id(r, 1);
+    v->newspaper = load_id(r, 7);
     v->final_screen = load_id(r, 7);
 
-    /* 227 is also a useful fallback if an individual frame asset fails. */
-    return v->office ? 0 : -1;
+    /*
+     * Frame 2 (Title) assets mapped from the exported object layout:
+     *
+     * Background  -> 179 (1280x720 title background)
+     * New         -> 239
+     * Continue    -> 240
+     * 6 Night     -> 241
+     * Custom      -> 242
+     * Arrow       -> 245
+     * Star        -> 232
+     *
+     * The three Star objects all use the same source image in Fusion.
+     */
+    v->title_bg = load_id(r, 179);
+    v->title_new = load_id(r, 239);
+    v->title_continue = load_id(r, 240);
+    v->title_6night = load_id(r, 241);
+    v->title_custom = load_id(r, 242);
+    v->title_arrow = load_id(r, 245);
+    v->title_star = load_id(r, 232);
+
+    return v->title_bg ? 0 : -1;
+}
+
+static void destroy_texture(SDL_Texture **t) {
+    if (*t) {
+        SDL_DestroyTexture(*t);
+        *t = NULL;
+    }
 }
 
 void visuals_free(FnaeVisuals *v) {
-    if (v->office) SDL_DestroyTexture(v->office);
-    if (v->static_tex) SDL_DestroyTexture(v->static_tex);
-    if (v->title) SDL_DestroyTexture(v->title);
-    if (v->six_am) SDL_DestroyTexture(v->six_am);
-    if (v->final_screen) SDL_DestroyTexture(v->final_screen);
-
-    for (int i = 0; i < 4; ++i) {
-        if (v->cams[i]) {
-            SDL_DestroyTexture(v->cams[i]);
-        }
-    }
-
+    destroy_texture(&v->office);
+    for (int i = 0; i < 4; ++i)
+        destroy_texture(&v->cams[i]);
+    destroy_texture(&v->static_tex);
+    destroy_texture(&v->six_am);
+    destroy_texture(&v->death);
+    destroy_texture(&v->title_bg);
+    destroy_texture(&v->title_new);
+    destroy_texture(&v->title_continue);
+    destroy_texture(&v->title_6night);
+    destroy_texture(&v->title_custom);
+    destroy_texture(&v->title_arrow);
+    destroy_texture(&v->title_star);
+    destroy_texture(&v->newspaper);
+    destroy_texture(&v->final_screen);
     memset(v, 0, sizeof *v);
+}
+
+static void draw_texture(SDL_Renderer *r, SDL_Texture *t, int x, int y) {
+    if (!t) return;
+    int w, h;
+    SDL_QueryTexture(t, NULL, NULL, &w, &h);
+    SDL_Rect d = {x, y, w, h};
+    SDL_RenderCopy(r, t, NULL, &d);
 }
 
 static void fit_center(SDL_Renderer *r, SDL_Texture *t) {
@@ -84,8 +113,9 @@ static void fit_center(SDL_Renderer *r, SDL_Texture *t) {
     float sy = (float)rh / (float)th;
     float s = sx < sy ? sx : sy;
 
-    int w = (int)(tw*s), h = (int)(th*s);
-    SDL_Rect d = {(rw-w)/2, (rh-h)/2, w, h};
+    int w = (int)(tw * s);
+    int h = (int)(th * s);
+    SDL_Rect d = {(rw - w) / 2, (rh - h) / 2, w, h};
     SDL_RenderCopy(r, t, NULL, &d);
 }
 
@@ -93,7 +123,7 @@ static void draw_static(SDL_Renderer *r, SDL_Texture *t, int alpha) {
     if (!t) return;
     int rw, rh;
     SDL_GetRendererOutputSize(r, &rw, &rh);
-    SDL_Rect d = {0,0,rw,rh};
+    SDL_Rect d = {0, 0, rw, rh};
     SDL_SetTextureBlendMode(t, SDL_BLENDMODE_BLEND);
     SDL_SetTextureAlphaMod(t, (Uint8)alpha);
     SDL_RenderCopy(r, t, NULL, &d);
@@ -101,25 +131,21 @@ static void draw_static(SDL_Renderer *r, SDL_Texture *t, int alpha) {
 }
 
 static void draw_power(SDL_Renderer *r, int power) {
-    int rw, rh;
-    SDL_GetRendererOutputSize(r, &rw, &rh);
     int w = 250, h = 18;
     SDL_Rect border = {30, 30, w, h};
     SDL_RenderDrawRect(r, &border);
 
-    int fill = (w-4) * power / 10000;
+    int fill = (w - 4) * power / 10000;
     if (fill < 0) fill = 0;
-    SDL_Rect bar = {32, 32, fill, h-4};
+    SDL_Rect bar = {32, 32, fill, h - 4};
     SDL_RenderFillRect(r, &bar);
-
-    (void)rh;
 }
 
 static void draw_door_indicators(SDL_Renderer *r, int left, int right) {
     int rw, rh;
     SDL_GetRendererOutputSize(r, &rw, &rh);
-    SDL_Rect l = {35, rh-70, 100, 32};
-    SDL_Rect rr = {rw-135, rh-70, 100, 32};
+    SDL_Rect l = {35, rh - 70, 100, 32};
+    SDL_Rect rr = {rw - 135, rh - 70, 100, 32};
     SDL_RenderDrawRect(r, &l);
     SDL_RenderDrawRect(r, &rr);
     if (left) SDL_RenderFillRect(r, &l);
@@ -129,15 +155,40 @@ static void draw_door_indicators(SDL_Renderer *r, int left, int right) {
 static void draw_camera_labels(SDL_Renderer *r, int camera) {
     int rw, rh;
     SDL_GetRendererOutputSize(r, &rw, &rh);
-    const char *names[4] = {"CAM 01 - HELL", "CAM 02 - FOREST",
-                           "CAM 03 - OFFICE", "CAM 04 - DINOSAUR EXHIBIT"};
-    for (int i=0;i<4;i++) {
-        SDL_Rect b = {rw-250, 90+i*52, 215, 40};
+    for (int i = 0; i < 4; ++i) {
+        SDL_Rect b = {rw - 250, 90 + i * 52, 215, 40};
         if (i == camera) SDL_RenderFillRect(r, &b);
         else SDL_RenderDrawRect(r, &b);
-        (void)names; /* text is supplied by the title/debug window for now */
     }
     (void)rh;
+}
+
+static void draw_title(SDL_Renderer *r, FnaeVisuals *v) {
+    /* Fusion title frame is laid out on a 1280x720 canvas. */
+    if (v->title_bg) {
+        SDL_Rect d = {0, 0, 1280, 720};
+        SDL_RenderCopy(r, v->title_bg, NULL, &d);
+    }
+
+    /* Exact exported object positions from Frame 2 (Title). */
+    draw_texture(r, v->title_new,      96, 448);
+    draw_texture(r, v->title_continue, 96, 512);
+    draw_texture(r, v->title_6night,   96, 576);
+    draw_texture(r, v->title_custom,   96, 640);
+
+    /* Arrow starts at (-22,461) relative to New at (96,448). */
+    draw_texture(r, v->title_arrow, 74, 464);
+
+    /* Star / Star 2 / Star 3 positions from the original frame. */
+    draw_texture(r, v->title_star, 348, 75);
+    draw_texture(r, v->title_star, 428, 75);
+    draw_texture(r, v->title_star, 508, 75);
+
+    /* A darkened panel keeps the menu readable over the title background. */
+    SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(r, 0, 0, 0, 35);
+    SDL_Rect panel = {55, 410, 390, 285};
+    SDL_RenderFillRect(r, &panel);
 }
 
 void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
@@ -147,7 +198,7 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
     SDL_RenderClear(r);
 
     if (frame == 2) {
-        fit_center(r, v->title);
+        draw_title(r, v);
     } else if (frame == 3) {
         if (camera_up) {
             if (camera < 0 || camera > 3) camera = 0;
@@ -159,30 +210,29 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             draw_power(r, power);
             draw_door_indicators(r, left_door, right_door);
             if (mask) {
-                /* A dark overlay gives the correct mask-down visual behavior
-                   while the extracted mask animation is wired in later. */
                 int rw, rh;
                 SDL_GetRendererOutputSize(r, &rw, &rh);
+                SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_BLEND);
                 SDL_SetRenderDrawColor(r, 0, 0, 0, 180);
-                SDL_Rect m = {0,0,rw,rh};
+                SDL_Rect m = {0, 0, rw, rh};
                 SDL_RenderFillRect(r, &m);
             }
         }
     } else if (frame == 9) {
         fit_center(r, v->six_am);
     } else if (frame == 4) {
-        fit_center(r, v->final_screen);
+        fit_center(r, v->death);
     } else if (frame == 5) {
         fit_center(r, v->final_screen);
     } else if (frame == 7) {
-        fit_center(r, v->final_screen);
+        fit_center(r, v->newspaper);
     } else {
-        fit_center(r, v->title);
+        fit_center(r, v->title_bg);
     }
 
     char title[256];
     snprintf(title, sizeof title,
              "Five Nights at Edward's | Native | Night %d | %d AM | Power %d%%",
-             night, hour, power/100);
+             night, hour, power / 100);
     SDL_SetWindowTitle(SDL_GetWindowFromID(1), title);
 }
