@@ -35,78 +35,173 @@ static void enter_death(FnaeGame* g,int who){ if(g->death==0) g->death=who; }
 static void ai_move(FnaeGame* g){
  if(g->death) return;
  if(rnd(30)<g->foxy_ai && g->foxy.move==0) g->foxy.move=1;
- if(g->foxy.move){ if(g->foxy.pos==2)g->foxy.pos=4; else if(g->foxy.pos==4)g->foxy.pos=5; else if(g->foxy.pos==5){ if(g->right_door==0)g->foxy.pos=6; else g->foxy.pos=2; } g->foxy.move=0; }
+ if(g->foxy.move){
+  if(g->foxy.pos==2)g->foxy.pos=4;
+  else if(g->foxy.pos==4)g->foxy.pos=5;
+  else if(g->foxy.pos==5){ if(g->right_door==0)g->foxy.pos=6; else g->foxy.pos=2; }
+  g->foxy.move=0;
+ }
  if(g->foxy.pos==6 && g->view>0 && g->hidden_power>0) enter_death(g,3);
  if(rnd(30)<g->freddy_ai && g->freddy.move==0) g->freddy.move=1;
- if(g->freddy.move){ if(g->freddy.pos==1)g->freddy.pos=3; else if(g->freddy.pos==3)g->freddy.pos=6; else if(g->freddy.pos==6){ if(g->left_door==0)g->freddy.pos=7; else g->freddy.pos=1; } g->freddy.move=0; }
+ if(g->freddy.move){
+  if(g->freddy.pos==1)g->freddy.pos=3;
+  else if(g->freddy.pos==3)g->freddy.pos=6;
+  else if(g->freddy.pos==6){ if(g->left_door==0)g->freddy.pos=7; else g->freddy.pos=1; }
+  g->freddy.move=0;
+ }
  if(g->freddy.pos==7 && g->view>0 && g->hidden_power>0) enter_death(g,2);
  if(g->springtrap_ai>0 && rnd(30)+1<g->springtrap_ai && g->springtrap_a==0)g->springtrap_a=1;
 }
 
-static void update_phantoms(FnaeGame* g,float dt){
+static void update_phantoms(FnaeGame* g){
  if(g->view>0 && g->ph_bb_ai>0 && g->ph_bb_a==0) g->ph_bb_a=rnd(23-g->ph_bb_ai);
- if(g->view==0) g->ph_bb_a=0;
+ if(g->view==0) { g->ph_bb_a=0; g->ph_bb_b=0; }
  if(g->ph_bb_a==1){g->ph_bb_b++; if(g->ph_bb_b>80){g->ph_bb_a=0;g->ph_bb_b=0;g->force_down=5;}}
  if(g->view>0 && g->ph_mangle_ai>0 && g->ph_mangle_c==0) g->ph_mangle_a=rnd(23-g->ph_mangle_ai);
  if(g->view==0) g->ph_mangle_a=0;
  if(g->ph_mangle_a==1){g->ph_mangle_b++; if(g->ph_mangle_b>60){g->ph_mangle_c=1;g->ph_mangle_a=0;g->ph_mangle_b=0;g->force_down=5;}}
- if(g->ph_mangle_c){ static float t=0;t+=dt; if(t>=1.0f){t-=1.0f;if(g->ph_mangle_b<7)g->ph_mangle_b++;} }
 }
 
 static void update_gf(FnaeGame* g){
  if(g->cam_anim==CAM_DOWN_ANIM && g->golden_ai>0 && g->gf_random!=1) g->gf_random=rnd(22-g->golden_ai);
  if(g->cam_anim==CAM_UP_ANIM && g->gf_random==1)g->gf_random=0;
  if(g->mask_anim==MASK_DOWN && g->gf_random==1)g->gf_random=0;
- if(g->gf_random==1)g->gf_death_addup++; else g->gf_death_addup=0;
- if(g->gf_death_addup>90)enter_death(g,5);
+ if(g->gf_random==1) g->gf_death_addup++; else g->gf_death_addup=0;
+ if(g->gf_death_addup>90) enter_death(g,5);
 }
 
 static void update_music(FnaeGame* g,float dt){
  if(g->view!=4){g->music_winding=0;return;}
  g->music_tick+=dt;
  if(!g->music_winding && g->music_left>0 && g->music_tick>=0.07f){g->music_tick=0;g->music_left-=g->night==7?g->golden_ai*2:g->night*2;if(g->music_left<0)g->music_left=0;}
- if(g->music_winding){ if(g->music_tick>=0.35f){g->music_tick=0;if(g->music_left>0)g->music_left+=100;} }
+ if(g->music_winding && g->music_tick>=0.35f){g->music_tick=0;if(g->music_left>0)g->music_left+=100;if(g->music_left>2000)g->music_left=2000;}
  if(g->music_left<=0 && g->hidden_power>0 && g->death==0 && ((g->cam_anim==CAM_UP&&rnd(5)==1)||(g->mask_anim==MASK_DOWN&&rnd(5)==1))) enter_death(g,1);
 }
 
-void fnae_init(FnaeGame* g){memset(g,0,sizeof(*g));g->running=1;g->frame=FRAME_TITLE;g->night=1;g->progress=0;g->arrow=0;g->pc_mobile=0;}
-void fnae_start_night(FnaeGame* g,int night){memset(g->hour_events,0,sizeof(g->hour_events));g->night=night<1?1:(night>7?7:night);g->frame=FRAME_NIGHT;g->time_of_day=12;g->time_to_hour=0;g->death=0;g->death_addup=0;g->gf_random=0;g->gf_death_addup=0;g->cam_anim=CAM_DOWN;g->mask_anim=MASK_UP;g->prevent_flip=1;g->force_down=0;g->view=0;g->camera=0;g->left_door=0;g->right_door=0;g->flashlight=0;g->hidden_power=10000;g->power_left=1;g->power_tick=0;g->movement_out=0;g->movement_timer=0;g->music_left=2000;g->music_winding=0;g->music_tick=0;g->current_call=0;g->call_muted=0;g->foxy.pos=2;g->freddy.pos=1;g->springtrap_a=0;g->springtrap_b=0;g->ph_mangle_a=g->ph_mangle_b=g->ph_mangle_c=0;g->ph_bb_a=g->ph_bb_b=0;g->golden_ai=0;g->foxy_ai=g->freddy_ai=g->springtrap_ai=g->ph_mangle_ai=g->ph_bb_ai=0;difficulty(g,12);}
+void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_TITLE; g->night=1; g->progress=0; g->arrow=0; g->pc_mobile=0; }
 
-static void hour(FnaeGame* g){g->time_of_day++;if(g->time_of_day>12)g->time_of_day=1;difficulty(g,g->time_of_day);if(g->time_of_day>5 && g->time_of_day!=12)g->frame=FRAME_6AM;}
+void fnae_start_night(FnaeGame* g,int night){
+ memset(g->hour_events,0,sizeof(g->hour_events));
+ g->night=night<1?1:(night>7?7:night); g->frame=FRAME_NIGHT; g->time_of_day=12; g->time_to_hour=0;
+ g->death=0; g->death_addup=0; g->gf_random=0; g->gf_death_addup=0;
+ g->cam_anim=CAM_DOWN; g->mask_anim=MASK_UP; g->prevent_flip=0; g->force_down=0; g->view=0; g->camera=1;
+ g->left_door=0; g->right_door=0; g->flashlight=0; g->hidden_power=10000; g->power_left=1; g->power_tick=0;
+ g->movement_out=0; g->movement_timer=0; g->camera_up_check=0;
+ g->music_left=2000; g->music_winding=0; g->music_tick=0; g->current_call=0; g->call_muted=0;
+ g->cam_anim_timer=g->mask_anim_timer=g->left_door_timer=g->right_door_timer=0;
+ g->ai_timer=g->power_out_timer=g->springtrap_timer=g->phantom_timer=0;
+ ai_reset(&g->foxy,0,2); ai_reset(&g->freddy,0,1); g->springtrap_a=0;g->springtrap_b=0;
+ g->ph_mangle_a=g->ph_mangle_b=g->ph_mangle_c=0;g->ph_bb_a=g->ph_bb_b=0;
+ g->golden_ai=0;g->foxy_ai=g->freddy_ai=g->springtrap_ai=g->ph_mangle_ai=g->ph_bb_ai=0;
+ difficulty(g,12);
+}
+
+static void hour(FnaeGame* g){
+ g->time_of_day++; if(g->time_of_day>12)g->time_of_day=1;
+ difficulty(g,g->time_of_day);
+ if(g->time_of_day>5 && g->time_of_day!=12)g->frame=FRAME_6AM;
+}
 
 void fnae_update(FnaeGame* g,float dt){
  if(g->frame!=FRAME_NIGHT)return;
  if(g->death){g->death_addup++;if(g->death_addup>=60)g->frame=FRAME_DEATH;return;}
- g->time_to_hour+=dt;if(g->time_to_hour>=50){g->time_to_hour-=50;hour(g);if(g->frame!=FRAME_NIGHT)return;}
- int ph=(g->ph_mangle_c?2:0);g->power_left=1+g->camera_up_check+(g->left_door?1:0)+(g->right_door?1:0)+(g->flashlight?1:0)+ph;if(g->power_left<1)g->power_left=1;if(g->power_left>5)g->power_left=5;
+
+ /* Fusion's transition objects have visible animation phases. */
+ if(g->cam_anim==CAM_UP_ANIM){
+  g->cam_anim_timer+=dt;
+  if(g->cam_anim_timer>=0.55f){g->cam_anim_timer=0;g->cam_anim=CAM_UP;g->view=g->camera;g->camera_up_check=1;}
+ } else if(g->cam_anim==CAM_DOWN_ANIM){
+  g->cam_anim_timer+=dt;
+  if(g->cam_anim_timer>=0.55f){g->cam_anim_timer=0;g->cam_anim=CAM_DOWN;g->view=0;g->camera_up_check=0;}
+ }
+ if(g->mask_anim==MASK_UP_ANIM){g->mask_anim_timer+=dt;if(g->mask_anim_timer>=0.45f){g->mask_anim_timer=0;g->mask_anim=MASK_DOWN;}}
+ else if(g->mask_anim==MASK_DOWN_ANIM){g->mask_anim_timer+=dt;if(g->mask_anim_timer>=0.45f){g->mask_anim_timer=0;g->mask_anim=MASK_UP;}}
+
+ if(g->left_door==1){g->left_door_timer+=dt;if(g->left_door_timer>=0.25f){g->left_door=2;g->left_door_timer=0;}}
+ else if(g->left_door==3){g->left_door_timer+=dt;if(g->left_door_timer>=0.25f){g->left_door=0;g->left_door_timer=0;}}
+ if(g->right_door==1){g->right_door_timer+=dt;if(g->right_door_timer>=0.25f){g->right_door=2;g->right_door_timer=0;}}
+ else if(g->right_door==3){g->right_door_timer+=dt;if(g->right_door_timer>=0.25f){g->right_door=0;g->right_door_timer=0;}}
+
+ g->time_to_hour+=dt;
+ if(g->time_to_hour>=50){g->time_to_hour-=50;hour(g);if(g->frame!=FRAME_NIGHT)return;}
+
+ g->power_left=1+g->camera_up_check+(g->left_door>0)+(g->right_door>0)+(g->flashlight?1:0)+(g->ph_mangle_c*2);
+ if(g->power_left<1)g->power_left=1;if(g->power_left>5)g->power_left=5;
  static const float intervals[6]={0,2,.5,.25,.15,.10};
- g->power_tick+=dt;if(g->power_left>=1&&g->power_left<=5&&g->power_tick>=intervals[g->power_left]){g->power_tick=0;int sub=10*((g->night/5)+1);g->hidden_power-=sub;if(g->hidden_power<0)g->hidden_power=0;}
- if(g->hidden_power<=0){g->force_down=5;g->cam_anim=CAM_DOWN;g->mask_anim=MASK_UP;g->flashlight=0;if(g->death==0){static float t=0;t+=dt;if(t>=5){t=0;enter_death(g,rnd(4));}}}
- if(g->force_down>0){g->force_down--;if(g->cam_anim==CAM_UP)g->cam_anim=CAM_DOWN_ANIM;}
- if(g->cam_anim==CAM_UP)g->view=(g->camera>=1&&g->camera<=4)?g->camera:0; else if(g->cam_anim==CAM_DOWN)g->view=0;
- static float ai_timer=0;ai_timer+=dt;if(ai_timer>=5){ai_timer-=5;ai_move(g);}
- update_phantoms(g,dt);update_gf(g);update_music(g,dt);
- if(g->springtrap_a && g->view==3 && g->hidden_power>0 && g->death==0){static float st=0;st+=dt;if(st>=4){st=0;if(rnd(2)==1)enter_death(g,4);}}
- if(g->current_call==0 && g->time_to_hour>=3){g->current_call=g->night;}
- if(g->view>0){g->camera_up_check=1;}else g->camera_up_check=0;
+ g->power_tick+=dt;
+ if(g->power_tick>=intervals[g->power_left]){g->power_tick=0;int sub=10*((g->night/5)+1);g->hidden_power-=sub;if(g->hidden_power<0)g->hidden_power=0;}
+
+ if(g->hidden_power<=0){
+  g->force_down=5;g->cam_anim=CAM_DOWN;g->view=0;g->camera_up_check=0;g->mask_anim=MASK_UP;g->flashlight=0;
+  g->power_out_timer+=dt;
+  if(g->death==0 && g->power_out_timer>=5){g->power_out_timer=0;enter_death(g,rnd(4));}
+ }
+ if(g->force_down>0)g->force_down--;
+
+ g->ai_timer+=dt;
+ if(g->ai_timer>=5){g->ai_timer-=5;ai_move(g);}
+ update_phantoms(g); update_gf(g); update_music(g,dt);
+ if(g->springtrap_a && g->view==3 && g->hidden_power>0 && g->death==0){g->springtrap_timer+=dt;if(g->springtrap_timer>=4){g->springtrap_timer=0;if(rnd(2)==1)enter_death(g,4);}}
+ if(g->current_call==0 && g->time_to_hour>=3)g->current_call=g->night;
+ if(g->cam_anim==CAM_UP)g->view=g->camera; else if(g->cam_anim==CAM_DOWN)g->view=0;
+ g->camera_up_check=(g->view>0);
 }
 
 void fnae_key(FnaeGame* g,int key){
  if(key==27){g->running=0;return;}
- if(g->frame==FRAME_TITLE){if(key==13){if(g->arrow==0){g->six_or_seven=0;g->frame=FRAME_NEWSPAPER;}else if(g->arrow==1){g->six_or_seven=0;g->frame=FRAME_WHICH_NIGHT;}else if(g->arrow==2){g->six_or_seven=1;g->frame=FRAME_WHICH_NIGHT;}else if(g->arrow==3){g->six_or_seven=1;g->frame=FRAME_CUSTOMIZE;}}else if(key=='w')g->arrow--;else if(key=='s')g->arrow++;if(g->arrow<0)g->arrow=0;int max=g->progress+1;if(max>3)max=3;if(g->arrow>max)g->arrow=max;return;}
+ if(g->frame==FRAME_TITLE){
+  if(key==13){
+   if(g->arrow==0){g->six_or_seven=0;g->frame=FRAME_NEWSPAPER;}
+   else if(g->arrow==1){g->six_or_seven=0;g->frame=FRAME_WHICH_NIGHT;}
+   else if(g->arrow==2){g->six_or_seven=1;g->frame=FRAME_WHICH_NIGHT;}
+   else if(g->arrow==3){g->six_or_seven=1;g->frame=FRAME_CUSTOMIZE;}
+  } else if(key==273 || key=='w')g->arrow--;
+  else if(key==274 || key=='s')g->arrow++;
+  if(g->arrow<0)g->arrow=0;int max=g->progress+1;if(max>3)max=3;if(g->arrow>max)g->arrow=max;return;
+ }
  if(g->frame==FRAME_NEWSPAPER){if(key==13)g->frame=FRAME_WHICH_NIGHT;return;}
- if(g->frame==FRAME_WHICH_NIGHT){if(key==13)fnae_start_night(g,g->six_or_seven==1?(g->night>=7?7:6):g->night);return;}
+ if(g->frame==FRAME_WHICH_NIGHT){if(key==13)fnae_start_night(g,g->six_or_seven?(g->night>=7?7:6):g->night);return;}
  if(g->frame==FRAME_CUSTOMIZE){if(key==13)fnae_start_night(g,7);return;}
  if(g->frame==FRAME_6AM){if(key==13){if(g->night>=5)g->frame=FRAME_FINAL;else g->frame=FRAME_WHICH_NIGHT;}return;}
  if(g->frame==FRAME_DEATH){if(key==13)g->frame=FRAME_TITLE;return;}
  if(g->frame==FRAME_FINAL){if(key==13)g->frame=FRAME_TITLE;return;}
  if(g->frame!=FRAME_NIGHT)return;
+
  if(key=='a'&&g->view==0&&g->hidden_power>0){if(g->left_door==0)g->left_door=1;else if(g->left_door==2)g->left_door=3;}
  if(key=='d'&&g->view==0&&g->hidden_power>0){if(g->right_door==0)g->right_door=1;else if(g->right_door==2)g->right_door=3;}
- if(key=='s'&&g->hidden_power>0&&g->mask_anim==MASK_UP&&g->cam_anim==CAM_DOWN){g->cam_anim=CAM_UP_ANIM;g->prevent_flip=1;}
- if(key=='m'&&g->hidden_power>0&&g->cam_anim==CAM_DOWN&&g->mask_anim==MASK_UP){g->mask_anim=MASK_UP_ANIM;g->prevent_flip=1;}
+ if(key=='s' && g->hidden_power>0){
+  if(g->cam_anim==CAM_DOWN && g->mask_anim==MASK_UP){g->cam_anim=CAM_UP_ANIM;g->cam_anim_timer=0;}
+  else if(g->cam_anim==CAM_UP && g->mask_anim==MASK_UP){g->cam_anim=CAM_DOWN_ANIM;g->cam_anim_timer=0;}
+ }
+ if(key=='m'&&g->hidden_power>0&&g->cam_anim==CAM_DOWN){if(g->mask_anim==MASK_UP){g->mask_anim=MASK_UP_ANIM;g->mask_anim_timer=0;}else if(g->mask_anim==MASK_DOWN){g->mask_anim=MASK_DOWN_ANIM;g->mask_anim_timer=0;}}
  if(key=='z'||key==308)g->flashlight=1;
- if(key=='1')g->camera=1;if(key=='2')g->camera=2;if(key=='3')g->camera=3;if(key=='4')g->camera=4;if(key=='e'&&g->view==1&&g->hidden_power>0){g->movement_out=1;g->movement_timer=0;}
- if(key=='w'&&g->view==0){g->camera_up_check=0;}
+ if(g->cam_anim==CAM_UP){if(key>='1'&&key<='4')g->camera=key-'0';}
+ if(key=='e'&&g->view==1&&g->hidden_power>0){g->movement_out=1;g->movement_timer=0;}
+ /* R is a keyboard test/control for winding the music box; mouse uses fnae_click. */
+ if(key=='r'&&g->view==4)g->music_winding=1;
 }
-void fnae_click(FnaeGame* g,int x,int y){(void)x;(void)y;/* Renderer supplies object hitboxes; core keeps Clickteam state transitions platform-neutral. */}
+
+void fnae_key_up(FnaeGame* g,int key){
+ if((key=='z'||key==308) && g->frame==FRAME_NIGHT)g->flashlight=0;
+ if(key=='r' && g->frame==FRAME_NIGHT)g->music_winding=0;
+}
+
+void fnae_click(FnaeGame* g,int x,int y){
+ if(g->frame==FRAME_TITLE){
+  if(x>=70&&x<=430&&y>=430&&y<495){g->arrow=0;g->frame=FRAME_NEWSPAPER;return;}
+  if(x>=70&&x<=430&&y>=495&&y<560){g->arrow=1;g->frame=FRAME_WHICH_NIGHT;return;}
+  if(x>=70&&x<=430&&y>=560&&y<625 && g->progress>0){g->arrow=2;g->six_or_seven=1;g->frame=FRAME_WHICH_NIGHT;return;}
+  if(x>=70&&x<=430&&y>=625&&y<700 && g->progress>1){g->arrow=3;g->six_or_seven=1;g->frame=FRAME_CUSTOMIZE;return;}
+  return;
+ }
+ if(g->frame!=FRAME_NIGHT)return;
+ if(g->view==0 && g->hidden_power>0){
+  if(x<180 && y>500){if(g->left_door==0)g->left_door=1;else if(g->left_door==2)g->left_door=3;return;}
+  if(x>1100 && y>500){if(g->right_door==0)g->right_door=1;else if(g->right_door==2)g->right_door=3;return;}
+  if(x>500 && x<780 && y>560){g->cam_anim=CAM_UP_ANIM;g->cam_anim_timer=0;return;}
+ }
+ if(g->cam_anim==CAM_UP && y>80){
+  if(x>980){ if(y<150)g->camera=1; else if(y<220)g->camera=2; else if(y<290)g->camera=3; else if(y<360)g->camera=4; }
+ }
+ if(g->view==4 && x>500 && x<780 && y>500){g->music_winding=1;}
+}

@@ -36,8 +36,9 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     /* Real extracted gameplay assets. */
     v->office = load_id(r, 227);
     v->cams[0] = load_id(r, 211);
-    v->cams[1] = load_id(r, 350);
-    v->cams[2] = load_id(r, 227);
+    /* Cam 01 = Hell, Cam 02 = Mountain/forest feed, Cam 03 = Forest, Cam 04 = Dinosaur Exhibit. */
+    v->cams[1] = load_id(r, 379);
+    v->cams[2] = load_id(r, 350);
     v->cams[3] = load_id(r, 312);
     v->static_tex = load_id(r, 46);
     v->six_am = load_id(r, 4);
@@ -65,6 +66,7 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->title_custom = load_id(r, 242);
     v->title_arrow = load_id(r, 245);
     v->title_star = load_id(r, 232);
+    v->title_template = load_id(r, 233);
 
     return v->title_bg ? 0 : -1;
 }
@@ -90,6 +92,7 @@ void visuals_free(FnaeVisuals *v) {
     destroy_texture(&v->title_custom);
     destroy_texture(&v->title_arrow);
     destroy_texture(&v->title_star);
+    destroy_texture(&v->title_template);
     destroy_texture(&v->newspaper);
     destroy_texture(&v->final_screen);
     memset(v, 0, sizeof *v);
@@ -171,6 +174,7 @@ static void draw_title(SDL_Renderer *r, FnaeVisuals *v) {
     }
 
     /* Exact exported object positions from Frame 2 (Title). */
+    draw_texture(r, v->title_template, 64, 96);
     draw_texture(r, v->title_new,      96, 448);
     draw_texture(r, v->title_continue, 96, 512);
     draw_texture(r, v->title_6night,   96, 576);
@@ -184,11 +188,7 @@ static void draw_title(SDL_Renderer *r, FnaeVisuals *v) {
     draw_texture(r, v->title_star, 428, 75);
     draw_texture(r, v->title_star, 508, 75);
 
-    /* A darkened panel keeps the menu readable over the title background. */
-    SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(r, 0, 0, 0, 35);
-    SDL_Rect panel = {55, 410, 390, 285};
-    SDL_RenderFillRect(r, &panel);
+
 }
 
 void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,

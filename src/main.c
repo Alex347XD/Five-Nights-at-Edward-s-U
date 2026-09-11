@@ -69,6 +69,10 @@ int main(int argc, char *argv[]) {
                 game.running = 0;
             } else if (e.type == SDL_KEYDOWN && !e.key.repeat) {
                 fnae_key(&game, e.key.keysym.sym);
+            } else if (e.type == SDL_KEYUP && !e.key.repeat) {
+                fnae_key_up(&game, e.key.keysym.sym);
+            } else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT) {
+                fnae_click(&game, e.button.x, e.button.y);
             }
         }
 

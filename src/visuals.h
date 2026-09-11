@@ -17,6 +17,7 @@ typedef struct {
     SDL_Texture *title_custom;
     SDL_Texture *title_arrow;
     SDL_Texture *title_star;
+    SDL_Texture *title_template;
 
     SDL_Texture *newspaper;
     SDL_Texture *final_screen;

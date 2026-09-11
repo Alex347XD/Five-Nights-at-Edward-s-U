@@ -21,7 +21,8 @@ typedef struct {
  int music_left; int music_winding; float music_tick;
  int current_call; int call_muted;
  int all20; int left_challenge, left_challenge_active;
- float anim_timer; int anim_stage;
+ float cam_anim_timer, mask_anim_timer, left_door_timer, right_door_timer;
+ float ai_timer, power_out_timer, springtrap_timer, phantom_timer;
  int hour_events[8][13];
 } FnaeGame;
 
@@ -29,5 +30,6 @@ void fnae_init(FnaeGame* g);
 void fnae_start_night(FnaeGame* g, int night);
 void fnae_update(FnaeGame* g, float dt);
 void fnae_key(FnaeGame* g, int key);
+void fnae_key_up(FnaeGame* g, int key);
 void fnae_click(FnaeGame* g, int x, int y);
 const char* fnae_frame_name(FnaeFrame f);
