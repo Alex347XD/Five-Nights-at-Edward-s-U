@@ -1,0 +1,105 @@
++ Object Definitions
+	+ Background
+		- Type: Active
+		- Images hash: 0xBAB3
+	+ Static
+		- Type: Active
+		- Images hash: 0x6711
+	+ Template Title
+		- Type: Active
+		- Images hash: 0x8403
+	+ New
+		- Type: Active
+		- Images hash: 0x93A9
+	+ Continue
+		- Type: Active
+		- Images hash: 0x8BD9
+	+ 6 Night
+		- Type: Active
+		- Images hash: 0x4435
+	+ Custom
+		- Type: Active
+		- Images hash: 0xFD83
+	+ Arrow
+		- Type: Active
+		- Images hash: 0xBEE6
+	+ Ini
+		- Type: Ini
+	+ Save Guide
+		- Type: String
+		+ Texts
+			1: Edit the string above to the name your save file is going to be.
+	+ Star
+		- Type: Active
+		- Images hash: 0xE26C
+	+ The Night
+		- Type: Counter
+		- Images hash: 0x04BD
+	+ 6th or 7th night
+		- Type: Counter
+		- Images hash: 0x1C7A
+	+ Current Call
+		- Type: Counter
+		- Images hash: 0x1C7A
+	+ String 2
+		- Type: String
+		+ Texts
+			1: Edward owned by Alex347_XD,  FNaF Made by Scott Cawthon | Version 1.0.0
+	+ savestring
+		- Type: String
+		+ Texts
+			1: Edward
+			2: \n
+	+ Warn
+		- Type: String
+		+ Texts
+			1: 
+	+ PC/Mobile
+		- Type: Counter
+		- Images hash: 0x773C
+	+ Cooldown
+		- Type: Counter
+		- Images hash: 0x1C7A
+	+ Star 2
+		- Type: Active
+		- Images hash: 0xE26C
+	+ Star 3
+		- Type: Active
+		- Images hash: 0xE26C
+	+ Update Notification
+		- Type: String
+		+ Texts
+			1: 
+	+ Update Object
+		- Type: Active
+		- Images hash: 0xC50C
+		+ Alterable Strings
+			pastebinID: CJPjEYYF
+			thisversion: 1.0.0
+	+ Get Object
+		- Type: Get Object
++ Layer #1 (background)
+	- Background [0, 0]
++ Layer #2 (user interface)
+	- Static [0, 0]
+	- Template Title [64, 96]
+	- New [96, 448]
+	- Continue [96, 512]
+	- 6 Night [96, 576]
+	- Custom [96, 640]
+	- Arrow [-22, 461]
+	- Save Guide [0, -64]
+	- Star [348, 75]
+	- Star 2 [428, 75]
+	- Star 3 [508, 75]
+	- The Night [326, 545]
+	- 6th or 7th night [-20, 338]
+	- Current Call [-20, 370]
+	- String 2 [16, 685]
+	- savestring [0, -96]
+	- Warn [378, 266]
+	- PC/Mobile [-64, 79]
+	- Update Notification [656, 688]
+	- Update Object [15, 751]
+	- Get Object [32, 736]
+	- Ini [-48, 416]

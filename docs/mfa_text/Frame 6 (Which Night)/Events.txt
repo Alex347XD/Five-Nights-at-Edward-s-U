@@ -1,0 +1,57 @@
+* blip visual animation Stopped is over
+	blip visual : Destroy
+
+* The Night = 1
++ Only one action when event loops
+	Which Night : Change animation sequence to Stopped
+
+* The Night = 2
++ Only one action when event loops
+	Which Night : Change animation sequence to Animation 12
+
+* The Night = 3
++ Only one action when event loops
+	Which Night : Change animation sequence to Animation 13
+
+* The Night = 4
++ Only one action when event loops
+	Which Night : Change animation sequence to Animation 14
+
+* The Night = 5
++ Only one action when event loops
+	Which Night : Change animation sequence to Animation 15
+
+* The Night = 6
++ Only one action when event loops
+	Which Night : Change animation sequence to Animation 16
+
+* The Night = 7
++ Only one action when event loops
+	Which Night : Change animation sequence to Animation 17
+
+* Start of Frame
++ 6th or 7th night = 0
+	New Objects : Create blip visual at (0,0) layer 1
+	Ini : Set current file to string$( "savestring" )
+	Ini : Set current group to "Base"
+	The Night : Set Counter to ItemValue( "Ini", "Night" )
+
+* Start of Frame
++ 6th or 7th night = 1
+	New Objects : Create blip visual at (0,0) layer 1
+	The Night : Set Counter to 6
+
+* Start of Frame
++ 6th or 7th night = 2
+	New Objects : Create blip visual at (0,0) layer 1
+	The Night : Set Counter to 7
+
+* Every 02''-00
+	Clock : Reappear
+	storyboard controls : Jump to frame "Night" (3)
+
+* Start of Frame
+	Sound : Stop any sample
+	 Sound : Set volume of channel #1 to 50
+	 Sound : Play sample Change (uninteruptable) on channel #1
+

@@ -1,0 +1,15 @@
++ Object Definitions
+	+ Red Fade In
+		- Type: Active
+		- Images hash: 0x860A
+	+ RIP Text
+		- Type: Active
+		- Images hash: 0x0B2E
+	+ Death Anim
+		- Type: Active
+		- Images hash: 0xD98F
++ Layer #1
+	- RIP Text [640, 650]
+	- Death Anim [630, 390]
++ Layer #2
+	- Red Fade In [600, 337]

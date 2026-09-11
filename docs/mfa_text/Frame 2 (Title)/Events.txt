@@ -1,0 +1,329 @@
+* Start of Frame
+	Sound : Stop any sample
+	Ini : Set current file to string$( "savestring" )
+	Ini : Set current group to "Base"
+	The Night : Set Counter to ItemValue( "Ini", "Night" )
+	 Sound : Set volume of channel #1 to 50
+	 Sound : Set volume of channel #2 to 50
+	 Sound : Play sample static (uninteruptable) on channel #1
+	 Sound : Play sample darkness music (uninteruptable) on channel #2, 0 times
+	 Sound : Stop channel #3
+	 Sound : Set volume of channel #3 to 50
+	 Sound : Play sample Change (uninteruptable) on channel #3
+
+[ Title Screen Code ]
+
+	* string$( "savestring" ) = "FNaFTemplate"
+	+ Only one action when event loops
+		Warn : Set alterable string to "Change your save file name!"
+		Warn : Flash during 00''-50
+
+	* Upon pressing "Enter"
+	+ Alterable Value A of Arrow = 0
+		storyboard controls : Jump to frame "Newspaper" (7)
+		6th or 7th night : Set Counter to 0
+		Current Call : Set Counter to 0
+
+	* Upon pressing "Enter"
+	+ Alterable Value A of Arrow = 1
+		storyboard controls : Jump to frame "Which Night" (6)
+		6th or 7th night : Set Counter to 0
+
+	* Upon pressing "Enter"
+	+ Alterable Value A of Arrow = 2
+	+ Star is visible
+		storyboard controls : Jump to frame "Which Night" (6)
+		6th or 7th night : Set Counter to 1
+
+	* Upon pressing "Enter"
+	+ Alterable Value A of Arrow = 3
+	+ Star 2 is visible
+		storyboard controls : Jump to frame "Customize" (8)
+		6th or 7th night : Set Counter to 1
+
+	* Star is visible
+	+ Only one action when event loops
+		6 Night : Reappear
+
+	* Star is invisible
+	+ Only one action when event loops
+		6 Night : Make invisible
+
+	* Star 2 is visible
+	+ Only one action when event loops
+		Custom : Reappear
+
+	* Star 2 is invisible
+	+ Only one action when event loops
+		Custom : Make invisible
+
+	* NOT Background animation Stopped is playing
+	+ Every 00''-20
+		Background : Change animation sequence to Stopped
+
+	* ItemValue( "Ini", "Night" ) = 0
+		The Night : Set Counter to 1
+		 Ini : Set value 1 to item "Night"
+
+	* Alterable Value A of Arrow = 0
+	+ Only one action when event loops
+		Arrow : Set position at (-10,16) from New
+
+	* Alterable Value A of Arrow = 1
+	+ Only one action when event loops
+		Arrow : Set position at (-10,17) from Continue
+		The Night : Reappear
+
+	* Alterable Value A of Arrow <> 1
+	+ Only one action when event loops
+		The Night : Make invisible
+
+	* Alterable Value A of Arrow = 2
+	+ Only one action when event loops
+		Arrow : Set position at (-10,19) from 6 Night
+
+	* Alterable Value A of Arrow = 3
+	+ Only one action when event loops
+		Arrow : Set position at (-10,19) from Custom
+
+	* User clicks with left button on New
+	+ PC/Mobile = 0
+		storyboard controls : Jump to frame "Newspaper" (7)
+		6th or 7th night : Set Counter to 0
+		Current Call : Set Counter to 0
+
+	* User clicks with left button on Continue
+	+ PC/Mobile = 0
+		storyboard controls : Jump to frame "Which Night" (6)
+		6th or 7th night : Set Counter to 0
+
+	* User clicks with left button on 6 Night
+	+ Star is visible
+	+ PC/Mobile = 0
+		storyboard controls : Jump to frame "Which Night" (6)
+		6th or 7th night : Set Counter to 1
+
+	* User clicks with left button on Custom
+	+ Star 2 is visible
+	+ PC/Mobile = 0
+		storyboard controls : Jump to frame "Customize" (8)
+		6th or 7th night : Set Counter to 1
+
+	* Mouse pointer is over New
+	+ Alterable Value A of Arrow <> 0
+	+ PC/Mobile = 0
+		Arrow : Set Alterable Value A to 0
+		 Sound : Stop channel #3
+		 Sound : Play sample Change (uninteruptable) on channel #3
+
+	* Mouse pointer is over Continue
+	+ Alterable Value A of Arrow <> 1
+	+ PC/Mobile = 0
+		Arrow : Set Alterable Value A to 1
+		 Sound : Stop channel #3
+		 Sound : Play sample Change (uninteruptable) on channel #3
+
+	* Mouse pointer is over 6 Night
+	+ Alterable Value A of Arrow <> 2
+	+ Star is visible
+	+ PC/Mobile = 0
+		Arrow : Set Alterable Value A to 2
+		 Sound : Stop channel #3
+		 Sound : Play sample Change (uninteruptable) on channel #3
+
+	* Mouse pointer is over Custom
+	+ Alterable Value A of Arrow <> 3
+	+ Star 2 is visible
+	+ PC/Mobile = 0
+		Arrow : Set Alterable Value A to 3
+		 Sound : Stop channel #3
+		 Sound : Play sample Change (uninteruptable) on channel #3
+
+	* ItemValue( "Ini", "Progress" ) > 0
+	+ Only one action when event loops
+		Star : Reappear
+
+	* ItemValue( "Ini", "Progress" ) <= 0
+	+ Only one action when event loops
+		Star : Make invisible
+
+	* ItemValue( "Ini", "Progress" ) > 1
+	+ Only one action when event loops
+		Star 2 : Reappear
+
+	* ItemValue( "Ini", "Progress" ) <= 1
+	+ Only one action when event loops
+		Star 2 : Make invisible
+
+	* ItemValue( "Ini", "Progress" ) > 2
+	+ Only one action when event loops
+		Star 3 : Reappear
+
+	* ItemValue( "Ini", "Progress" ) <= 2
+	+ Only one action when event loops
+		Star 3 : Make invisible
+
+	* User clicks with left button on New
+	+ Alterable Value A of Arrow = 0
+	+ PC/Mobile > 0
+	+ Cooldown <= 0
+		storyboard controls : Jump to frame "Newspaper" (7)
+		6th or 7th night : Set Counter to 0
+		Current Call : Set Counter to 0
+
+	* User clicks with left button on Continue
+	+ Alterable Value A of Arrow = 1
+	+ PC/Mobile > 0
+	+ Cooldown <= 0
+		storyboard controls : Jump to frame "Which Night" (6)
+		6th or 7th night : Set Counter to 0
+
+	* User clicks with left button on 6 Night
+	+ Alterable Value A of Arrow = 2
+	+ Star is visible
+	+ PC/Mobile > 0
+	+ Cooldown <= 0
+		storyboard controls : Jump to frame "Which Night" (6)
+		6th or 7th night : Set Counter to 1
+
+	* User clicks with left button on Custom
+	+ Alterable Value A of Arrow = 3
+	+ Star 2 is visible
+	+ PC/Mobile > 0
+	+ Cooldown <= 0
+		storyboard controls : Jump to frame "Customize" (8)
+		6th or 7th night : Set Counter to 1
+
+	* User clicks with left button on New
+	+ Alterable Value A of Arrow <> 0
+	+ PC/Mobile > 0
+	+ Cooldown <= 0
+		Cooldown : Set Counter to 1
+		Arrow : Set Alterable Value A to 0
+		 Sound : Stop channel #3
+		 Sound : Play sample Change (uninteruptable) on channel #3
+
+	* User clicks with left button on Continue
+	+ Alterable Value A of Arrow <> 1
+	+ PC/Mobile > 0
+	+ Cooldown <= 0
+		Cooldown : Set Counter to 1
+		Arrow : Set Alterable Value A to 1
+		 Sound : Stop channel #3
+		 Sound : Play sample Change (uninteruptable) on channel #3
+
+	* User clicks with left button on 6 Night
+	+ Alterable Value A of Arrow <> 2
+	+ Star is visible
+	+ PC/Mobile > 0
+	+ Cooldown <= 0
+		Cooldown : Set Counter to 1
+		Arrow : Set Alterable Value A to 2
+		 Sound : Stop channel #3
+		 Sound : Play sample Change (uninteruptable) on channel #3
+
+	* User clicks with left button on Custom
+	+ Alterable Value A of Arrow <> 3
+	+ Star 2 is visible
+	+ PC/Mobile > 0
+	+ Cooldown <= 0
+		Cooldown : Set Counter to 1
+		Arrow : Set Alterable Value A to 3
+		 Sound : Stop channel #3
+		 Sound : Play sample Change (uninteruptable) on channel #3
+
+	* PC/Mobile > 0
+	+ Run this event once
+		New Objects : Create Cooldown at (-114,140) layer 2
+
+	* NOT Repeat while left mouse-key is pressed
+	+ PC/Mobile > 0
+	+ Number of Cooldown > 0
+	+ Cooldown > 0
+		Cooldown : Set Counter to 0
+
+	* Alterable Value A of Arrow > ItemValue( "Ini", "Progress" ) + 1
+		Arrow : Set Alterable Value A to ItemValue( "Ini", "Progress" ) + 1
+
+	* Alterable Value A of Arrow < 0
+		Arrow : Set Alterable Value A to 0
+
+	* Random(10) = 1
+		 Static : Set alpha-blending coefficient to 100 + Random(100)
+
+	* Random(50) = 1
+		Background : Change animation sequence to RRandom(12, 14)
+
+// [ Check for update (Optional) ]
+
+	// // How to setup the update engine:
+	// 1: Go to pastebin.com, create a new paste, and give it a name.
+	// I advise against Paste Expiration or Password Protected pastes.
+	// 
+	// 2: Enter your version number into the Paste.
+	// You will need to update this Paste each time you make a new version.
+	// This should always be the latest version of your application.
+	// Example: 1.0.0
+	// 
+	// 3: Click Create and then copy the Pastebin ID.
+	// Clicking create will automatically redirect you to your Paste.
+	// The Pastebin ID will be in the link. (pastebin.com/XXXXXXXX)
+	// Don't copy the entire link.
+	// 
+	// 4: Open properties of the Update Object, go to the values tab, and paste your Pastebin ID into the "PastebinID" box in Alterable Strings.
+	// 
+	// 5: Put the current version of your application in the "thisversion" alterable string. This will be your actual version number that gets compared to your Paste. This won't get recognized as a number, but only as a string. So putting in a lower number into the Paste after releasing this application will still get recognized as an update.
+
+	[ Update Engine ]
+
+		* Start of Frame
+		+ pastebinID of Update Object = ""
+		+ thisversion of Update Object <> ""
+			Update Notification : Set alterable string to "Error: No Pastebin ID entered."
+
+		* Start of Frame
+		+ thisversion of Update Object = ""
+		+ pastebinID of Update Object <> ""
+			Update Notification : Set alterable string to "Error: No application update entered."
+
+		* Start of Frame
+		+ thisversion of Update Object = ""
+		+ pastebinID of Update Object = ""
+			Update Notification : Set alterable string to "Error: No application update or pastebin ID entered."
+
+		* Start of Frame
+		+ pastebinID of Update Object <> ""
+		+ thisversion of Update Object <> ""
+			Update Notification : Set alterable string to ""
+			 Get Object : Get URL "https://pastebin.com/raw/" + pastebinID( "Update Object" )
+
+		* Get Object: On get complete
+		+ thisversion( "Update Object" ) <> Received$( "Get Object" )
+		+ Received$( "Get Object" ) <> ""
+			Update Notification : Set alterable string to "New update available!" + NewLine$ + "You're on " + thisversion( "Update Object" ) + ", but the latest version is " + Received$( "Get Object" )
+
+[ Choose Platform Automatically ]
+
+	* Start of Frame
+	+ Is running as Windows application
+		PC/Mobile : Set Counter to 0
+
+	* Start of Frame
+	+ Is running as Mac application
+		PC/Mobile : Set Counter to 0
+
+	* Start of Frame
+	+ Is running as Html5 application
+		PC/Mobile : Set Counter to 0
+
+	* Start of Frame
+	+ Is running as Android application
+		PC/Mobile : Set Counter to 1
+
+	* Start of Frame
+	+ Is running as iOS application
+		PC/Mobile : Set Counter to 1
+
+* Upon pressing "Escape"
+	storyboard controls : End the application
+

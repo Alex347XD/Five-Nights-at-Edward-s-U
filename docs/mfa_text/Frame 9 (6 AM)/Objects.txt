@@ -1,0 +1,36 @@
++ Object Definitions
+	+ which AM
+		- Type: Active
+		- Images hash: 0xF858
+	+ Time Text
+		- Type: Active
+		- Images hash: 0x52B9
+		+ Alterable Values
+			Advance: 0
+			Night Story: 0
+			Added: 0
+	+ 6th or 7th night
+		- Type: Counter
+		- Images hash: 0x1C7A
+	+ Save Guide
+		- Type: String
+		+ Texts
+			1: Edit the string above to the name your save file is going to be.
+	+ Ini
+		- Type: Ini
+	+ Fade
+		- Type: Active
+		- Images hash: 0x6455
+	+ savestring
+		- Type: String
+		+ Texts
+			1: Edward
+			2: \n
++ Layer #1
+	- which AM [533, 324]
+	- Time Text [624, 324]
+	- 6th or 7th night [-8, 372]
+	- Save Guide [32, -64]
+	- Fade [0, 0]
+	- savestring [32, -96]
+	- Ini [368, -120]

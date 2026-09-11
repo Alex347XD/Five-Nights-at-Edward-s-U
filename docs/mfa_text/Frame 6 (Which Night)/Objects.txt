@@ -1,0 +1,36 @@
++ Object Definitions
+	+ Which Night
+		- Type: Active
+		- Images hash: 0x25B4
+	+ The Night
+		- Type: Counter
+		- Images hash: 0x04BD
+	+ blip visual
+		- Type: Active
+		- Images hash: 0xA6D8
+	+ Clock
+		- Type: Active
+		- Images hash: 0xFFEF
+	+ Save Guide
+		- Type: String
+		+ Texts
+			1: Edit the string above to the name your save file is going to be.
+	+ Ini
+		- Type: Ini
+	+ 6th or 7th night
+		- Type: Counter
+		- Images hash: 0x1C7A
+	+ savestring
+		- Type: String
+		+ Texts
+			1: Edward
+			2: \n
++ Layer #1
+	- Which Night [640, 360]
+	- The Night [-10, 385]
+	- blip visual [0, 0]
+	- Clock [1250, 690]
+	- Save Guide [64, -96]
+	- 6th or 7th night [-192, 276]
+	- savestring [64, -128]
+	- Ini [368, -120]

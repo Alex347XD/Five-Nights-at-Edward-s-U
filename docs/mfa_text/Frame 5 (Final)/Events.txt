@@ -1,0 +1,74 @@
+* Alterable Value A of Night 5 > 0
++ Alterable Value B of Night 5 = 1
+	Night 5 : Sub 5 from Alterable Value A
+	 Night 5 : Set alpha-blending coefficient to Alterable Value A( "Night 5" )
+
+* Alterable Value A of Night 6 > 0
++ Alterable Value B of Night 6 = 1
+	Night 6 : Sub 5 from Alterable Value A
+	 Night 6 : Set alpha-blending coefficient to Alterable Value A( "Night 6" )
+
+* Alterable Value A of Night 7 > 0
++ Alterable Value B of Night 7 = 1
+	Night 7 : Sub 5 from Alterable Value A
+	 Night 7 : Set alpha-blending coefficient to Alterable Value A( "Night 7" )
+
+* Number of Night 5 > 0
++ Run this event once
+	 Night 5 : Set alpha-blending coefficient to 255
+	Night 5 : Reappear
+	Night 5 : Set Alterable Value B to 1
+	Ini : Set current file to string$( "savestring" )
+	Ini : Set current group to "Base"
+	 Ini : Set value 1 to item "Progress"
+
+* Number of Night 6 > 0
++ Run this event once
+	 Night 6 : Set alpha-blending coefficient to 255
+	Night 6 : Reappear
+	Night 6 : Set Alterable Value B to 1
+	Ini : Set current file to string$( "savestring" )
+	Ini : Set current group to "Base"
+	 Ini : Set value 2 to item "Progress"
+
+* Number of Night 7 > 0
++ Run this event once
+	 Night 7 : Set alpha-blending coefficient to 255
+	Night 7 : Reappear
+	Night 7 : Set Alterable Value B to 1
+
+* Number of Night 7 > 0
++ All 20? > 0
++ Run this event once
+	Ini : Set current file to string$( "savestring" )
+	Ini : Set current group to "Base"
+	 Ini : Set value 3 to item "Progress"
+
+* Number of Night 7 > 0
++ Alterable Value A of Left Challenge > 0
++ Alterable Value B of Left Challenge > 0
++ Run this event once
+	Ini : Set current file to string$( "savestring" )
+	Ini : Set current group to "Base"
+	 Ini : Set value 1 to item "Challenge" + Str$(Alterable Value A( "Left Challenge" ))
+
+* User clicks with left button
+	storyboard controls : Jump to frame "Title" (2)
+
+* 6th or 7th night = 0
++ Run this event once
+	New Objects : Create Night 5 at (0,0) layer 1
+
+* 6th or 7th night = 1
++ Run this event once
+	New Objects : Create Night 6 at (0,0) layer 1
+
+* 6th or 7th night = 2
++ Run this event once
+	New Objects : Create Night 7 at (0,0) layer 1
+
+* Start of Frame
+	Sound : Stop any sample
+	 Sound : Set volume of channel #1 to 50
+	 Sound : Play sample music box (uninteruptable) on channel #1
+

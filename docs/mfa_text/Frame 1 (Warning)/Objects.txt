@@ -1,0 +1,6 @@
++ Object Definitions
+	+ Background
+		- Type: Active
+		- Images hash: 0x4723
++ Layer #1
+	- Background [0, 0]

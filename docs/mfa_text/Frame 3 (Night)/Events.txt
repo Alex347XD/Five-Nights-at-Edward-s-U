@@ -1,0 +1,1951 @@
+[ Example Characters ]
+
+	[ Foxy ]
+
+		* Start of Frame
+			Foxy Collision Character : Set position at (0,0) from Cam 02 Text
+			 Foxy Stand : Set scale to 1.1 (Quality = 1.1)
+
+		* Every 05''-00
+		+ Random(30) < value( "Foxy AI" )
+		+ Move of Foxy Collision Character = 0
+			Foxy Collision Character : Set Move to 1
+
+		* Foxy Collision Character is overlapping Cam 02 Text
+		+ Move of Foxy Collision Character > 0
+			Foxy Collision Character : Set Move to 0
+			Foxy Collision Character : Set position at (0,0) from Cam 04 Text
+			Cam 02 Text : Set Alterable Value A to 5
+			Cam 04 Text : Set Alterable Value A to 5
+
+		* Foxy Collision Character is overlapping Cam 04 Text
+		+ Move of Foxy Collision Character > 0
+			Foxy Collision Character : Set Move to 0
+			Foxy Collision Character : Set position at (0,0) from Right Door Collision
+			Cam 04 Text : Set Alterable Value A to 5
+
+		* Foxy Collision Character is overlapping Right Door Collision
+		+ Move of Foxy Collision Character > 0
+		+ Alterable Value A of Right Door = 0
+			Foxy Collision Character : Set Move to 0
+			Foxy Collision Character : Set position at (0,0) from Pending Death Collision
+
+		* Foxy Collision Character is overlapping Right Door Collision
+		+ Move of Foxy Collision Character > 0
+		+ Alterable Value A of Right Door > 0
+			Foxy Collision Character : Set Move to 0
+			Foxy Collision Character : Set position at (0,0) from Cam 02 Text
+			Cam 02 Label Guide : Set Alterable Value A to 5
+
+		* Foxy Collision Character is overlapping Right Door Collision
+		+ View of Office & Cams = 0
+		+ Foxy Stand is invisible
+			Foxy Stand : Reappear
+
+		* NOT Foxy Collision Character is overlapping Right Door Collision
+		+ Foxy Stand is visible
+			Foxy Stand : Make invisible
+
+		* View of Office & Cams > 0
+		+ Foxy Stand is visible
+			Foxy Stand : Make invisible
+
+		* Foxy Collision Character is overlapping Pending Death Collision
+		+ View of Office & Cams > 0
+		+ death = 0
+		+ Hidden Power of Office & Cams > 0
+		+ Run this event once
+			death : Set Counter to 3
+
+		* Foxy Collision Character is overlapping Right Door Collision
+		+ Only one action when event loops
+			 Sound : Stop channel #12
+			 Sound : Play sample videogame_or_not-metallic-thud-449652 (1) on channel #12
+
+	[ Freddy ]
+
+		* Start of Frame
+			Freddy Collision Character : Set position at (0,0) from Cam 01 Text
+			 Freddy at your door : Set scale to 1.1 (Quality = 1)
+
+		* Every 05''-00
+		+ Random(30) < value( "Freddy AI" )
+		+ Move of Freddy Collision Character = 0
+			Freddy Collision Character : Set Move to 1
+
+		* Freddy Collision Character is overlapping Cam 01 Text
+		+ Move of Freddy Collision Character > 0
+			Freddy Collision Character : Set Move to 0
+			Freddy Collision Character : Set position at (0,0) from Cam 03 Text
+			Cam 01 Text : Set Alterable Value A to 5
+			Cam 03 Text : Set Alterable Value A to 5
+
+		* Freddy Collision Character is overlapping Cam 03 Text
+		+ Move of Freddy Collision Character > 0
+			Freddy Collision Character : Set Move to 0
+			Freddy Collision Character : Set position at (0,0) from Left Door Collision
+			Cam 03 Text : Set Alterable Value A to 5
+
+		* Freddy Collision Character is overlapping Left Door Collision
+		+ Move of Freddy Collision Character > 0
+		+ Alterable Value A of Left Door = 0
+			Freddy Collision Character : Set Move to 0
+			Freddy Collision Character : Set position at (0,0) from Pending Death Collision
+
+		* Freddy Collision Character is overlapping Left Door Collision
+		+ Move of Freddy Collision Character > 0
+		+ Alterable Value A of Left Door > 0
+			Freddy Collision Character : Set Move to 0
+			Freddy Collision Character : Set position at (0,0) from Cam 01 Text
+			Cam 01 Text : Set Alterable Value A to 5
+
+		* Freddy Collision Character is overlapping Left Door Collision
+		+ View of Office & Cams = 0
+		+ Freddy at your door is invisible
+			Freddy at your door : Reappear
+
+		* NOT Freddy Collision Character is overlapping Left Door Collision
+		+ Freddy at your door is visible
+			Freddy at your door : Make invisible
+
+		* View of Office & Cams > 0
+		+ Freddy at your door is visible
+			Freddy at your door : Make invisible
+
+		* Freddy Collision Character is overlapping Pending Death Collision
+		+ View of Office & Cams > 0
+		+ death = 0
+		+ Hidden Power of Office & Cams > 0
+		+ Run this event once
+			death : Set Counter to 2
+
+		* Freddy Collision Character is overlapping Left Door Collision
+		+ Only one action when event loops
+			 Sound : Stop channel #12
+			 Sound : Play sample deep steps (uninteruptable) on channel #12
+
+	[ Phantom BB ]
+
+		* Start of Frame
+			 Ph BB Camera : Set scale to 2.7 (Quality = 1)
+			 Ph BB Scare : Set scale to 2.7 (Quality = 1)
+
+		* View of Office & Cams > 0
+		+ Ph BB AI > 0
+		+ Only one action when event loops
+			Ph BB Camera : Set Alterable Value A to ( Random(( 23 - value( "Ph BB AI" ) )) )
+
+		* View of Office & Cams = 0
+		+ Ph BB AI > 0
+		+ Only one action when event loops
+			Ph BB Camera : Set Alterable Value A to 0
+
+		* Alterable Value A of Ph BB Camera <> 1
+			Ph BB Camera : Make invisible
+			Ph BB Camera : Set Alterable Value B to 0
+
+		* Alterable Value A of Ph BB Camera = 1
+			Ph BB Camera : Reappear
+			Ph BB Camera : Add 1 to Alterable Value B
+
+		* Alterable Value B of Ph BB Camera > 80
+			Ph BB Camera : Set Alterable Value A to 0
+			Ph BB Camera : Set Alterable Value B to 0
+			Ph BB Scare : Set Alterable Value A to 0
+			Office & Cams : Set Force Down Camera to 5
+			 Sound : Stop channel #18
+			 Sound : Play sample scream3 (uninteruptable) on channel #18
+
+		* Alterable Value A of Ph BB Scare < 255
+			Ph BB Scare : Add 7 to Alterable Value A
+			 Ph BB Scare : Set alpha-blending coefficient to Alterable Value A( "Ph BB Scare" )
+
+		* User clicks with left button on CAM 01
+		+ View of Office & Cams > 0
+			Ph BB Camera : Set Alterable Value A to 0
+			Ph BB Camera : Set Alterable Value B to 0
+
+	[ Phantom Mangle ]
+
+		* Start of Frame
+			 Ph Mangle Camera : Set scale to 2.7 (Quality = 1)
+
+		* View of Office & Cams > 0
+		+ Ph Mangle AI > 0
+		+ Alterable Value C of Ph Mangle Camera = 0
+		+ Only one action when event loops
+			Ph Mangle Camera : Set Alterable Value A to ( Random(( 23 - value( "Ph Mangle AI" ) )) ) - ( Alterable Value C( "Ph Mangle Camera" ) * 23 )
+
+		* View of Office & Cams = 0
+		+ Ph Mangle AI > 0
+		+ Only one action when event loops
+			Ph Mangle Camera : Set Alterable Value A to 0
+
+		* Alterable Value A of Ph Mangle Camera = 1
+			Ph Mangle Camera : Reappear
+
+		* Alterable Value A of Ph Mangle Camera <> 1
+			Ph Mangle Camera : Make invisible
+
+		* Alterable Value A of Ph Mangle Camera = 1
+			Ph Mangle Camera : Add 1 to Alterable Value B
+
+		* Alterable Value A of Ph Mangle Camera = 0
+		+ Alterable Value B of Ph Mangle Camera <> 0
+			Ph Mangle Camera : Set Alterable Value B to 0
+
+		* Alterable Value B of Ph Mangle Camera > 60
+			Ph Mangle Camera : Set Alterable Value C to 1
+			Ph Mangle Camera : Set Alterable Value A to 0
+			Ph Mangle Camera : Set Alterable Value B to 0
+			Office & Cams : Set Force Down Camera to 5
+
+		* Alterable Value C of Ph Mangle Camera = 1
+		+ Alterable Value B of Ph Mangle Annoy = 0
+		+ Alterable Value A of Ph Mangle Annoy < 224
+			Ph Mangle Annoy : Add 1 to Alterable Value A
+			Ph Mangle Annoy : Set position at (0,-1) from Ph Mangle Annoy
+
+		* Alterable Value A of Ph Mangle Annoy >= 224
+		+ Every 01''-00
+			Ph Mangle Annoy : Add 1 to Alterable Value B
+
+		* Alterable Value B of Ph Mangle Annoy >= 7
+		+ Alterable Value A of Ph Mangle Annoy > 0
+			Ph Mangle Annoy : Sub 1 from Alterable Value A
+			Ph Mangle Annoy : Set position at (0,1) from Ph Mangle Annoy
+
+		* Alterable Value B of Ph Mangle Annoy >= 7
+		+ Alterable Value A of Ph Mangle Annoy <= 0
+			Ph Mangle Annoy : Set Alterable Value A to 0
+			Ph Mangle Annoy : Set Alterable Value B to 0
+			Ph Mangle Camera : Set Alterable Value C to 0
+
+		* Alterable Value B of Ph Mangle Annoy < 7
+		+ Alterable Value A of Ph Mangle Annoy > 0
+		+ Only one action when event loops
+			 Sound : Stop channel #17
+			 Sound : Play sample garble1 (uninteruptable) on channel #17, 0 times
+
+		* Alterable Value B of Ph Mangle Annoy >= 7
+		+ Only one action when event loops
+			 Sound : Stop channel #17
+			 Sound : Play sample breathing (uninteruptable) on channel #17
+
+	// [ AI Test Character Chica ]
+
+		// * Every 05''-00
+		// + Random(20) + 1 < value( "Test Chica AI" )
+		// + Move of Foxy Collision Character = 0
+		// + Test Chica AI > 0
+			// Foxy Collision Character : Set Move to 1
+
+		// * Start of Frame
+			// Foxy Collision Character : Set position at (0,0) from Cam 01 Text
+
+		// * Foxy Collision Character is overlapping Cam 01 Text
+		// + Move of Foxy Collision Character > 0
+			// Foxy Collision Character : Set Move to 0
+			// Foxy Collision Character : Set position at (0,0) from Cam 02 Text
+
+		// * Foxy Collision Character is overlapping Cam 02 Text
+		// + Move of Foxy Collision Character > 0
+			// Foxy Collision Character : Set Move to 0
+			// Foxy Collision Character : Set position at (0,0) from Cam 04 Text
+
+		// * Foxy Collision Character is overlapping Cam 04 Text
+		// + Move of Foxy Collision Character > 0
+			// Foxy Collision Character : Set Move to 0
+			// Foxy Collision Character : Set position at (0,0) from Cam 03 Text
+
+		// * Foxy Collision Character is overlapping Cam 03 Text
+		// + Move of Foxy Collision Character > 0
+			// Foxy Collision Character : Set Move to 0
+			// Foxy Collision Character : Set position at (0,0) from Cam 01 Text
+
+	[ Golden Freddy ]
+
+		* Camera Animation of Office & Cams = 3
+		+ Golden Freddy AI > 0
+		+ GF Random of Office & Cams <> 1
+		+ Only one action when event loops
+			Office & Cams : Set GF Random to Random(( 22 - value( "Golden Freddy AI" ) ))
+
+		* GF Random of Office & Cams = 1
+			GF Sit : Reappear
+
+		* GF Random of Office & Cams <> 1
+			GF Sit : Make invisible
+
+		* Camera Animation of Office & Cams = 2
+		+ GF Random of Office & Cams = 1
+			Office & Cams : Set GF Random to 0
+
+		* Mask animation of Office & Cams = 2
+		+ GF Random of Office & Cams = 1
+			Office & Cams : Set GF Random to 0
+
+		* GF Random of Office & Cams = 1
+			Office & Cams : Add 1 to GF Death Addup
+
+		* GF Random of Office & Cams <> 1
+		+ GF Death Addup of Office & Cams > 0
+			Office & Cams : Set GF Death Addup to 0
+
+		* GF Death Addup of Office & Cams > 90
+			death : Set Counter to 5
+
+	[ Springtrap (Audio Lure) ]
+
+		* Start of Frame
+		+ Cam 02 Text is overlapping CAM 01
+			Springtrap : Set position at (0,0) from CAM 01
+
+		* Springtrap is overlapping Lure Area
+		+ Every 02''-00
+		+ Random(2) = 1
+			Springtrap : Set position at (0,0) from Lure Area
+			Lure Area : Destroy
+			Office & Cams : Set Movement Out to 1
+
+		* Alterable Value A of Springtrap = 1
+		+ Alterable Value B of Springtrap = 0
+		+ Springtrap is overlapping Cam 01 Text
+		+ Cam 03 Text is overlapping CAM 01
+			Springtrap : Set Alterable Value A to 0
+			Springtrap : Set position at (0,0) from CAM 01
+			Cam 01 Text : Set Alterable Value A to 5
+			Cam 03 Text : Set Alterable Value A to 5
+
+		* Alterable Value A of Springtrap = 1
+		+ Alterable Value B of Springtrap = 1
+		+ Springtrap is overlapping Cam 01 Text
+		+ Cam 02 Text is overlapping CAM 01
+			Springtrap : Set Alterable Value A to 0
+			Springtrap : Set position at (0,0) from CAM 01
+			Cam 01 Text : Set Alterable Value A to 5
+			Cam 02 Text : Set Alterable Value A to 5
+
+		* Alterable Value A of Springtrap = 1
+		+ Springtrap is overlapping Cam 03 Text
+		+ Cam 01 Text is overlapping CAM 01
+			Springtrap : Set Alterable Value A to 0
+			Springtrap : Set position at (0,0) from CAM 01
+			Cam 03 Text : Set Alterable Value A to 5
+			Cam 01 Text : Set Alterable Value A to 5
+
+		* Alterable Value A of Springtrap = 1
+		+ Alterable Value B of Springtrap = 0
+		+ Springtrap is overlapping Cam 02 Text
+		+ Cam 04 Text is overlapping CAM 01
+			Springtrap : Set Alterable Value A to 0
+			Springtrap : Set position at (0,0) from CAM 01
+			Cam 02 Text : Set Alterable Value A to 5
+			Cam 04 Text : Set Alterable Value A to 5
+
+		* Alterable Value A of Springtrap = 1
+		+ Alterable Value B of Springtrap = 1
+		+ Springtrap is overlapping Cam 02 Text
+		+ Cam 01 Text is overlapping CAM 01
+			Springtrap : Set Alterable Value A to 0
+			Springtrap : Set position at (0,0) from CAM 01
+			Cam 01 Text : Set Alterable Value A to 5
+			Cam 02 Text : Set Alterable Value A to 5
+
+		* Alterable Value A of Springtrap = 1
+		+ Springtrap is overlapping Cam 04 Text
+		+ Cam 02 Text is overlapping CAM 01
+			Springtrap : Set Alterable Value A to 0
+			Springtrap : Set position at (0,0) from CAM 01
+			Cam 04 Text : Set Alterable Value A to 5
+			Cam 02 Text : Set Alterable Value A to 5
+
+		* Every 05''-00
+		+ Random(30) + 1 < value( "Springtrap AI" )
+		+ Alterable Value A of Springtrap = 0
+			Springtrap : Set Alterable Value A to 1
+
+		* View of Office & Cams > 0
+		+ You is overlapping Springtrap
+		+ Only one action when event loops
+			Springtrap Stand : Reappear
+
+		* View of Office & Cams = 0
+		+ Only one action when event loops
+			Springtrap Stand : Make invisible
+
+		* NOT You is overlapping Springtrap
+		+ Only one action when event loops
+			Springtrap Stand : Make invisible
+
+		* Springtrap is overlapping Cam 03 Text
+		+ Only one action when event loops
+			 Sound : Stop channel #15
+			 Sound : Play sample walk1 (uninteruptable) on channel #15
+
+		* Springtrap is overlapping Cam 03 Text
+		+ NOT Springtrap is overlapping Lure Area
+		+ Number of Lure Area > 0
+		+ Every 04''-00
+		+ Random(2) = 1
+		+ Hidden Power of Office & Cams > 0
+		+ death = 0
+			death : Set Counter to 4
+
+		* Springtrap is overlapping Cam 03 Text
+		+ Number of Lure Area = 0
+		+ Every 04''-00
+		+ Random(2) = 1
+		+ Hidden Power of Office & Cams > 0
+		+ death = 0
+			death : Set Counter to 4
+
+		* Springtrap is overlapping Cam 02 Text
+		+ Only one action when event loops
+			Springtrap : Set Alterable Value B to RRandom(0, 1)
+
+		* Springtrap is overlapping Cam 01 Text
+		+ Only one action when event loops
+			Springtrap : Set Alterable Value B to RRandom(0, 1)
+
+	[ Music Box ]
+
+		// // Group can be safely disabled
+
+		* View of Office & Cams = 4
+		+ Only one action when event loops
+			Music Box Button : Reappear
+			Music Box Wind Text : Reappear
+			Click & Hold : Reappear
+			Music Left : Reappear
+
+		* View of Office & Cams <> 4
+		+ Only one action when event loops
+			Music Left : Make invisible
+			Click & Hold : Make invisible
+			Music Box Wind Text : Make invisible
+			Music Box Button : Make invisible
+
+		* NOT Is channel 1 not playing?
+		+ Run this event once
+			 Sound : Stop channel #8
+			 Sound : Play sample Music_Box_Melody_Playful (uninteruptable) on channel #8, 0 times
+			Music Left : Set Counter to 2000
+
+		* View of Office & Cams = 4
+		+ death = 0
+		+ Mouse pointer is over Music Box Button
+		+ Repeat while left mouse-key is pressed
+		+ Alterable Value A of Music Box Button = 0
+			Music Box Button : Set Alterable Value A to 1
+
+		* NOT Repeat while left mouse-key is pressed
+		+ death = 0
+		+ Alterable Value A of Music Box Button > 0
+			Music Box Button : Set Alterable Value A to 0
+
+		* NOT Mouse pointer is over Music Box Button
+		+ death = 0
+		+ Alterable Value A of Music Box Button > 0
+			Music Box Button : Set Alterable Value A to 0
+
+		* View of Office & Cams <> 4
+		+ death = 0
+		+ Alterable Value A of Music Box Button > 0
+			Music Box Button : Set Alterable Value A to 0
+
+		* Alterable Value A of Music Box Button = 0
+		+ Only one action when event loops
+			Music Box Button : Change animation sequence to Stopped
+
+		* Alterable Value A of Music Box Button > 0
+		+ Only one action when event loops
+			Music Box Button : Change animation sequence to Animation 12
+
+		* Alterable Value A of Music Box Button = 0
+		+ Every 00''-07
+		+ death = 0
+		+ Music Left > 0
+		+ The Night <> 7
+			Music Left : Subtract value( "The Night" ) * 2 from Counter
+
+		* Alterable Value A of Music Box Button = 0
+		+ Every 00''-07
+		+ death = 0
+		+ Music Left > 0
+		+ The Night = 7
+			Music Left : Subtract AI Level( "Puppet Global" ) * 2 from Counter
+
+		* Alterable Value A of Music Box Button > 0
+		+ Every 00''-35
+		+ Music Left > 0
+			Music Left : Add 100 to Counter
+
+		* Alterable Value A of Music Box Button > 0
+		+ Every 00''-50
+		+ Music Left > 0
+			 Sound : Stop channel #11
+			 Sound : Play sample windup2 (uninteruptable) on channel #11
+
+		* Music Left <= 0
+		+ Every 01''-00
+		+ Random(5) = 1
+		+ Camera Animation of Office & Cams = 2
+		+ Hidden Power of Office & Cams > 0
+		+ death = 0
+			death : Set Counter to 1
+
+		* Music Left <= 0
+		+ Every 01''-00
+		+ Random(5) = 1
+		+ Mask animation of Office & Cams = 2
+		+ Hidden Power of Office & Cams > 0
+		+ death = 0
+			death : Set Counter to 1
+
+		[ Warning Messages ]
+
+			* Music Left < 600
+			+ Music Left >= 200
+			+ Only one action when event loops
+				Warning out of cam : Change animation sequence to Stopped
+				warning in cam : Change animation sequence to Stopped
+
+			* Music Left < 200
+			+ Music Left > 0
+			+ Only one action when event loops
+				Warning out of cam : Change animation sequence to Animation 12
+				warning in cam : Change animation sequence to Animation 12
+
+			* Music Left <= 0
+			+ Only one action when event loops
+				warning in cam : Make invisible
+				Warning out of cam : Make invisible
+
+			* Music Left < 600
+			+ Music Left > 0
+			+ View of Office & Cams = 0
+			+ Only one action when event loops
+				Warning out of cam : Reappear
+				warning in cam : Make invisible
+
+			* Music Left < 600
+			+ Music Left > 0
+			+ View of Office & Cams > 0
+			+ Only one action when event loops
+				warning in cam : Reappear
+				Warning out of cam : Make invisible
+
+			* Music Left > 600
+			+ Only one action when event loops
+				Warning out of cam : Make invisible
+				warning in cam : Make invisible
+
+		* Music Left <= 0
+		+ Run this event once
+			 Sound : Stop channel #20
+			 Sound : Play sample jackinthebox (uninteruptable) on channel #20, 0 times
+
+	// [ Basic AI Movement Tutorial ]
+
+		// * Never
+		// + Every 05''-00
+		// + Random(20) < value( "Freddy AI" )
+			// Freddy Collision Character : Set Move to 1
+
+		// // Here's a sample of FNaF AI. (Except for the Never condition) It's actually not that complicated. The every 5 seconds condition makes the event run once every 5 seconds.
+		// 
+		// The "Random(20) < AI Level" condition can seem a little bit confusing at first, but if you double-click it and the general values menu comes up, it starts to make a lot more sense.
+		// 
+		// When the event is running, a random number between 0-19 is picked. (It's important to note that the Random number never goes up to what you set it to, just a maximum of one number below it.)
+		// Then the randomly generated number will be compared to the current AI value (In this case, it's Freddy's.) If the number is lower than the current AI value, then the animatronic will get called to move. (Alterable Value A set to 1.)
+
+		// * Never
+		// + Move of Freddy Collision Character > 0
+		// + Freddy Collision Character is overlapping Cam 01 Text
+			// Freddy Collision Character : Set Move to 0
+			// Freddy Collision Character : Set position at (0,0) from Cam 03 Text
+
+		// // This event above is the event to make him actually move. The move value being set to 1 is the main condition for him to move.
+		// 
+		// The move value is set to 0 and then he is moved from a one location to another. This is just a sample from the Freddy example character, you can look at the full AI a few event group above this.
+		// 
+		// This can be used for a lot more than just moving around. Let's say if Freddy is in your office and want him to kill the player faster depending on the AI value, this can be done too, just have the "Move > 0" condition attached to the jumpscare event. But I would not recommend doing it that way because of the nature of RNG, There's a chance Freddy will never kill you. I'd recommend just using a timer for that. That's just an example of what can be done. The amount you can really do with this is basically infinite.
+		// 
+		// Now this is just very basic AI Movement, there's still a lot to to do to have a fully implemented animatronic, such as camera images, footstep sounds, camera blackouts, jumpscares, etc. But this is a good start to making one.
+		// 
+		// The other example animatronics are rather complicated and have different mechanics than just moving around cameras, so I don't even know where to start to explain exactly how they work. However, I did try to simplify their code as much as possible, so hopefully they can be understood.
+
+[ Office Panning ]
+
+	* Mouse pointer is over Left 1
+	+ death = 0
+	+ X position of Office Center Object > Game Width( "Office & Cams" ) / 2
+	+ View of Office & Cams = 0
+	+ PC/Mobile = 0
+		Office Center Object : Set position at (-2,0) from Office Center Object
+		storyboard controls : Center display at (0,0) from Office Center Object
+
+	* Mouse pointer is over Left 2
+	+ death = 0
+	+ X position of Office Center Object > Game Width( "Office & Cams" ) / 2
+	+ View of Office & Cams = 0
+	+ PC/Mobile = 0
+		Office Center Object : Set position at (-4,0) from Office Center Object
+		storyboard controls : Center display at (0,0) from Office Center Object
+
+	* Mouse pointer is over Left 3
+	+ death = 0
+	+ X position of Office Center Object > Game Width( "Office & Cams" ) / 2
+	+ View of Office & Cams = 0
+	+ PC/Mobile = 0
+		Office Center Object : Set position at (-6,0) from Office Center Object
+		storyboard controls : Center display at (0,0) from Office Center Object
+
+	* Mouse pointer is over Right 1
+	+ death = 0
+	+ X position of Office Center Object < Frame Width - ( Game Width( "Office & Cams" ) / 2 )
+	+ View of Office & Cams = 0
+	+ PC/Mobile = 0
+		Office Center Object : Set position at (2,0) from Office Center Object
+		storyboard controls : Center display at (0,0) from Office Center Object
+
+	* Mouse pointer is over Right 2
+	+ death = 0
+	+ X position of Office Center Object < Frame Width - ( Game Width( "Office & Cams" ) / 2 )
+	+ View of Office & Cams = 0
+	+ PC/Mobile = 0
+		Office Center Object : Set position at (4,0) from Office Center Object
+		storyboard controls : Center display at (0,0) from Office Center Object
+
+	* Mouse pointer is over Right 3
+	+ death = 0
+	+ X position of Office Center Object < Frame Width - ( Game Width( "Office & Cams" ) / 2 )
+	+ View of Office & Cams = 0
+	+ PC/Mobile = 0
+		Office Center Object : Set position at (6,0) from Office Center Object
+		storyboard controls : Center display at (0,0) from Office Center Object
+
+	* Repeat while left mouse-key is pressed
+	+ Mouse pointer is over Left 3
+	+ death = 0
+	+ X position of Office Center Object > Game Width( "Office & Cams" ) / 2
+	+ View of Office & Cams = 0
+	+ PC/Mobile > 0
+		Office Center Object : Set position at (-12,0) from Office Center Object
+		storyboard controls : Center display at (0,0) from Office Center Object
+
+	* Repeat while left mouse-key is pressed
+	+ Mouse pointer is over Right 3
+	+ death = 0
+	+ X position of Office Center Object < Frame Width - ( Game Width( "Office & Cams" ) / 2 )
+	+ View of Office & Cams = 0
+	+ PC/Mobile > 0
+		Office Center Object : Set position at (12,0) from Office Center Object
+		storyboard controls : Center display at (0,0) from Office Center Object
+
+[ Flip Buttons visibility ]
+
+	* View of Office & Cams = 0
+	+ Mask animation of Office & Cams = 0
+	+ Hidden Power of Office & Cams > 0
+	+ Only one action when event loops
+		cam flip button : Reappear
+		mask flip visual : Reappear
+
+	* View of Office & Cams > 0
+	+ Mask animation of Office & Cams = 0
+	+ Hidden Power of Office & Cams > 0
+	+ Only one action when event loops
+		cam flip button : Reappear
+		mask flip visual : Make invisible
+
+	* View of Office & Cams = 0
+	+ Mask animation of Office & Cams > 0
+	+ Hidden Power of Office & Cams > 0
+	+ Only one action when event loops
+		cam flip button : Make invisible
+		mask flip visual : Make invisible
+
+	* Hidden Power of Office & Cams <= 0
+		mask flip visual : Make invisible
+		cam flip button : Make invisible
+
+[ Time ]
+
+	* Every 50''-00
+		time of day : Add 1 to Counter
+
+	* time of day > 12
+		time of day : Set Counter to 1
+
+	* time of day > 5
+	+ time of day <> 12
+		storyboard controls : Jump to frame "6 AM" (9)
+
+[ Jumpscares ]
+
+	* death = 1
+	+ Run this event once
+		New Objects : Create Jumpscare Puppet at (0,0) from Create Animations
+		 Jumpscare Puppet : Set scale to 2.8 (Quality = 1)
+		Jumpscare Puppet : Reappear
+		Sound : Stop any sample
+		 Sound : Set volume of channel #2 to 100
+		 Sound : Play sample money-counter-95830 on channel #2
+
+	* death = 2
+	+ Run this event once
+		New Objects : Create Jumpscare Freddy at (0,0) from Create Animations
+		 Jumpscare Freddy : Set scale to 2.8 (Quality = 1)
+		Jumpscare Freddy : Reappear
+		Sound : Stop any sample
+		 Sound : Set volume of channel #2 to 100
+		 Sound : Play sample XSCREAM (uninteruptable) on channel #2
+
+	* death = 3
+	+ Run this event once
+		Sound : Stop any sample
+		 Sound : Set volume of channel #2 to 100
+		 Sound : Play sample dinosaur-roar-390283 (uninteruptable) on channel #2
+		New Objects : Create Jumpscare Foxy at (0,0) from Create Animations
+		 Jumpscare Foxy : Set scale to 2.8 (Quality = 1)
+		Jumpscare Foxy : Reappear
+
+	* death = 4
+	+ Run this event once
+		Sound : Stop any sample
+		 Sound : Set volume of channel #2 to 100
+		 Sound : Play sample scream3 (uninteruptable) on channel #2
+		New Objects : Create Jumpscare Springtrap at (0,0) from Create Animations
+		 Jumpscare Springtrap : Set scale to 2.8 (Quality = 1)
+		Jumpscare Springtrap : Reappear
+
+	* death = 5
+	+ Run this event once
+		Sound : Stop any sample
+		 Sound : Set volume of channel #2 to 100
+		 Sound : Play sample XScream2 (uninteruptable) on channel #2
+		New Objects : Create Jumpscare GF at (0,0) from Create Animations
+		 Jumpscare GF : Set scale to 2.8 (Quality = 1)
+		Jumpscare GF : Reappear
+
+	* death > 0
+		Office Center Object : Set X position to X( "Office Center Object" ) + Random(5) - Random(5)
+		storyboard controls : Center display at (0,0) from Office Center Object
+		Power Out : Destroy
+
+	* View of Office & Cams > 0
+	+ death > 0
+		Office & Cams : Set Camera Animation to 3
+		Office & Cams : Set View to 0
+
+	* death > 0
+	+ Camera Animation of Office & Cams = 2
+		Office & Cams : Set Camera Animation to 3
+
+	* death > 0
+	+ Mask animation of Office & Cams = 2
+		Office & Cams : Set Mask animation to 3
+
+	* death > 0
+		Office & Cams : Add 1 to Death Addup
+
+	* Death Addup of Office & Cams >= 60
+		storyboard controls : Jump to frame "Death" (4)
+
+	* Number of Jumpscare GF > 0
+		Jumpscare GF : Set X position to X( "Jumpscare GF" ) + Random(8) - Random(8)
+		Jumpscare GF : Set Y position to Y( "Jumpscare GF" ) + Random(8) - Random(8)
+
+[ Audio ]
+
+	* Start of Frame
+		Sound : Stop any sample
+		 Sound : Play sample fansound (uninteruptable) on channel #1, 0 times
+		 Sound : Set volume of channel #2 to 50
+		 Sound : Play sample In The Depths C (uninteruptable) on channel #2, 0 times
+		 Sound : Play sample Camera Audio (uninteruptable) on channel #3, 0 times
+		 Sound : Set volume of channel #4 to 50
+		 Sound : Set volume of channel #5 to 50
+		 Sound : Play sample deepbreaths (uninteruptable) on channel #6, 0 times
+		 Sound : Set volume of channel #7 to 50
+		 Sound : Play sample stare (uninteruptable) on channel #9, 0 times
+		 Sound : Play sample buzzlight (uninteruptable) on channel #10, 0 times
+		 Sound : Set volume of channel #11 to 75
+		 Sound : Set volume of channel #12 to 40
+		 Sound : Set pan of channel #12 to -100
+		 Sound : Set volume of channel #14 to 50
+		 Sound : Set volume of channel #15 to 50
+		 Sound : Set volume of channel #16 to 50
+		 Sound : Set volume of channel #17 to 50
+		 Sound : Set volume of channel #18 to 50
+		 Sound : Set volume of channel #19 to 50
+		 Sound : Set volume of channel #20 to 30
+
+	* View of Office & Cams = 0
+	+ Only one action when event loops
+		 Sound : Set volume of channel #3 to 0
+		 Sound : Set volume of channel #1 to 30
+
+	* View of Office & Cams > 0
+	+ Only one action when event loops
+		 Sound : Set volume of channel #3 to 50
+		 Sound : Set volume of channel #1 to 10
+
+	* View of Office & Cams <= 1
+	+ Only one action when event loops
+		 Sound : Set volume of channel #8 to 0
+
+	* View of Office & Cams = 2
+	+ Only one action when event loops
+		 Sound : Set volume of channel #8 to 20
+
+	* View of Office & Cams = 3
+	+ Only one action when event loops
+		 Sound : Set volume of channel #8 to 10
+
+	* View of Office & Cams = 4
+	+ Only one action when event loops
+		 Sound : Set volume of channel #8 to 50
+
+[ Game Difficulty ]
+
+	* The Night = 1
+	+ time of day = 12
+	+ Run this event once
+		Foxy AI : Set Counter to 0
+		Freddy AI : Set Counter to 3
+		Springtrap AI : Set Counter to 3
+		Ph Mangle AI : Set Counter to 3
+		Ph BB AI : Set Counter to 3
+
+	* The Night = 1
+	+ time of day = 3
+	+ Run this event once
+		Foxy AI : Set Counter to Random(2) + 1
+		Freddy AI : Add Random(1) to Counter
+
+	* The Night = 2
+	+ time of day = 12
+	+ Run this event once
+		Freddy AI : Set Counter to 3 + ( Random(2) + 1 )
+		Foxy AI : Set Counter to Random(4) + 2
+		Springtrap AI : Set Counter to 4
+		Ph Mangle AI : Set Counter to 3 + Random(2)
+		Ph BB AI : Set Counter to 3 + Random(2)
+		Golden Freddy AI : Set Counter to 1
+
+	* The Night = 2
+	+ time of day = 2
+	+ Run this event once
+		Freddy AI : Set Counter to 1 + Random(2)
+		Foxy AI : Add 1 + Random(2) to Counter
+		Springtrap AI : Set Counter to 5
+		Golden Freddy AI : Add Random(2) to Counter
+
+	* The Night = 3
+	+ time of day = 12
+	+ Run this event once
+		Freddy AI : Set Counter to 4 + ( Random(4) + 1 )
+		Foxy AI : Set Counter to 6
+		Springtrap AI : Set Counter to 4
+		Ph Mangle AI : Set Counter to 4 + Random(2)
+		Ph BB AI : Set Counter to 4 + Random(2)
+		Golden Freddy AI : Set Counter to 3
+
+	* The Night = 3
+	+ time of day = 2
+	+ Run this event once
+		Freddy AI : Add Random(1) + 1 to Counter
+		Foxy AI : Add Random(1) + 1 to Counter
+		Springtrap AI : Set Counter to 7
+		Ph Mangle AI : Add 1 to Counter
+		Ph BB AI : Add 1 to Counter
+		Golden Freddy AI : Add Random(2) to Counter
+
+	* The Night = 4
+	+ time of day = 12
+	+ Run this event once
+		Freddy AI : Set Counter to 5 + ( Random(4) + 1 )
+		Foxy AI : Set Counter to 6 + Random(2)
+		Springtrap AI : Set Counter to 6
+		Ph Mangle AI : Set Counter to 5 + Random(2)
+		Ph BB AI : Set Counter to 5 + Random(2)
+		Golden Freddy AI : Set Counter to 5
+
+	* The Night = 4
+	+ time of day = 1
+	+ Run this event once
+		Freddy AI : Add Random(1) + 2 to Counter
+		Foxy AI : Add Random(2) + 1 to Counter
+		Springtrap AI : Add 2 to Counter
+		Ph Mangle AI : Add 1 + Random(2) to Counter
+		Ph BB AI : Add 1 + Random(2) to Counter
+		Golden Freddy AI : Add Random(2) to Counter
+
+	* The Night = 5
+	+ time of day = 12
+	+ Run this event once
+		Freddy AI : Set Counter to 6 + ( Random(4) + 1 )
+		Foxy AI : Set Counter to 7 + Random(2)
+		Springtrap AI : Set Counter to 5
+		Ph Mangle AI : Set Counter to 6 + Random(2)
+		Ph BB AI : Set Counter to 6 + Random(2)
+		Golden Freddy AI : Set Counter to 6
+
+	* The Night = 5
+	+ time of day = 1
+	+ Run this event once
+		Freddy AI : Add Random(1) + 2 to Counter
+		Foxy AI : Add Random(2) + 1 to Counter
+		Springtrap AI : Add 3 + Random(2) to Counter
+		Ph Mangle AI : Add 1 + Random(3) to Counter
+		Ph BB AI : Add 1 + Random(3) to Counter
+		Golden Freddy AI : Add Random(2) to Counter
+
+	* The Night = 6
+	+ time of day = 12
+	+ Run this event once
+		Freddy AI : Set Counter to 9 + ( Random(4) + 1 )
+		Foxy AI : Set Counter to 10 + Random(2)
+		Springtrap AI : Set Counter to 8
+		Ph Mangle AI : Set Counter to 9 + Random(2)
+		Ph BB AI : Set Counter to 9 + Random(2)
+		Golden Freddy AI : Set Counter to 7
+
+	* The Night = 6
+	+ time of day = 1
+	+ Run this event once
+		Freddy AI : Add Random(1) + 2 to Counter
+		Foxy AI : Add Random(2) + 1 to Counter
+		Springtrap AI : Add 1 + Random(5) to Counter
+		Ph Mangle AI : Add 1 + Random(3) to Counter
+		Ph BB AI : Add 1 + Random(3) to Counter
+		Golden Freddy AI : Add Random(2) to Counter
+
+	* The Night = 7
+	+ Run this event once
+		Freddy AI : Set Counter to AI Level( "Freddy Global" )
+		Foxy AI : Set Counter to AI Level( "Foxy Global" )
+		Springtrap AI : Set Counter to AI Level( "Springtrap Global" )
+		Golden Freddy AI : Set Counter to AI Level( "GF Global" )
+		Ph Mangle AI : Set Counter to AI Level( "Phantom Mangle Global" )
+		Ph BB AI : Set Counter to AI Level( "Phantom BB Global" )
+
+[ Close Ambience ]
+
+	* Alterable Value A of Foxy Stand = 0
+	+ NOT Freddy Collision Character is overlapping Left Door Collision
+	+ Close Ambience of Office & Cams > 0
+		Office & Cams : Set Close Ambience to 0
+
+	* Alterable Value A of Foxy Stand > 0
+	+ Close Ambience of Office & Cams = 0
+		Office & Cams : Set Close Ambience to 1
+
+	* Freddy Collision Character is overlapping Left Door Collision
+	+ Close Ambience of Office & Cams = 0
+		Office & Cams : Set Close Ambience to 1
+
+	* Close Ambience of Office & Cams = 0
+	+ Only one action when event loops
+		 Sound : Set volume of channel #13 to 0
+
+	* Close Ambience of Office & Cams > 0
+	+ Only one action when event loops
+		 Sound : Set volume of channel #13 to 50
+
+	* Start of Frame
+		 Sound : Play sample With_S2 (uninteruptable) on channel #13, 0 times
+
+[ Power ]
+
+	// Group can be safely disabled
+
+	[ Decrease Times ]
+
+		* Power Left = 1
+		+ death = 0
+		+ Hidden Power of Office & Cams > 0
+		+ Every 02''-00
+			Office & Cams : Sub 10 * ( ( value( "The Night" ) / 5 ) + 1 ) from Hidden Power
+
+		* Power Left = 2
+		+ death = 0
+		+ Hidden Power of Office & Cams > 0
+		+ Every 00''-50
+			Office & Cams : Sub 10 * ( ( value( "The Night" ) / 5 ) + 1 ) from Hidden Power
+
+		* Power Left = 3
+		+ death = 0
+		+ Hidden Power of Office & Cams > 0
+		+ Every 00''-25
+			Office & Cams : Sub 10 * ( ( value( "The Night" ) / 5 ) + 1 ) from Hidden Power
+
+		* Power Left = 4
+		+ death = 0
+		+ Hidden Power of Office & Cams > 0
+		+ Every 00''-15
+			Office & Cams : Sub 10 * ( ( value( "The Night" ) / 5 ) + 1 ) from Hidden Power
+
+		* Power Left = 5
+		+ death = 0
+		+ Hidden Power of Office & Cams > 0
+		+ Every 00''-10
+			Office & Cams : Sub 10 * ( ( value( "The Night" ) / 5 ) + 1 ) from Hidden Power
+
+	[ Power Down ]
+
+		* Hidden Power of Office & Cams <= 0
+		+ Alterable Value A of Left Door = 2
+			Left Door : Set Alterable Value A to 3
+
+		* Hidden Power of Office & Cams <= 0
+		+ Alterable Value A of Right Door = 2
+			Right Door : Set Alterable Value A to 3
+
+		* Hidden Power of Office & Cams <= 0
+		+ Run this event once
+			Office & Cams : Set Force Down Camera to 5
+			Office & Cams : Set Mask animation to 0
+			Sound : Stop any sample
+			Flashlight : Set Alterable Value A to 0
+			 Sound : Play sample powerdown (uninteruptable) on channel #19
+			desk : Stop animation
+
+		* Alterable Value A of Power Out <= 0
+		+ Every 05''-00
+		+ death = 0
+			death : Set Counter to Random(4)
+
+	[ Usage Level ]
+
+		* Power Left <> 1 + ( ( camera up check( "Office & Cams" ) + ( Alterable Value B( "Left Door" ) + Alterable Value B( "Right Door" ) ) ) + Alterable Value A( "Flashlight" ) ) + ( Alterable Value C( "Ph Mangle Camera" ) * 2 )
+			Power Left : Set Counter to 1 + ( ( camera up check( "Office & Cams" ) + ( Alterable Value B( "Left Door" ) + Alterable Value B( "Right Door" ) ) ) + Alterable Value A( "Flashlight" ) ) + ( Alterable Value C( "Ph Mangle Camera" ) * 2 )
+
+	* Start of Frame
+		Power : Reappear
+		Power Left : Reappear
+		% : Reappear
+		Usage Text : Reappear
+
+	* Power <> Hidden Power( "Office & Cams" ) / 100
+		Power : Set Counter to Hidden Power( "Office & Cams" ) / 100
+
+	* Hidden Power of Office & Cams <= 0
+	+ Alterable Value A of Power Out > 0
+		Power Out : Sub 3 from Alterable Value A
+		 Power Out : Set alpha-blending coefficient to Alterable Value A( "Power Out" )
+
+[ Doors ]
+
+	[ Left ]
+
+		[ Open ]
+
+			* User clicks with left button on Button Left
+			+ death = 0
+			+ Hidden Power of Office & Cams > 0
+			+ View of Office & Cams = 0
+			+ Alterable Value A of Left Door = 2
+				Left Door : Set Alterable Value A to 3
+				 Sound : Stop channel #7
+				 Sound : Play sample SFXBible_12478 (uninteruptable) on channel #7
+
+			* Upon pressing "A"
+			+ death = 0
+			+ Hidden Power of Office & Cams > 0
+			+ View of Office & Cams = 0
+			+ Alterable Value A of Left Door = 2
+				Left Door : Set Alterable Value A to 3
+				 Sound : Stop channel #7
+				 Sound : Play sample SFXBible_12478 (uninteruptable) on channel #7
+
+		[ Close ]
+
+			* User clicks with left button on Button Left
+			+ death = 0
+			+ Hidden Power of Office & Cams > 0
+			+ View of Office & Cams = 0
+			+ Alterable Value A of Left Door = 0
+				Left Door : Set Alterable Value A to 1
+				 Sound : Stop channel #7
+				 Sound : Play sample SFXBible_12478 (uninteruptable) on channel #7
+
+			* Upon pressing "A"
+			+ death = 0
+			+ Hidden Power of Office & Cams > 0
+			+ View of Office & Cams = 0
+			+ Alterable Value A of Left Door = 0
+				Left Door : Set Alterable Value A to 1
+				 Sound : Stop channel #7
+				 Sound : Play sample SFXBible_12478 (uninteruptable) on channel #7
+
+		* Alterable Value A of Left Door = 0
+		+ Only one action when event loops
+			Left Door : Change animation sequence to Stopped
+			Left Door : Set Alterable Value B to 0
+
+		* Alterable Value A of Left Door > 0
+		+ Only one action when event loops
+			Left Door : Set Alterable Value B to 1
+
+		* Alterable Value A of Left Door = 1
+		+ Only one action when event loops
+			Left Door : Change animation sequence to Close
+
+		* Alterable Value A of Left Door = 2
+		+ Only one action when event loops
+			Left Door : Change animation sequence to Closed
+
+		* Alterable Value A of Left Door = 3
+		+ Only one action when event loops
+			Left Door : Change animation sequence to Open
+
+		* Left Door animation Close is over
+			Left Door : Set Alterable Value A to 2
+
+		* Left Door animation Open is over
+			Left Door : Set Alterable Value A to 0
+
+		* Alterable Value A of Left Door <> 1
+		+ Alterable Value A of Left Door <> 2
+		+ Only one action when event loops
+			Button Left : Change animation sequence to Stopped
+
+		* Alterable Value A of Left Door <> 0
+		+ Alterable Value A of Left Door <> 3
+		+ Only one action when event loops
+			Button Left : Change animation sequence to Animation 12
+
+	[ Right ]
+
+		[ Open ]
+
+			* User clicks with left button on Button Right
+			+ death = 0
+			+ Hidden Power of Office & Cams > 0
+			+ View of Office & Cams = 0
+			+ Alterable Value A of Right Door = 2
+				Right Door : Set Alterable Value A to 3
+				 Sound : Stop channel #7
+				 Sound : Play sample SFXBible_12478 (uninteruptable) on channel #7
+
+			* Upon pressing "D"
+			+ death = 0
+			+ Hidden Power of Office & Cams > 0
+			+ View of Office & Cams = 0
+			+ Alterable Value A of Right Door = 2
+				Right Door : Set Alterable Value A to 3
+				 Sound : Stop channel #7
+				 Sound : Play sample SFXBible_12478 (uninteruptable) on channel #7
+
+		[ Close ]
+
+			* User clicks with left button on Button Right
+			+ death = 0
+			+ Hidden Power of Office & Cams > 0
+			+ View of Office & Cams = 0
+			+ Alterable Value A of Right Door = 0
+				Right Door : Set Alterable Value A to 1
+				 Sound : Stop channel #7
+				 Sound : Play sample SFXBible_12478 (uninteruptable) on channel #7
+
+			* Upon pressing "D"
+			+ death = 0
+			+ Hidden Power of Office & Cams > 0
+			+ View of Office & Cams = 0
+			+ Alterable Value A of Right Door = 0
+				Right Door : Set Alterable Value A to 1
+				 Sound : Stop channel #7
+				 Sound : Play sample SFXBible_12478 (uninteruptable) on channel #7
+
+		* Alterable Value A of Right Door = 0
+		+ Only one action when event loops
+			Right Door : Change animation sequence to Stopped
+			Right Door : Set Alterable Value B to 0
+
+		* Alterable Value A of Right Door > 0
+		+ Only one action when event loops
+			Right Door : Set Alterable Value B to 1
+
+		* Alterable Value A of Right Door = 1
+		+ Only one action when event loops
+			Right Door : Change animation sequence to Close
+
+		* Alterable Value A of Right Door = 2
+		+ Only one action when event loops
+			Right Door : Change animation sequence to Closed
+
+		* Alterable Value A of Right Door = 3
+		+ Only one action when event loops
+			Right Door : Change animation sequence to Open
+
+		* Right Door animation Close is over
+			Right Door : Set Alterable Value A to 2
+
+		* Right Door animation Open is over
+			Right Door : Set Alterable Value A to 0
+
+		* Alterable Value A of Right Door <> 1
+		+ Alterable Value A of Right Door <> 2
+		+ Only one action when event loops
+			Button Right : Change animation sequence to Stopped
+
+		* Alterable Value A of Right Door <> 0
+		+ Alterable Value A of Right Door <> 3
+		+ Only one action when event loops
+			Button Right : Change animation sequence to Animation 12
+
+	* View of Office & Cams = 0
+	+ Only one action when event loops
+		Left Door : Reappear
+		Right Door : Reappear
+		Button Left : Reappear
+		Button Right : Reappear
+
+	* View of Office & Cams > 0
+	+ Only one action when event loops
+		Left Door : Make invisible
+		Right Door : Make invisible
+		Button Left : Make invisible
+		Button Right : Make invisible
+
+[ Camera ]
+
+	[ Flip Events ]
+
+		[ Flip Up ]
+
+			* Mouse pointer is over Camera Flip Region
+			+ death = 0
+			+ Hidden Power of Office & Cams > 0
+			+ Camera Animation of Office & Cams = 0
+			+ Prevent Infinite Flip of Office & Cams = 0
+			+ Mask animation of Office & Cams <> 1
+			+ Mask animation of Office & Cams <> 2
+			+ Number of Cam Down Animation = 0
+			+ PC/Mobile = 0
+				Office & Cams : Set Prevent Infinite Flip to 1
+				Office & Cams : Set Camera Animation to 1
+
+			* User clicks with left button on Camera Flip Region
+			+ death = 0
+			+ Hidden Power of Office & Cams > 0
+			+ Camera Animation of Office & Cams = 0
+			+ Prevent Infinite Flip of Office & Cams = 0
+			+ Mask animation of Office & Cams <> 1
+			+ Mask animation of Office & Cams <> 2
+			+ Number of Cam Down Animation = 0
+			+ PC/Mobile > 0
+				Office & Cams : Set Prevent Infinite Flip to 1
+				Office & Cams : Set Camera Animation to 1
+
+			* Upon pressing "S"
+			+ death = 0
+			+ Hidden Power of Office & Cams > 0
+			+ Camera Animation of Office & Cams = 0
+			+ Mask animation of Office & Cams <> 1
+			+ Mask animation of Office & Cams <> 2
+			+ Number of Cam Down Animation = 0
+				Office & Cams : Set Prevent Infinite Flip to 1
+				Office & Cams : Set Camera Animation to 1
+
+			* Camera Animation of Office & Cams = 1
+			+ Only one action when event loops
+				New Objects : Create Cam Up Animation at (0,0) from Create Animations
+				 Sound : Stop channel #5
+				 Sound : Play sample STEREO_CASSETTE__90097704 (uninteruptable) on channel #5
+
+			* Cam Up Animation animation Stopped is over
+				Office & Cams : Set Camera Animation to 2
+
+		[ Flip Down ]
+
+			* Upon pressing "S"
+			+ death = 0
+			+ Camera Animation of Office & Cams = 2
+			+ Mask animation of Office & Cams = 0
+			+ Number of Cam Up Animation = 0
+				Office & Cams : Set Prevent Infinite Flip to 1
+				Office & Cams : Set Camera Animation to 3
+
+			* Mouse pointer is over reset point
+			+ death = 0
+			+ Camera Animation of Office & Cams = 2
+			+ Prevent Infinite Flip of Office & Cams = 0
+			+ Mask animation of Office & Cams = 0
+			+ Number of Cam Up Animation = 0
+			+ PC/Mobile = 0
+				Office & Cams : Set Prevent Infinite Flip to 1
+				Office & Cams : Set Camera Animation to 3
+
+			* User clicks with left button on reset point
+			+ death = 0
+			+ Camera Animation of Office & Cams = 2
+			+ Prevent Infinite Flip of Office & Cams = 0
+			+ Mask animation of Office & Cams = 0
+			+ Number of Cam Up Animation = 0
+			+ PC/Mobile > 0
+				Office & Cams : Set Prevent Infinite Flip to 1
+				Office & Cams : Set Camera Animation to 3
+
+			* Camera Animation of Office & Cams = 3
+			+ Only one action when event loops
+				New Objects : Create Cam Down Animation at (0,0) from Create Animations
+				Office & Cams : Set View to 0
+				 Sound : Stop channel #5
+				 Sound : Play sample STEREO_CASSETTE__90097701 (uninteruptable) on channel #5
+
+			* NOT Mouse pointer is over reset point
+			+ death = 0
+			+ Camera Animation of Office & Cams <> 1
+			+ Mask animation of Office & Cams <> 1
+			+ Prevent Infinite Flip of Office & Cams > 0
+			+ Number of Cam Up Animation = 0
+			+ PC/Mobile = 0
+				Office & Cams : Set Prevent Infinite Flip to 0
+
+			* NOT Repeat while left mouse-key is pressed
+			+ death = 0
+			+ Camera Animation of Office & Cams <> 1
+			+ Mask animation of Office & Cams <> 1
+			+ Prevent Infinite Flip of Office & Cams > 0
+			+ Number of Cam Up Animation = 0
+			+ PC/Mobile > 0
+				Office & Cams : Set Prevent Infinite Flip to 0
+
+			* Cam Down Animation animation Stopped is over
+				Office & Cams : Set Camera Animation to 0
+				Cam Down Animation : Destroy
+
+		[ Is Up ]
+
+			* User clicks with left button on CAM 01
+			+ death = 0
+			+ Hidden Power of Office & Cams > 0
+			+ View of Office & Cams > 0
+				You : Set position at (0,0) from CAM 01
+				Office & Cams : Set Change to 1
+
+			* View of Office & Cams > 0
+				CAM 01 : Change animation sequence to Stopped
+
+			* You is overlapping CAM 01
+				CAM 01 : Change animation sequence to Animation 12
+
+			* Every 00''-08
+			+ Movement Out of Office & Cams = 0
+			+ View of Office & Cams > 0
+				 Static : Set alpha-blending coefficient to 150 + Random(50)
+
+			* Change of Office & Cams > 0
+			+ View of Office & Cams > 0
+				Office & Cams : Set Change to 0
+				New Objects : Create Bad Object 50 at (0,0) from Create Animations
+				 Sound : Play sample Change (uninteruptable) on channel #4
+
+			* Change of Office & Cams > 0
+			+ View of Office & Cams = 0
+				Office & Cams : Set Change to 0
+
+			* Bad Object 50 animation Stopped is over
+				Bad Object 50 : Destroy
+
+			* View of Office & Cams = 0
+			+ Only one action when event loops
+				Office & Cams : Change animation sequence to Stopped
+
+		[ Camera Out ]
+
+			[ Trigger ]
+
+				* Alterable Value A of Cam 01 Text > 0
+				+ View of Office & Cams = 1
+					Office & Cams : Set Movement Out to 1
+					Cam 01 Text : Set Alterable Value A to 0
+
+				* Alterable Value A of Cam 02 Text > 0
+				+ View of Office & Cams = 2
+					Office & Cams : Set Movement Out to 1
+					Cam 02 Text : Set Alterable Value A to 0
+
+				* Alterable Value A of Cam 03 Text > 0
+				+ View of Office & Cams = 3
+					Office & Cams : Set Movement Out to 1
+					Cam 03 Text : Set Alterable Value A to 0
+
+				* Alterable Value A of Cam 04 Text > 0
+				+ View of Office & Cams = 4
+					Office & Cams : Set Movement Out to 1
+					Cam 04 Text : Set Alterable Value A to 0
+
+				* Alterable Value A of Cam 01 Text > 0
+					Cam 01 Text : Sub 1 from Alterable Value A
+
+				* Alterable Value A of Cam 02 Text > 0
+					Cam 02 Text : Sub 1 from Alterable Value A
+
+				* Alterable Value A of Cam 03 Text > 0
+					Cam 03 Text : Sub 1 from Alterable Value A
+
+				* Alterable Value A of Cam 04 Text > 0
+					Cam 04 Text : Sub 1 from Alterable Value A
+
+			* Movement Out of Office & Cams > 0
+				 Static : Set alpha-blending coefficient to 0
+
+			* Movement Out of Office & Cams > 0
+			+ Every 00''-50
+			+ Random(2) = 1
+				Office & Cams : Set Movement Out to 0
+
+			* Movement Out of Office & Cams > 0
+			+ Every 02''-00
+				Office & Cams : Set Movement Out to 0
+
+			* Movement Out of Office & Cams = 0
+			+ Only one action when event loops
+				Connection Lost : Make invisible
+				 Sound : Set volume of channel #9 to 0
+
+			* Movement Out of Office & Cams > 0
+			+ Only one action when event loops
+				Office & Cams : Set Change to 1
+				Connection Lost : Reappear
+				 Sound : Set volume of channel #9 to 50
+
+			* Start of Frame
+				Connection Lost : Set X position to Game Width( "Office & Cams" ) / 2
+				Connection Lost : Set Y position to 60
+
+	[ Camera Scrolling ]
+
+		* Start of Frame
+			death : Set Counter to 0
+			Camera Center Object : Set X position to ( Game Width( "Office & Cams" ) / 2 ) - 120
+			Camera Center Object : Set Alterable Value B to 1
+
+		* Alterable Value A of Camera Center Object = 0
+		+ Alterable Value B of Camera Center Object = 1
+		+ X position of Camera Center Object > Frame Width - ( Game Width( "Office & Cams" ) / 2 ) + 120
+			Camera Center Object : Set Alterable Value A to 1
+
+		* Alterable Value A of Camera Center Object = 1
+		+ Alterable Value B of Camera Center Object = 1
+		+ X position of Camera Center Object < ( Game Width( "Office & Cams" ) / 2 ) - 120
+			Camera Center Object : Set Alterable Value A to 0
+
+		* Alterable Value A of Camera Center Object = 0
+		+ Alterable Value B of Camera Center Object = 1
+			Camera Center Object : Set position at (1,0) from Camera Center Object
+
+		* Alterable Value A of Camera Center Object = 1
+		+ Alterable Value B of Camera Center Object = 1
+			Camera Center Object : Set position at (-1,0) from Camera Center Object
+
+		* View of Office & Cams > 0
+			storyboard controls : Center display at (0,0) from Camera Center Object
+
+	[ Force Down ]
+
+		* Force Down Camera of Office & Cams > 0
+			Office & Cams : Sub 1 from Force Down Camera
+
+		* Force Down Camera of Office & Cams > 0
+		+ Camera Animation of Office & Cams = 2
+			Office & Cams : Set Camera Animation to 3
+
+	[ Camera Buttons Visibility ]
+
+		* View of Office & Cams = 0
+		+ Only one action when event loops
+			minimap : Make invisible
+			Cam 01 Text : Make invisible
+			Cam 02 Text : Make invisible
+			Cam 03 Text : Make invisible
+			Cam 04 Text : Make invisible
+			Static : Make invisible
+			White Frame Camera : Make invisible
+			CAM 01 : Make invisible
+			Cam Labels : Make invisible
+			storyboard controls : Center display at (0,0) from Office Center Object
+			Office & Cams : Set camera up check to 0
+			 Connection Lost : Set alpha-blending coefficient to 255
+			Rec : Make invisible
+
+		* View of Office & Cams > 0
+		+ Only one action when event loops
+			minimap : Reappear
+			Cam 01 Text : Reappear
+			Cam 02 Text : Reappear
+			Cam 03 Text : Reappear
+			Cam 04 Text : Reappear
+			Static : Reappear
+			White Frame Camera : Reappear
+			CAM 01 : Reappear
+			Cam Labels : Reappear
+			Office & Cams : Set Change to 1
+			Office & Cams : Set camera up check to 1
+			 Connection Lost : Set alpha-blending coefficient to 0
+			Rec : Reappear
+
+[ Cam 01 ]
+
+	* Camera Animation of Office & Cams = 2
+	+ You is overlapping Cam 01 Text
+	+ Only one action when event loops
+		Office & Cams : Set View to 1
+		Cam Labels : Set alterable string to "Hell"
+
+	* View of Office & Cams = 1
+	+ NOT Freddy Collision Character is overlapping Cam 01 Text
+	+ Only one action when event loops
+		Office & Cams : Change animation sequence to cam 01
+
+	* View of Office & Cams = 1
+	+ Freddy Collision Character is overlapping Cam 01 Text
+	+ Only one action when event loops
+		Office & Cams : Change animation sequence to cam 01 Freddy
+
+[ Cam 03 ]
+
+	* Camera Animation of Office & Cams = 2
+	+ You is overlapping Cam 03 Text
+	+ Only one action when event loops
+		Office & Cams : Set View to 3
+		Cam Labels : Set alterable string to "Forest"
+
+	* View of Office & Cams = 3
+	+ NOT Freddy Collision Character is overlapping Cam 03 Text
+	+ Only one action when event loops
+		Office & Cams : Change animation sequence to cam 03
+
+	* View of Office & Cams = 3
+	+ Freddy Collision Character is overlapping Cam 03 Text
+	+ Only one action when event loops
+		Office & Cams : Change animation sequence to cam 03 Freddy
+
+[ Cam 02 ]
+
+	* Camera Animation of Office & Cams = 2
+	+ You is overlapping Cam 02 Text
+	+ Only one action when event loops
+		Office & Cams : Set View to 2
+		Cam Labels : Set alterable string to "Mountain"
+
+	* View of Office & Cams = 2
+	+ NOT Foxy Collision Character is overlapping Cam 02 Text
+	+ Only one action when event loops
+		Office & Cams : Change animation sequence to cam 02
+
+	* View of Office & Cams = 2
+	+ Foxy Collision Character is overlapping Cam 02 Text
+	+ Only one action when event loops
+		Office & Cams : Change animation sequence to cam 02 Foxy
+
+[ Cam 04 ]
+
+	* Camera Animation of Office & Cams = 2
+	+ You is overlapping Cam 04 Text
+	+ Only one action when event loops
+		Office & Cams : Set View to 4
+		Cam Labels : Set alterable string to "Dinosaur Exhibit"
+
+	* View of Office & Cams = 4
+	+ NOT Foxy Collision Character is overlapping Cam 04 Text
+	+ Only one action when event loops
+		Office & Cams : Change animation sequence to cam 04
+
+	* View of Office & Cams = 4
+	+ Foxy Collision Character is overlapping Cam 04 Text
+	+ Only one action when event loops
+		Office & Cams : Change animation sequence to cam 04 Foxy
+
+[ Camera Visibility ]
+
+	* View of Office & Cams > 0
+	+ Only one action when event loops
+		Ph Mangle Annoy : Make invisible
+		desk : Make invisible
+		Cam Up Animation : Destroy
+
+	* View of Office & Cams = 0
+	+ Only one action when event loops
+		Ph Mangle Annoy : Reappear
+		desk : Reappear
+
+[ Audio Lure ]
+
+	// Group can be safely disabled
+
+	* User clicks with left button on Lure Button
+	+ View of Office & Cams > 0
+	+ Alterable Value A of Lure Button = 0
+	+ death = 0
+	+ Hidden Power of Office & Cams > 0
+	+ You is overlapping CAM 01
+	+ NOT You is overlapping Cam 04 Text
+		Lure Button : Change animation sequence to Animation 12
+		Lure Button : Set Alterable Value A to 1
+		New Objects : Create Lure Area at (0,0) from CAM 01
+		Office & Cams : Set Lure which to Random(3) + 1
+
+	* Upon pressing "E"
+	+ View of Office & Cams > 0
+	+ Alterable Value A of Lure Button = 0
+	+ death = 0
+	+ Hidden Power of Office & Cams > 0
+	+ You is overlapping CAM 01
+	+ NOT You is overlapping Cam 04 Text
+		Lure Button : Change animation sequence to Animation 12
+		Lure Button : Set Alterable Value A to 1
+		New Objects : Create Lure Area at (0,0) from CAM 01
+		Office & Cams : Set Lure which to Random(3) + 1
+
+	* Lure Button animation Animation 12 is over
+		Lure Button : Change animation sequence to Stopped
+		Lure Button : Set Alterable Value A to 0
+		Lure Area : Destroy
+		 Sound : Stop channel #14
+		 Sound : Play sample stop (uninteruptable) on channel #14
+
+	* View of Office & Cams = 0
+	+ Only one action when event loops
+		Lure Button : Make invisible
+		Lure Area : Make invisible
+
+	* You is overlapping Cam 04 Text
+	+ Only one action when event loops
+		Lure Button : Make invisible
+
+	* View of Office & Cams > 0
+	+ Only one action when event loops
+		Lure Area : Reappear
+
+	* View of Office & Cams > 0
+	+ NOT You is overlapping Cam 04 Text
+	+ Only one action when event loops
+		Lure Button : Reappear
+
+	* Lure which of Office & Cams = 1
+		Office & Cams : Set Lure which to 0
+		 Sound : Stop channel #14
+		 Sound : Play sample echo1 (uninteruptable) on channel #14
+
+	* Lure which of Office & Cams = 2
+		Office & Cams : Set Lure which to 0
+		 Sound : Stop channel #14
+		 Sound : Play sample echo3b (uninteruptable) on channel #14
+
+	* Lure which of Office & Cams = 3
+		Office & Cams : Set Lure which to 0
+		 Sound : Stop channel #14
+		 Sound : Play sample echo4b (uninteruptable) on channel #14
+
+[ Phone Calls ]
+
+	* Current Call <> 1
+	+ The Night = 1
+	+ Every 03''-00
+	+ Run this event once
+		Current Call : Set Counter to 1
+		 Sound : Stop channel #16
+		 Sound : Play sample call1b (1) on channel #16
+
+	* Current Call <> 2
+	+ The Night = 2
+	+ Every 03''-00
+	+ Run this event once
+		Current Call : Set Counter to 2
+		 Sound : Stop channel #16
+		 Sound : Play sample call2b (3) on channel #16
+
+	* Current Call <> 3
+	+ The Night = 3
+	+ Every 03''-00
+	+ Run this event once
+		Current Call : Set Counter to 3
+		 Sound : Stop channel #16
+		 Sound : Play sample call3b (3) on channel #16
+
+	* Current Call <> 4
+	+ The Night = 4
+	+ Every 03''-00
+	+ Run this event once
+		Current Call : Set Counter to 4
+		 Sound : Stop channel #16
+		 Sound : Play sample call-4b-44100hz on channel #16
+
+	* Current Call <> 5
+	+ The Night = 5
+	+ Every 03''-00
+	+ Run this event once
+		Current Call : Set Counter to 5
+		 Sound : Stop channel #16
+		 Sound : Play sample call-5b-44100hz on channel #16
+
+	* Current Call <> 6
+	+ The Night = 6
+	+ Every 03''-00
+	+ Run this event once
+		Current Call : Set Counter to 6
+		 Sound : Stop channel #16
+		 Sound : Play sample call-6b-44100hz on channel #16
+
+	* NOT Is channel 16 not playing?
+	+ Every 03''-00
+	+ Run this event once
+		Mute Call Button : Reappear
+
+	* User clicks with left button on Mute Call Button
+		Mute Call Button : Make invisible
+		 Sound : Stop channel #16
+
+	* Is channel 16 not playing?
+		Mute Call Button : Make invisible
+
+	* Is channel 16 not playing?
+
+[ Mask ]
+
+	* Mouse pointer is over Mask Flip Region
+	+ death = 0
+	+ Hidden Power of Office & Cams > 0
+	+ Prevent Infinite Flip of Office & Cams = 0
+	+ View of Office & Cams = 0
+	+ Mask animation of Office & Cams = 0
+	+ Camera Animation of Office & Cams <> 1
+	+ Camera Animation of Office & Cams <> 2
+	+ Number of Flip Mask Up = 0
+	+ PC/Mobile = 0
+		Office & Cams : Set Prevent Infinite Flip to 1
+		Office & Cams : Set Mask animation to 1
+
+	* Mouse pointer is over reset point
+	+ death = 0
+	+ Hidden Power of Office & Cams > 0
+	+ Prevent Infinite Flip of Office & Cams = 0
+	+ View of Office & Cams = 0
+	+ Camera Animation of Office & Cams = 0
+	+ Mask animation of Office & Cams = 2
+	+ Number of Flip Mask Down = 0
+	+ PC/Mobile = 0
+		Office & Cams : Set Prevent Infinite Flip to 1
+		Office & Cams : Set Mask animation to 3
+
+	* User clicks with left button on Mask Flip Region
+	+ death = 0
+	+ Hidden Power of Office & Cams > 0
+	+ Prevent Infinite Flip of Office & Cams = 0
+	+ View of Office & Cams = 0
+	+ Mask animation of Office & Cams = 0
+	+ Camera Animation of Office & Cams <> 1
+	+ Camera Animation of Office & Cams <> 2
+	+ Number of Flip Mask Up = 0
+	+ PC/Mobile > 0
+		Office & Cams : Set Prevent Infinite Flip to 1
+		Office & Cams : Set Mask animation to 1
+
+	* User clicks with left button on reset point
+	+ death = 0
+	+ Hidden Power of Office & Cams > 0
+	+ Prevent Infinite Flip of Office & Cams = 0
+	+ View of Office & Cams = 0
+	+ Camera Animation of Office & Cams = 0
+	+ Mask animation of Office & Cams = 2
+	+ Number of Flip Mask Down = 0
+	+ PC/Mobile > 0
+		Office & Cams : Set Prevent Infinite Flip to 1
+		Office & Cams : Set Mask animation to 3
+
+	* Start of Frame
+		mask : Set position at (-100,-66) from Create Animations
+
+	* Mask animation of Office & Cams = 2
+	+ Only one action when event loops
+		mask : Reappear
+		Flip Mask Down : Destroy
+		 Sound : Set volume of channel #6 to 50
+
+	* Mask animation of Office & Cams <> 2
+	+ Only one action when event loops
+		mask : Make invisible
+		 Sound : Set volume of channel #6 to 0
+
+	* Mask animation of Office & Cams = 1
+	+ Only one action when event loops
+		New Objects : Create Flip Mask Down at (0,0) from Create Animations
+		 Sound : Stop channel #5
+		 Sound : Play sample FENCING_43_GEN-HDF10954 (uninteruptable) on channel #5
+
+	* Mask animation of Office & Cams = 3
+	+ Only one action when event loops
+		New Objects : Create Flip Mask Up at (0,0) from Create Animations
+		 Sound : Stop channel #5
+		 Sound : Play sample FENCING_42_GEN-HDF10953 (uninteruptable) on channel #5
+
+	* Flip Mask Down animation Stopped is over
+		Office & Cams : Set Mask animation to 2
+
+	* Flip Mask Up animation Stopped is over
+		Office & Cams : Set Mask animation to 0
+		Flip Mask Up : Destroy
+
+[ Is all 20? ]
+
+	* AI Level of Freddy Global = 20
+	+ AI Level of Foxy Global = 20
+	+ AI Level of GF Global = 20
+	+ AI Level of Phantom Mangle Global = 20
+	+ AI Level of Phantom BB Global = 20
+	+ AI Level of Springtrap Global = 20
+	+ AI Level of Puppet Global = 7
+	+ Only one action when event loops
+		All 20? : Set Counter to 1
+
+	* AI Level of Freddy Global <> 20
+	+ Only one action when event loops
+		All 20? : Set Counter to 0
+
+	* AI Level of Puppet Global <> 7
+	+ Only one action when event loops
+		All 20? : Set Counter to 0
+
+	* AI Level of Foxy Global <> 20
+	+ Only one action when event loops
+		All 20? : Set Counter to 0
+
+	* AI Level of Springtrap Global <> 20
+	+ Only one action when event loops
+		All 20? : Set Counter to 0
+
+	* AI Level of GF Global <> 20
+	+ Only one action when event loops
+		All 20? : Set Counter to 0
+
+	* AI Level of Phantom Mangle Global <> 20
+	+ Only one action when event loops
+		All 20? : Set Counter to 0
+
+	* AI Level of Phantom BB Global <> 20
+	+ Only one action when event loops
+		All 20? : Set Counter to 0
+
+[ Flash-Light ]
+
+	[ PC Controls ]
+
+		* Repeat while "Control" is pressed
+		+ death = 0
+		+ Hidden Power of Office & Cams > 0
+		+ Alterable Value A of Flashlight = 0
+		+ PC/Mobile = 0
+			Flashlight : Set Alterable Value A to 1
+
+		* Repeat while "Z" is pressed
+		+ death = 0
+		+ Hidden Power of Office & Cams > 0
+		+ Alterable Value A of Flashlight = 0
+		+ PC/Mobile = 0
+			Flashlight : Set Alterable Value A to 1
+
+		* NOT Repeat while "Control" is pressed
+		+ NOT Repeat while "Z" is pressed
+		+ PC/Mobile = 0
+		+ Alterable Value A of Flashlight > 0
+			Flashlight : Set Alterable Value A to 0
+
+	[ Mobile Controls ]
+
+		* User clicks with left button on Mobile Flashlight
+		+ Repeat while left mouse-key is pressed
+		+ Number of Mobile Flashlight > 0
+		+ death = 0
+		+ Hidden Power of Office & Cams > 0
+		+ Alterable Value A of Flashlight = 0
+		+ PC/Mobile > 0
+			Flashlight : Set Alterable Value A to 1
+
+		* NOT Mouse pointer is over Mobile Flashlight
+		+ Number of Mobile Flashlight > 0
+		+ PC/Mobile > 0
+		+ Alterable Value A of Flashlight > 0
+			Flashlight : Set Alterable Value A to 0
+
+		* NOT Repeat while left mouse-key is pressed
+		+ Number of Mobile Flashlight > 0
+		+ PC/Mobile > 0
+		+ Alterable Value A of Flashlight > 0
+			Flashlight : Set Alterable Value A to 0
+
+		[ Mobile Adjustment ]
+
+			* Start of Frame
+			+ PC/Mobile > 0
+				New Objects : Create Mobile Flashlight at (640,360) layer 6
+
+			* PC/Mobile > 0
+			+ View of Office & Cams = 0
+				Mobile Flashlight : Set X position to X( "Create Animations" ) + 640
+				Mobile Flashlight : Set Y position to Y( "Create Animations" ) + 360
+
+			* PC/Mobile > 0
+			+ View of Office & Cams > 0
+				Mobile Flashlight : Set X position to X( "Create Animations" ) + 478
+				Mobile Flashlight : Set Y position to Y( "Create Animations" ) + 254
+
+	* death > 0
+	+ Alterable Value A of Flashlight > 0
+		Flashlight : Set Alterable Value A to 0
+
+	* Hidden Power of Office & Cams <= 0
+	+ Alterable Value A of Flashlight > 0
+		Flashlight : Set Alterable Value A to 0
+
+	* Alterable Value A of Flashlight = 0
+	+ Only one action when event loops
+		Flashlight : Make invisible
+
+	* Alterable Value A of Flashlight > 0
+	+ View of Office & Cams > 0
+	+ Only one action when event loops
+		Flashlight : Make invisible
+
+	* Alterable Value A of Flashlight > 0
+	+ View of Office & Cams = 0
+	+ Only one action when event loops
+		Flashlight : Reappear
+
+	* Start of Frame
+		 Flashlight : Set scale to 3 (Quality = 1)
+		 Flashlight : Set alpha-blending coefficient to 50
+
+	* Alterable Value A of Flashlight = 0
+	+ Only one action when event loops
+		 Sound : Set volume of channel #10 to 0
+
+	* Alterable Value A of Flashlight > 0
+	+ Only one action when event loops
+		 Sound : Set volume of channel #10 to 70
+
+[ Correct to Night 6 or 7 ]
+
+	* Start of Frame
+	+ 6th or 7th night = 0
+		Ini : Set current file to string$( "savestring" )
+		Ini : Set current group to "Base"
+		The Night : Set Counter to ItemValue( "Ini", "Night" )
+
+	* Start of Frame
+	+ 6th or 7th night = 1
+		The Night : Set Counter to 6
+
+	* Start of Frame
+	+ 6th or 7th night = 2
+		The Night : Set Counter to 7
+
+* Upon pressing "Escape"
+	storyboard controls : End the application
+

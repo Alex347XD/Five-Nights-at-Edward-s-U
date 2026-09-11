@@ -1,0 +1,39 @@
+* Alterable Value A of Red Fade In < 255
+	Red Fade In : Add 7 to Alterable Value A
+	 Red Fade In : Set alpha-blending coefficient to Alterable Value A( "Red Fade In" )
+
+* Alterable Value A of Red Fade In >= 255
++ Alterable Value A of RIP Text > 0
++ Alterable Value B of RIP Text = 0
+	RIP Text : Sub 7 from Alterable Value A
+	 RIP Text : Set alpha-blending coefficient to Alterable Value A( "RIP Text" )
+
+* Alterable Value A of Red Fade In >= 255
++ Alterable Value A of RIP Text < 255
++ Alterable Value B of RIP Text > 1
+	RIP Text : Add 7 to Alterable Value A
+	 RIP Text : Set alpha-blending coefficient to Alterable Value A( "RIP Text" )
+
+* Alterable Value B of RIP Text > 0
++ Alterable Value A of RIP Text >= 255
+	storyboard controls : Jump to frame "Title" (2)
+	 Sound : Stop channel #32
+
+* Alterable Value A of Red Fade In >= 255
++ Alterable Value A of RIP Text <= 0
++ Alterable Value B of RIP Text = 0
++ Every 01''-00
+	RIP Text : Set Alterable Value B to 1
+	RIP Text : Force animation frame to 1
+
+* Alterable Value A of Red Fade In >= 255
++ Alterable Value A of RIP Text <= 0
++ Alterable Value B of RIP Text = 1
++ Every 01''-00
+	RIP Text : Set Alterable Value B to 2
+
+* Start of Frame
+	RIP Text : Set Alterable Value A to 255
+	 RIP Text : Set alpha-blending coefficient to 255
+	 Sound : Play sample Crying Goblin (Clash Royale) Sound Effect - YTSFX (youtube) on channel #32, 0 times
+

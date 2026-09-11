@@ -1,0 +1,12 @@
+FNaE Native test controls
+
+Enter  = start / advance / retry
+ESC    = quit
+S      = camera up/down
+1-4    = camera selection
+A      = left door
+D      = right door
+M      = mask
+Z      = flashlight
+
+The final Wii U build will replace these with GamePad/Controller input.

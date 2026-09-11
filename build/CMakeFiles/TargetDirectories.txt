@@ -1,0 +1,3 @@
+C:/Five Nights at Edward's U/Five Nights at Edward's U/build/CMakeFiles/FNaE_Native.dir
+C:/Five Nights at Edward's U/Five Nights at Edward's U/build/CMakeFiles/edit_cache.dir
+C:/Five Nights at Edward's U/Five Nights at Edward's U/build/CMakeFiles/rebuild_cache.dir

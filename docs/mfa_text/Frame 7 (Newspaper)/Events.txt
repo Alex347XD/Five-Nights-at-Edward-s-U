@@ -1,0 +1,15 @@
+* Start of Frame
+	Ini : Set current file to string$( "savestring" )
+	Ini : Set current group to "Base"
+	 Ini : Set value 1 to item "Night"
+
+* User clicks with left button
+	storyboard controls : Jump to frame "Which Night" (6)
+
+* Alterable Value A of fade in < 255
+	fade in : Add 4 to Alterable Value A
+	 fade in : Set alpha-blending coefficient to Alterable Value A( "fade in" )
+
+* Alterable Value A of fade in >= 255
+	fade in : Destroy
+

@@ -1,0 +1,38 @@
+* Timer is greater than 03''-00
++ Run this event once
+	which AM : Start animation
+
+* Every 10''-00
++ Advance of Time Text = 0
+	Time Text : Set Advance to 1
+
+* Advance of Time Text > 0
++ 6th or 7th night > 0
+	storyboard controls : Jump to frame "Final" (5)
+
+* Advance of Time Text > 0
++ Night Story of Time Text < 5
++ 6th or 7th night = 0
+	Time Text : Set Added to 1
+	Time Text : Add 1 to Night Story
+	storyboard controls : Jump to frame "Which Night" (6)
+	 Ini : Set value Night Story( "Time Text" ) to item "Night"
+
+* Advance of Time Text > 0
++ Night Story of Time Text >= 5
++ Added of Time Text = 0
++ 6th or 7th night = 0
+	storyboard controls : Jump to frame "Final" (5)
+
+* Start of Frame
+	Ini : Set current file to string$( "savestring" )
+	Ini : Set current group to "Base"
+	Time Text : Set Night Story to ItemValue( "Ini", "Night" )
+	Sound : Stop any sample
+	 Sound : Set volume of channel #1 to 50
+	 Sound : Play sample Clock Chimes (uninteruptable) on channel #1
+
+* Alterable Value A of Fade < 255
+	Fade : Add 7 to Alterable Value A
+	 Fade : Set alpha-blending coefficient to Alterable Value A( "Fade" )
+

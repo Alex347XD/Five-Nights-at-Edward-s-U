@@ -1,0 +1,33 @@
+file,channels,sample_rate,frames,sample_width
+"Camera Audio.wav",1,22050,275712,2
+"Change.wav",1,22050,4462,2
+"Clock Chimes.wav",1,22050,355812,2
+"FENCING_42_GEN-HDF10953.wav",1,22050,44840,2
+"FENCING_43_GEN-HDF10954.wav",1,22050,28563,2
+"In The Depths C.wav",1,22050,3161907,2
+"Music_Box_Melody_Playful.wav",1,22050,338743,2
+"SFXBible_12478.wav",1,22050,49860,2
+"STEREO_CASSETTE__90097701.wav",1,22050,8720,2
+"STEREO_CASSETTE__90097704.wav",1,22050,10458,2
+"With_S2.wav",2,22050,133672,2
+"XSCREAM.wav",1,22050,115316,1
+"XScream2.wav",2,44100,71246,2
+"breathing.wav",1,22050,126167,2
+"buzzlight.wav",1,8000,78335,1
+"darkness music.wav",1,44100,2749665,2
+"deep steps.wav",1,44100,344864,2
+"deepbreaths.wav",1,22050,461500,2
+"echo1.wav",2,22050,20842,2
+"echo3b.wav",2,22050,29969,2
+"echo4b.wav",2,22050,29097,2
+"fansound.wav",1,22050,249137,2
+"garble1.wav",1,44100,280033,2
+"jackinthebox.wav",1,22050,66296,2
+"music box.wav",1,22050,1359155,2
+"powerdown.wav",1,11025,206453,2
+"scream3.wav",2,44100,152056,2
+"stare.wav",1,22050,1627648,2
+"static.wav",1,22050,238868,2
+"stop.wav",1,44100,1706,2
+"walk1.wav",2,44100,184730,2
+"windup2.wav",1,8000,2270,1

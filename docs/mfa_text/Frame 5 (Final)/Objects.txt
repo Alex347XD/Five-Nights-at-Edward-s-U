@@ -1,0 +1,46 @@
++ Object Definitions
+	+ Night 5
+		- Type: Active
+		- Images hash: 0xF881
+		+ Alterable Values
+			Alterable Value A: 255
+	+ Ini
+		- Type: Ini
+	+ Save Guide
+		- Type: String
+		+ Texts
+			1: Edit the string above to the name your save file is going to be.
+	+ Night 6
+		- Type: Active
+		- Images hash: 0xAD9F
+		+ Alterable Values
+			Alterable Value A: 255
+	+ 6th or 7th night
+		- Type: Counter
+		- Images hash: 0x1C7A
+	+ Night 7
+		- Type: Active
+		- Images hash: 0x0547
+		+ Alterable Values
+			Alterable Value A: 255
+	+ All 20?
+		- Type: Counter
+		- Images hash: 0x1C7A
+	+ Left Challenge
+		- Type: Active
+		- Images hash: 0x0F5C
+	+ savestring
+		- Type: String
+		+ Texts
+			1: Edward
+			2: \n
++ Layer #1 (user interface)
+	- Night 5 [0, -64]
+	- Night 6 [72, 72]
+	- Night 7 [224, 184]
+	- Save Guide [224, -128]
+	- 6th or 7th night [76, -86]
+	- All 20? [104, -132]
+	- Left Challenge [-72, 240]
+	- savestring [224, -160]
+	- Ini [424, -152]

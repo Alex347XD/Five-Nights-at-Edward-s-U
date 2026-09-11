@@ -1,0 +1,6 @@
+* Timer equals 05''-00
+	storyboard controls : Jump to frame "Title" (2)
+
+* Upon pressing any key
+	storyboard controls : Jump to frame "Title" (2)
+

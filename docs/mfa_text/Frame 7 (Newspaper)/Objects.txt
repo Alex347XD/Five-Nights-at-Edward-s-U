@@ -1,0 +1,24 @@
++ Object Definitions
+	+ Newspaper
+		- Type: Active
+		- Images hash: 0x0256
+	+ Ini
+		- Type: Ini
+	+ Save Guide
+		- Type: String
+		+ Texts
+			1: Edit the string above to the name your save file is going to be.
+	+ savestring
+		- Type: String
+		+ Texts
+			1: Edward
+			2: \n
+	+ fade in
+		- Type: Active
+		- Images hash: 0x6455
++ Layer #1
+	- Newspaper [0, 0]
+	- Save Guide [64, -96]
+	- savestring [64, -128]
+	- fade in [0, 0]
+	- Ini [464, -80]

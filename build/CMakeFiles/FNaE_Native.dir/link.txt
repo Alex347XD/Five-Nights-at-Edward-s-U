@@ -1,0 +1,3 @@
+C:\msys64\ucrt64\bin\cmake.exe -E rm -f CMakeFiles\FNaE_Native.dir/objects.a
+C:\msys64\ucrt64\bin\ar.exe qc CMakeFiles\FNaE_Native.dir/objects.a @CMakeFiles\FNaE_Native.dir\objects1.rsp
+C:\msys64\ucrt64\bin\cc.exe -O3 -DNDEBUG -Wl,--whole-archive CMakeFiles\FNaE_Native.dir/objects.a -Wl,--no-whole-archive -o FNaE_Native.exe -Wl,--out-implib,libFNaE_Native.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\FNaE_Native.dir\linkLibs.rsp

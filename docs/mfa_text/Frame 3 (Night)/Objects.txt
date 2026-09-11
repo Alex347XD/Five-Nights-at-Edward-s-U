@@ -1,0 +1,540 @@
++ Object Definitions
+	+ Office & Cams
+		- Type: Active
+		- Images hash: 0xB120
+		+ Alterable Values
+			Game Width: 1280
+			Camera Animation: 0
+			View: 0
+			Prevent Infinite Flip: 1
+			Change: 0
+			Debug Visibility: 0
+			camera up check: 0
+			Hidden Power: 10000
+			Mask animation: 0
+			Movement Out: 0
+			Close Ambience: 0
+			Lure which: 0
+			Death Addup: 0
+			Animatronic in Office: 0
+			GF Random: 0
+			Force Down Camera: 0
+			GF Death Addup: 0
+	+ Perspective
+		- Type: Perspective
+	+ Left 1
+		- Type: Active
+		- Images hash: 0x3441
+	+ Right 1
+		- Type: Active
+		- Images hash: 0x3441
+	+ Left 2
+		- Type: Active
+		- Images hash: 0x8307
+	+ Right 2
+		- Type: Active
+		- Images hash: 0x8307
+	+ Left 3
+		- Type: Active
+		- Images hash: 0xE9D5
+	+ Right 3
+		- Type: Active
+		- Images hash: 0xE9D5
+	+ Office Center Object
+		- Type: Active
+		- Images hash: 0xF0A1
+	+ Camera Center Object
+		- Type: Active
+		- Images hash: 0xD302
+	+ reset point
+		- Type: Active
+		- Images hash: 0xB32F
+	+ Camera Flip Region
+		- Type: Active
+		- Images hash: 0x4947
+	+ Mask Flip Region
+		- Type: Active
+		- Images hash: 0x4947
+	+ cam flip button
+		- Type: Active
+		- Images hash: 0xEECB
+	+ mask flip visual
+		- Type: Active
+		- Images hash: 0xEEB8
+	+ Create Animations
+		- Type: Active
+		- Images hash: 0x93CA
+	+ minimap
+		- Type: Active
+		- Images hash: 0xFB03
+	+ CAM 01
+		- Type: Active
+		- Images hash: 0x6DDD
+	+ Cam 01 Text
+		- Type: Active
+		- Images hash: 0x6193
+	+ Cam 02 Text
+		- Type: Active
+		- Images hash: 0xE7CB
+	+ Cam 03 Text
+		- Type: Active
+		- Images hash: 0x4EBC
+	+ Cam 04 Text
+		- Type: Active
+		- Images hash: 0x2040
+	+ Warning out of cam
+		- Type: Active
+		- Images hash: 0x469B
+	+ warning in cam
+		- Type: Active
+		- Images hash: 0x2625
+	+ You
+		- Type: Active
+		- Images hash: 0x6BDC
+	+ Static
+		- Type: Active
+		- Images hash: 0x6711
+	+ White Frame Camera
+		- Type: Active
+		- Images hash: 0xF9FB
+	+ Cam 01 Label Guide
+		- Type: Active
+		- Images hash: 0x6193
+	+ Cam 02 Label Guide
+		- Type: Active
+		- Images hash: 0xE7CB
+	+ Cam 03 Label Guide
+		- Type: Active
+		- Images hash: 0x4EBC
+	+ Cam 04 Label Guide
+		- Type: Active
+		- Images hash: 0x2040
+	+ Cam 05 Label Guide
+		- Type: Active
+		- Images hash: 0x7E1B
+	+ Cam 06 Label Guide
+		- Type: Active
+		- Images hash: 0x3D99
+	+ Cam 07 Label Guide
+		- Type: Active
+		- Images hash: 0x8568
+	+ Cam 08 Label Guide
+		- Type: Active
+		- Images hash: 0x7C90
+	+ Cam 09 Label Guide
+		- Type: Active
+		- Images hash: 0x9D76
+	+ Cam 10 Label Guide
+		- Type: Active
+		- Images hash: 0x235B
+	+ Cam 20 Label Guide
+		- Type: Active
+		- Images hash: 0x3E4C
+	+ Cam 11 Label Guide
+		- Type: Active
+		- Images hash: 0xB520
+	+ Cam 12 Label Guide
+		- Type: Active
+		- Images hash: 0x7419
+	+ Cam 13 Label Guide
+		- Type: Active
+		- Images hash: 0x6C7B
+	+ Cam 14 Label Guide
+		- Type: Active
+		- Images hash: 0xD729
+	+ Cam 15 Label Guide
+		- Type: Active
+		- Images hash: 0x4656
+	+ Cam 16 Label Guide
+		- Type: Active
+		- Images hash: 0xD242
+	+ Cam 17 Label Guide
+		- Type: Active
+		- Images hash: 0x017D
+	+ Cam 18 Label Guide
+		- Type: Active
+		- Images hash: 0xF9EC
+	+ Cam 19 Label Guide
+		- Type: Active
+		- Images hash: 0xC20E
+	+ Label Assets String
+		- Type: String
+		+ Texts
+			1: Cam Label Assets
+	+ Cam Labels
+		- Type: String
+		+ Texts
+			1: Camera Labels
+	+ Cam Down Animation
+		- Type: Active
+		- Images hash: 0x95A1
+	+ time of day
+		- Type: Counter
+		- Images hash: 0xEB7B
+	+ am
+		- Type: Active
+		- Images hash: 0xD4A5
+	+ Which Night?
+		- Type: Active
+		- Images hash: 0x94FC
+	+ The Night
+		- Type: Counter
+		- Images hash: 0x04BD
+	+ Power
+		- Type: Counter
+		- Images hash: 0x66D1
+	+ %
+		- Type: Active
+		- Images hash: 0xA35C
+	+ Power Left
+		- Type: Counter
+	+ mask
+		- Type: Active
+		- Images hash: 0x0496
+	+ Flip Mask Down
+		- Type: Active
+		- Images hash: 0xD498
+	+ Flip Mask Up
+		- Type: Active
+		- Images hash: 0xD498
+	+ Left Door
+		- Type: Active
+		- Images hash: 0xA369
+	+ Right Door
+		- Type: Active
+		- Images hash: 0xE3CE
+	+ Button Left
+		- Type: Active
+		- Images hash: 0x1DB6
+	+ Music Box Button
+		- Type: Active
+		- Images hash: 0x13C9
+	+ Music Box Wind Text
+		- Type: Active
+		- Images hash: 0xC379
+	+ Click & Hold
+		- Type: Active
+		- Images hash: 0xD4F5
+	+ Music Left
+		- Type: Counter
+		- Images hash: 0xBA35
+	+ Usage Text
+		- Type: String
+		+ Texts
+			1: Usage
+	+ Jumpscare Puppet
+		- Type: Active
+		- Images hash: 0xFBA5
+	+ Flashlight
+		- Type: Active
+		- Images hash: 0x6B72
+	+ death
+		- Type: Counter
+		- Images hash: 0x1C7A
+	+ Ini
+		- Type: Ini
+	+ Save Guide
+		- Type: String
+		+ Texts
+			1: Edit the string above to the name your save file is going to be.
+	+ Foxy Collision Character
+		- Type: Active
+		- Images hash: 0x2204
+		+ Alterable Values
+			Move: 0
+	+ Test Chica AI
+		- Type: Counter
+		- Images hash: 0x5548
+	+ 6th or 7th night
+		- Type: Counter
+		- Images hash: 0x1C7A
+	+ Freddy Collision Character
+		- Type: Active
+		- Images hash: 0x2204
+		+ Alterable Values
+			Move: 0
+	+ Collision Characters Box
+		- Type: Active
+		- Images hash: 0xC878
+	+ Freddy at your door
+		- Type: Active
+		- Images hash: 0xD9A5
+	+ Left Door Collision
+		- Type: Active
+		- Images hash: 0x3315
+	+ Right Door Collision
+		- Type: Active
+		- Images hash: 0x3315
+	+ Freddy AI
+		- Type: Counter
+		- Images hash: 0x2F8E
+	+ Pending Death Collision
+		- Type: Active
+		- Images hash: 0x2734
+	+ Jumpscare Freddy
+		- Type: Active
+		- Images hash: 0x6E04
+	+ Connection Lost
+		- Type: Active
+		- Images hash: 0x3A97
+	+ Foxy Stand
+		- Type: Active
+		- Images hash: 0xD0A4
+	+ Foxy AI
+		- Type: Counter
+		- Images hash: 0x42D2
+	+ Lure Button
+		- Type: Active
+		- Images hash: 0xC8FE
+	+ Lure Area
+		- Type: Active
+		- Images hash: 0x4122
+	+ Springtrap
+		- Type: Active
+		- Images hash: 0x12EA
+	+ Rec
+		- Type: Active
+		- Images hash: 0x8F74
+	+ Springtrap AI
+		- Type: Counter
+		- Images hash: 0xEF51
+	+ Springtrap Stand
+		- Type: Active
+		- Images hash: 0x1133
+	+ Golden Freddy AI
+		- Type: Counter
+		- Images hash: 0x29F9
+	+ Jumpscare Foxy
+		- Type: Active
+		- Images hash: 0x5E70
+	+ Freddy Global
+		- Type: Active
+		- Images hash: 0x49A6
+		+ Alterable Values
+			AI Level: 0
+	+ Puppet Global
+		- Type: Active
+		- Images hash: 0x9EA0
+		+ Alterable Values
+			AI Level: 7
+	+ Foxy Global
+		- Type: Active
+		- Images hash: 0x1452
+		+ Alterable Values
+			AI Level: 0
+	+ Springtrap Global
+		- Type: Active
+		- Images hash: 0x892C
+		+ Alterable Values
+			AI Level: 0
+	+ GF Global
+		- Type: Active
+		- Images hash: 0x2AE3
+		+ Alterable Values
+			AI Level: 0
+	+ Out of sight collision
+		- Type: Active
+		- Images hash: 0x3315
+	+ Office Collision
+		- Type: Active
+		- Images hash: 0x3315
+	+ GF Sit
+		- Type: Active
+		- Images hash: 0x8652
+	+ Mute Call Button
+		- Type: Active
+		- Images hash: 0x6A31
+	+ Current Call
+		- Type: Counter
+		- Images hash: 0x1C7A
+	+ Ph Mangle Camera
+		- Type: Active
+		- Images hash: 0xABC9
+	+ Ph BB Camera
+		- Type: Active
+		- Images hash: 0x1144
+	+ Phantom Mangle Global
+		- Type: Active
+		- Images hash: 0x0FA1
+		+ Alterable Values
+			AI Level: 0
+	+ Ph Mangle AI
+		- Type: Counter
+		- Images hash: 0xEB97
+	+ Ph Mangle Annoy
+		- Type: Active
+		- Images hash: 0x6F4F
+	+ Ph BB AI
+		- Type: Counter
+		- Images hash: 0xEB97
+	+ Ph BB Scare
+		- Type: Active
+		- Images hash: 0x328F
+		+ Alterable Values
+			Alterable Value A: 255
+	+ Phantom BB Global
+		- Type: Active
+		- Images hash: 0x533A
+		+ Alterable Values
+			AI Level: 0
+	+ Jumpscare Springtrap
+		- Type: Active
+		- Images hash: 0x49DD
+	+ Power Out
+		- Type: Active
+		- Images hash: 0x6455
+		+ Alterable Values
+			Alterable Value A: 255
+	+ All 20?
+		- Type: Counter
+		- Images hash: 0x1C7A
+	+ Jumpscare GF
+		- Type: Active
+		- Images hash: 0x14A8
+	+ savestring
+		- Type: String
+		+ Texts
+			1: Edward
+			2: \n
+	+ desk
+		- Type: Active
+		- Images hash: 0x6BAE
+	+ PC/Mobile
+		- Type: Counter
+		- Images hash: 0x773C
+	+ Mobile Flashlight
+		- Type: Active
+		- Images hash: 0xC608
+	+ Button Right
+		- Type: Active
+		- Images hash: 0x1DB6
+	+ Cam Up Animation
+		- Type: Active
+		- Images hash: 0x7041
++ Layer #1 (office)
+	- Office & Cams [3, -31]
+	- Office Center Object [640, 360]
+	- Camera Center Object [640, 392]
++ Layer #2 (overlay office)
+	- Freddy at your door [260, 788]
+	- Left Door [119, 0]
+	- Button Left [105, 500]
+	- Foxy Stand [1287, 331]
+	- Right Door [1263, 0]
+	- Button Right [1489, 500]
+	- Springtrap Stand [416, -24]
+	- GF Sit [440, 240]
++ Layer #3 (desk)
+	- desk [266, 177]
+	- Flashlight [-80, -48]
+	- Ph Mangle Annoy [508, 720]
++ Layer #4 (perspective (don't delete this layer))
+	- Perspective [0, 0]
++ Layer #5 (user interface)
+	- Cam Up Animation [15, 15]
+	- Collision Characters Box [-136, 156]
+	- Static [0, -2]
+	- Left 1 [225, 294]
+	- Right 1 [1025, 294]
+	- Left 2 [168, 294]
+	- Right 2 [1088, 294]
+	- Left 3 [119, 294]
+	- Right 3 [1143, 294]
+	- reset point [600, 677]
+	- Camera Flip Region [925, 677]
+	- Mask Flip Region [323, 677]
+	- cam flip button [939, 674]
+	- mask flip visual [331, 674]
+	- Create Animations [0, 0]
+	- minimap [882, 265]
+	- CAM 01 [1016, 339]
+	- CAM 01 [1179, 371]
+	- Cam 01 Text [995, 327]
+	- Warning out of cam [1228, 672]
+	- warning in cam [1215, 506]
+	- Cam 02 Text [1158, 359]
+	- CAM 01 [953, 469]
+	- Cam 03 Text [932, 457]
+	- CAM 01 [1161, 505]
+	- Left Door Collision [808, 512]
+	- Pending Death Collision [808, 608]
+	- Right Door Collision [808, 416]
+	- Out of sight collision [808, 268]
+	- Office Collision [808, 152]
+	- Cam 04 Text [1141, 493]
+	- You [1019, 340]
+	- White Frame Camera [-1, 0]
+	- Cam 01 Label Guide [-1, 744]
+	- Cam 02 Label Guide [63, 744]
+	- Cam 03 Label Guide [127, 744]
+	- Cam 04 Label Guide [191, 744]
+	- Cam 05 Label Guide [255, 744]
+	- Cam 06 Label Guide [319, 744]
+	- Cam 07 Label Guide [383, 744]
+	- Cam 08 Label Guide [447, 744]
+	- Cam 09 Label Guide [511, 744]
+	- Cam 10 Label Guide [575, 744]
+	- Cam 20 Label Guide [1215, 744]
+	- Cam 11 Label Guide [639, 744]
+	- Cam 12 Label Guide [703, 744]
+	- Cam 13 Label Guide [767, 744]
+	- Cam 14 Label Guide [831, 744]
+	- Cam 15 Label Guide [895, 744]
+	- Cam 16 Label Guide [959, 744]
+	- Cam 17 Label Guide [1023, 744]
+	- Cam 18 Label Guide [1087, 744]
+	- Cam 19 Label Guide [1151, 744]
+	- Label Assets String [0, 784]
+	- Cam Labels [888, 272]
+	- time of day [1186, 65]
+	- am [1200, 37]
+	- Which Night? [759, 85]
+	- The Night [1245, 101]
+	- Power [129, 627]
+	- % [135, 585]
+	- Power Left [24, 616]
+	- Music Box Button [569, 497]
+	- Music Box Wind Text [497, 475]
+	- Click & Hold [491, 534]
+	- Music Left [418, 474]
+	- Usage Text [24, 632]
+	- death [-84, 402]
+	- Save Guide [128, -160]
+	- Foxy Collision Character [-124, 165]
+	- Freddy Collision Character [-92, 165]
+	- 6th or 7th night [-84, 418]
+	- Connection Lost [297, -54]
+	- Lure Button [744, 296]
+	- Springtrap [-97, 215]
+	- Jumpscare Freddy [-520, -168]
+	- Jumpscare Puppet [-520, -168]
+	- Jumpscare Foxy [-520, -168]
+	- Jumpscare Springtrap [-520, -168]
+	- Jumpscare GF [-520, -168]
+	- Rec [64, 104]
+	- Springtrap AI [-125, 619]
+	- Golden Freddy AI [-125, 523]
+	- Ph Mangle AI [-125, 667]
+	- Ph BB AI [-125, 715]
+	- Foxy AI [-125, 571]
+	- Freddy AI [-125, 427]
+	- Test Chica AI [-125, 475]
+	- Freddy Global [-336, 104]
+	- Puppet Global [-328, 120]
+	- Foxy Global [-312, 136]
+	- Springtrap Global [-296, 152]
+	- Mute Call Button [100, 55]
+	- Current Call [-84, 434]
+	- Phantom Mangle Global [-432, 120]
+	- Phantom BB Global [-448, 136]
+	- GF Global [-456, 160]
+	- All 20? [-84, 450]
+	- savestring [128, -192]
+	- PC/Mobile [-213, 513]
+	- mask [688, -960]
+	- Ini [432, -224]
++ Layer #6 (top)
+	- Ph Mangle Camera [0, 0]
+	- Ph BB Camera [0, 0]
+	- Ph BB Scare [0, 0]
+	- Power Out [0, 0]
