@@ -66,7 +66,10 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->title_custom = load_id(r, 242);
     v->title_arrow = load_id(r, 245);
     v->title_star = load_id(r, 232);
+    /* Template Title is 233 (600x507). 238 is a death-screen animation frame and must NOT be used here. */
     v->title_template = load_id(r, 233);
+    for (int i = 0; i < 7; ++i)
+        v->title_nights[i] = load_id(r, 246 + i);
 
     return v->title_bg ? 0 : -1;
 }
@@ -93,6 +96,8 @@ void visuals_free(FnaeVisuals *v) {
     destroy_texture(&v->title_arrow);
     destroy_texture(&v->title_star);
     destroy_texture(&v->title_template);
+    for (int i = 0; i < 7; ++i)
+        destroy_texture(&v->title_nights[i]);
     destroy_texture(&v->newspaper);
     destroy_texture(&v->final_screen);
     memset(v, 0, sizeof *v);
@@ -166,39 +171,46 @@ static void draw_camera_labels(SDL_Renderer *r, int camera) {
     (void)rh;
 }
 
-static void draw_title(SDL_Renderer *r, FnaeVisuals *v) {
-    /* Fusion title frame is laid out on a 1280x720 canvas. */
+static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, int progress) {
+    /* Frame 2 uses a fixed 1280x720 playfield. */
     if (v->title_bg) {
         SDL_Rect d = {0, 0, 1280, 720};
         SDL_RenderCopy(r, v->title_bg, NULL, &d);
     }
 
-    /* Exact exported object positions from Frame 2 (Title). */
+    /* These are the actual Frame 2 object positions from Objects.txt. */
     draw_texture(r, v->title_template, 64, 96);
     draw_texture(r, v->title_new,      96, 448);
     draw_texture(r, v->title_continue, 96, 512);
     draw_texture(r, v->title_6night,   96, 576);
     draw_texture(r, v->title_custom,   96, 640);
 
-    /* Arrow starts at (-22,461) relative to New at (96,448). */
-    draw_texture(r, v->title_arrow, 74, 464);
+    /* Arrow is positioned relative to the selected menu object. */
+    static const int arrow_y[4] = {464, 529, 595, 659};
+    static const int arrow_x[4] = {86, 86, 86, 86};
+    int a = arrow < 0 ? 0 : arrow > 3 ? 3 : arrow;
+    draw_texture(r, v->title_arrow, arrow_x[a], arrow_y[a]);
 
-    /* Star / Star 2 / Star 3 positions from the original frame. */
-    draw_texture(r, v->title_star, 348, 75);
-    draw_texture(r, v->title_star, 428, 75);
-    draw_texture(r, v->title_star, 508, 75);
+    /* The three stars unlock with progress, exactly like the Fusion events. */
+    if (progress > 0) draw_texture(r, v->title_star, 348, 75);
+    if (progress > 1) draw_texture(r, v->title_star, 428, 75);
+    if (progress > 2) draw_texture(r, v->title_star, 508, 75);
 
-
+    /* The Night counter is only shown when Continue is selected. */
+    if (a == 1) {
+        int n = night < 1 ? 1 : night > 7 ? 7 : night;
+        draw_texture(r, v->title_nights[n - 1], 326, 545);
+    }
 }
 
 void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                     int camera_up, int night, int hour, int power,
-                    int left_door, int right_door, int mask) {
+                    int left_door, int right_door, int mask, int arrow, int progress) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
     if (frame == 2) {
-        draw_title(r, v);
+        draw_title(r, v, night, arrow, progress);
     } else if (frame == 3) {
         if (camera_up) {
             if (camera < 0 || camera > 3) camera = 0;

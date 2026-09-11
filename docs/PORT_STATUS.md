@@ -1,24 +1,32 @@
-# FNaE Native Port Status
+# Native FNaE port status
 
-This build is a functional gameplay prototype, not yet a 1:1 Clickteam recreation.
+## Current state
 
-## Fixed in this revision
-- Camera flip now has a real transition and reaches CAM_UP.
-- S toggles camera up/down.
-- 1-4 select cameras while cameras are up.
-- Door A/D controls now complete their close/open transitions.
-- Flashlight Z/Ctrl is released correctly on key-up.
-- Mouse clicks are wired to title buttons, doors, camera flip, camera selection and music-box winding.
-- Night menu navigation works with keyboard and mouse.
-- Title screen no longer uses the incorrect GOOD JOB CAPTAIN image.
-- Title Template asset is layered at its exported position.
-- Camera 02/03 mapping was corrected to use the extracted forest character/background assets.
+The native SDL2 build contains the recovered gameplay state machine and extracted visual assets.
 
-## Still not 1:1
-- Clickteam animation sequences are not all reconstructed.
-- Fusion INI save persistence is not implemented.
-- Exact audio channel mixing is not implemented.
-- Exact camera UI/minimap/labels and animatronic sprite layers are incomplete.
-- Customize Night is still a simplified entry point.
-- Jumpscare/death presentation is simplified.
-- Springtrap audio lure and several phantom/GF timing details are simplified.
+### Frame 2 title screen
+
+The title screen now uses the correct Frame 2 asset mapping:
+
+- `179.png` — Background
+- `238.png` — Template Title
+- `239.png` — New
+- `240.png` — Continue
+- `241.png` — 6 Night
+- `242.png` — Custom
+- `245.png` — Arrow
+- `232.png` — Star / Star 2 / Star 3
+- `246.png`–`252.png` — The Night counter frames
+
+The previous incorrect mapping of `233.png` has been removed. `233.png` is a death-animation frame.
+
+## Functional controls
+
+- Title: Up/Down or W/S, Enter, mouse menu selection
+- Night: A/D doors, S camera, M mask, Z/Ctrl flashlight, 1–4 camera selection, R/mouse for music-box winding
+- Camera and door transition timers are implemented
+- Flashlight and music-box controls release correctly on key-up
+
+## Known limitations
+
+The project is still a native reconstruction rather than a byte-for-byte Clickteam runtime replacement. Audio, save/INI persistence, several secondary frames, and exact character animation still need further conversion work.

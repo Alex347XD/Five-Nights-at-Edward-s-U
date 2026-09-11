@@ -23,7 +23,7 @@ typedef struct {
  int all20; int left_challenge, left_challenge_active;
  float cam_anim_timer, mask_anim_timer, left_door_timer, right_door_timer;
  float ai_timer, power_out_timer, springtrap_timer, phantom_timer;
- int hour_events[8][13];
+ int hour_events[13][13];
 } FnaeGame;
 
 void fnae_init(FnaeGame* g);

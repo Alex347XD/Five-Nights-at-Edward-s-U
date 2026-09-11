@@ -5,8 +5,8 @@
 static int rnd(int n){ return n<=0?0:rand()%n; }
 static int rr(int a,int b){ return a + rand()%(b-a+1); }
 static void ai_reset(FnaeAI* a,int level,int start){ a->ai=level; a->pos=start; a->move=0; a->at_door=0; }
-static void mark(FnaeGame* g,int h,int id){ if(h>=0&&h<8&&id>=0&&id<13) g->hour_events[h][id]=1; }
-static int did(FnaeGame* g,int h,int id){ return h>=0&&h<8&&id>=0&&id<13&&g->hour_events[h][id]; }
+static void mark(FnaeGame* g,int h,int id){ if(h>=0&&h<13&&id>=0&&id<13) g->hour_events[h][id]=1; }
+static int did(FnaeGame* g,int h,int id){ return h>=0&&h<13&&id>=0&&id<13&&g->hour_events[h][id]; }
 
 const char* fnae_frame_name(FnaeFrame f){
  switch(f){case FRAME_WARNING:return "Warning";case FRAME_TITLE:return "Title";case FRAME_NIGHT:return "Night";case FRAME_DEATH:return "Death";case FRAME_FINAL:return "Final";case FRAME_WHICH_NIGHT:return "Which Night";case FRAME_NEWSPAPER:return "Newspaper";case FRAME_CUSTOMIZE:return "Customize";case FRAME_6AM:return "6 AM";} return "Unknown";

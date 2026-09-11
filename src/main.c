@@ -88,7 +88,9 @@ int main(int argc, char *argv[]) {
             game.hidden_power,
             game.left_door,
             game.right_door,
-            game.mask_anim == MASK_DOWN
+            game.mask_anim == MASK_DOWN,
+            game.arrow,
+            game.progress
         );
 
         SDL_RenderPresent(r);
