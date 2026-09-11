@@ -1,6 +1,3 @@
-Absolutely. Here’s a clean **README.md** you can put directly in the project:
-
-````md
 # Five Nights at Edward's — Native Port
 
 This project is the native C/SDL2 port of **Five Nights at Edward's**.
@@ -188,6 +185,3 @@ cmake --build build
 ```
 
 That's all that is required to build the current Windows version.
-
-```
-```
