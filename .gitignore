@@ -1,1 +1,4 @@
 build
+# Headless screenshots (keep screenshots/.gitkeep tracked).
+screenshots/*.png
+screenshots/*.bmp

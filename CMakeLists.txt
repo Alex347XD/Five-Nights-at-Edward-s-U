@@ -10,6 +10,7 @@ find_package(SDL2_image CONFIG REQUIRED)
 add_executable(FNaE_Native
     src/main.c
     src/fnae_core.c
+    src/headless.c
     src/visuals.c
 )
 
@@ -48,4 +49,16 @@ add_custom_command(TARGET FNaE_Native POST_BUILD
         "-DSEARCH_DIRS=$<TARGET_FILE_DIR:SDL2::SDL2>;$<TARGET_FILE_DIR:SDL2_image::SDL2_image>"
         -P "${CMAKE_SOURCE_DIR}/cmake/CopyRuntimeDeps.cmake"
     COMMENT "Copying runtime DLLs to FNaE run folder"
+)
+
+# Headless screenshot cleanup: wipes generated images under the tracked
+# screenshots/ dir (keeping .gitkeep), legacy CWD screenshots from before
+# the screenshots/ convention, and the bundle's screenshots/ output.
+add_custom_target(clean-screenshots
+    COMMAND "${CMAKE_COMMAND}"
+        "-DSOURCE_SCREENSHOTS_DIR=${CMAKE_SOURCE_DIR}/screenshots"
+        "-DBUNDLE_SCREENSHOTS_DIR=${CMAKE_BINARY_DIR}/FNaE/screenshots"
+        "-DLEGACY_FILES=${CMAKE_SOURCE_DIR}/headless.png;${CMAKE_SOURCE_DIR}/title.png;${CMAKE_BINARY_DIR}/FNaE/headless.png;${CMAKE_BINARY_DIR}/FNaE/title.png"
+        -P "${CMAKE_SOURCE_DIR}/cmake/CleanScreenshots.cmake"
+    COMMENT "Removing generated headless screenshots"
 )
