@@ -36,11 +36,17 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
 
     /* Real extracted gameplay assets (see src/fnae_assets.h). */
     v->office = load_id(r, IMG_OFFICE);
-    v->cams[0] = load_id(r, IMG_CAM_HELL);
-    /* Cam 01 = Hell, Cam 02 = Mountain/forest feed, Cam 03 = Forest, Cam 04 = Dinosaur Exhibit. */
-    v->cams[1] = load_id(r, IMG_CAM_MOUNTAIN);
-    v->cams[2] = load_id(r, IMG_CAM_FOREST);
-    v->cams[3] = load_id(r, IMG_CAM_DINO);
+    /* Cam 01 = Hell, Cam 02 = Mountain, Cam 03 = Forest,
+     * Cam 04 = Dinosaur Exhibit. Each camera has an empty base frame
+     * plus an occupied frame for its haunting animatronic. */
+    v->cams[0][0] = load_id(r, IMG_CAM_HELL);
+    v->cams[0][1] = load_id(r, IMG_CAM_HELL_FRED);
+    v->cams[1][0] = load_id(r, IMG_CAM_MOUNTAIN);
+    v->cams[1][1] = load_id(r, IMG_CAM_MOUNTAIN_FOXY);
+    v->cams[2][0] = load_id(r, IMG_CAM_FOREST);
+    v->cams[2][1] = load_id(r, IMG_CAM_FOREST_FRED);
+    v->cams[3][0] = load_id(r, IMG_CAM_DINO);
+    v->cams[3][1] = load_id(r, IMG_CAM_DINO_FOXY);
     for (int i = 0; i < IMG_STATIC_COUNT; ++i)
         v->static_frames[i] = load_id(r, IMG_STATIC_FIRST + i);
     v->six_am = load_id(r, IMG_SIX_AM);
@@ -89,7 +95,8 @@ static void destroy_texture(SDL_Texture **t) {
 void visuals_free(FnaeVisuals *v) {
     destroy_texture(&v->office);
     for (int i = 0; i < 4; ++i)
-        destroy_texture(&v->cams[i]);
+        for (int j = 0; j < 2; ++j)
+            destroy_texture(&v->cams[i][j]);
     for (int i = 0; i < 8; ++i)
         destroy_texture(&v->static_frames[i]);
     destroy_texture(&v->six_am);
@@ -283,7 +290,8 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                     int camera_up, int night, int hour, int power,
                     int left_door, int right_door, int mask, int arrow, int progress,
                     int static_frame, int static_alpha, int office_scroll,
-                    int left_door_frame, int right_door_frame, int title_bg_frame) {
+                    int left_door_frame, int right_door_frame, int title_bg_frame,
+                    int foxy_pos, int freddy_pos) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
@@ -292,10 +300,20 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                    title_bg_frame);
     } else if (frame == 3) {
         if (camera_up) {
-            if (camera < 0 || camera > 3) camera = 0;
-            fit_center(r, v->cams[camera]);
+            /* Core camera numbers are 1-based (1..4); the image bank is 0-based. */
+            int idx = camera - 1;
+            if (idx < 0 || idx > 3) idx = 0;
+            /* Occupied frame follows the haunting animatronic's route:
+             * Freddy Cam 01 (pos 1) -> Cam 03 (pos 3);
+             * Foxy Cam 02 (pos 2) -> Cam 04 (pos 4). */
+            int occupied = 0;
+            if (idx == 0 && freddy_pos == 1) occupied = 1;
+            else if (idx == 1 && foxy_pos == 2) occupied = 1;
+            else if (idx == 2 && freddy_pos == 3) occupied = 1;
+            else if (idx == 3 && foxy_pos == 4) occupied = 1;
+            fit_center(r, v->cams[idx][occupied]);
             draw_static(r, v->static_frames[static_frame & 7], 35);
-            draw_camera_labels(r, camera);
+            draw_camera_labels(r, idx);
         } else {
             draw_office_pan(r, v->office, office_scroll);
             /* Layer order mirrors Fusion: office (#1), doors (#2), desk (#3).

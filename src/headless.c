@@ -252,7 +252,9 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                         (int)game->office_scroll,
                         game->left_door_frame,
                         game->right_door_frame,
-                        game->title_bg_frame
+                        game->title_bg_frame,
+                        game->foxy.pos,
+                        game->freddy.pos
                     );
                     SDL_RenderPresent(r);
                     if (headless_save_screenshot(r, ev->shot) != 0)
@@ -289,7 +291,9 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
             (int)game->office_scroll,
             game->left_door_frame,
             game->right_door_frame,
-            game->title_bg_frame
+            game->title_bg_frame,
+            game->foxy.pos,
+            game->freddy.pos
         );
         SDL_RenderPresent(r);
         if ((f + 1) % 60 == 0) {

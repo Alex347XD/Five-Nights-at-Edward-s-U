@@ -6,7 +6,7 @@
 
 typedef struct {
     SDL_Texture *office;
-    SDL_Texture *cams[4];
+    SDL_Texture *cams[4][2]; /* per camera: [0] empty base, [1] animatronic present */
     SDL_Texture *static_frames[IMG_STATIC_COUNT]; /* TV-static animation, shared title/cameras */
     SDL_Texture *six_am;
     SDL_Texture *death;
@@ -50,4 +50,5 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                      int camera_up, int night, int hour, int power,
                      int left_door, int right_door, int mask, int arrow, int progress,
                      int static_frame, int static_alpha, int office_scroll,
-                     int left_door_frame, int right_door_frame, int title_bg_frame);
+                     int left_door_frame, int right_door_frame, int title_bg_frame,
+                     int foxy_pos, int freddy_pos);

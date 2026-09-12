@@ -9,10 +9,17 @@
  */
 
 #define IMG_OFFICE        227 /* Frame 3 office scene */
-#define IMG_CAM_HELL      211 /* Cam 01 */
-#define IMG_CAM_MOUNTAIN  379 /* Cam 02 */
-#define IMG_CAM_FOREST    350 /* Cam 03 */
-#define IMG_CAM_DINO      312 /* Cam 04 (Dinosaur Exhibit) */
+/* Camera feeds, 1600x720. Each camera is an empty base scene plus an
+ * occupied frame showing the animatronic that haunts it (Freddy: Cam 01
+ * -> Cam 03; Foxy: Cam 02 -> Cam 04; see Frame 3 Events.txt). */
+#define IMG_CAM_HELL        343 /* Cam 01 base (Hell ride, "Welcome To HELL") */
+#define IMG_CAM_HELL_FRED   312 /* Cam 01 with Freddy (red Edward) */
+#define IMG_CAM_MOUNTAIN    347 /* Cam 02 base (mountain waterfall/cave) */
+#define IMG_CAM_MOUNTAIN_FOXY 348 /* Cam 02 with Foxy (blue creature) */
+#define IMG_CAM_FOREST      350 /* Cam 03 base (empty forest) */
+#define IMG_CAM_FOREST_FRED 379 /* Cam 03 with Freddy (red Edward) */
+#define IMG_CAM_DINO        212 /* Cam 04 base (volcano/dinosaurs) */
+#define IMG_CAM_DINO_FOXY   211 /* Cam 04 with Foxy (blue creature) */
 
 #define IMG_STATIC_FIRST  46  /* TV-static animation, 8 frames (46-53), */
 #define IMG_STATIC_COUNT  8   /* shared by title Static + camera static */

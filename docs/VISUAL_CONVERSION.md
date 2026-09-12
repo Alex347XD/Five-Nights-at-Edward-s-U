@@ -12,10 +12,10 @@ These match `visuals_init` in `src/visuals.c`:
 - `144.png`–`159.png` — Left Door shutter (16 frames, open→closed) at [119,0]
 - `160.png`–`175.png` — Right Door shutter (16 frames, open→closed) at [1263,0]
 - `238.png` — desk scene (1066x511) at [266,177]; doors/desk pan with the office
-- `211.png` — Cam 01 / Hell-volcano environment
-- `379.png` — Cam 02 / Mountain-forest environment
-- `350.png` — Cam 03 / Forest environment
-- `312.png` — Cam 04 / Dinosaur Exhibit environment
+- `343.png` / `312.png` — Cam 01 / Hell ride (empty / Freddy present)
+- `347.png` / `348.png` — Cam 02 / Mountain (empty / Foxy present)
+- `350.png` / `379.png` — Cam 03 / Forest (empty / Freddy present)
+- `212.png` / `211.png` — Cam 04 / Dinosaur Exhibit (empty / Foxy present)
 - `46.png`–`53.png` — TV-static animation (8-frame loop; title flickers
   alpha 100+Random(100), cameras draw it at alpha 35)
 - `4.png` — 6 AM screen
