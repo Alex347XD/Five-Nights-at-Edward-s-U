@@ -1,5 +1,0 @@
-# ninja log v7
-68	297	8108721695497331	CMakeFiles/FNaE_Native.dir/src/fnae_core.c.obj	8706853f8db5ed0a
-54	696	8108721695366566	CMakeFiles/FNaE_Native.dir/src/main.c.obj	d9bb146c618a97f3
-79	718	8108721695607407	CMakeFiles/FNaE_Native.dir/src/visuals.c.obj	fff8bc96de27229f
-718	968	8108721701991628	FNaE_Native.exe	6e3c188824cfba25
