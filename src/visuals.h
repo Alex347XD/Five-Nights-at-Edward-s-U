@@ -13,7 +13,7 @@ typedef struct {
 
     /* Title-screen components from the exported Fusion asset bank. */
     SDL_Texture *title_bg;
-    SDL_Texture *title_bg_anim[IMG_TITLE_BG_ANIM_COUNT]; /* 4-frame bg flash */
+    SDL_Texture *title_bg_anim[IMG_TITLE_BG_ANIM_COUNT]; /* 3-frame bg flash (516-518) */
     SDL_Texture *title_new;
     SDL_Texture *title_continue;
     SDL_Texture *title_6night;

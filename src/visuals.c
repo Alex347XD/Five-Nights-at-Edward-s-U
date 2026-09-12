@@ -235,8 +235,8 @@ static void draw_camera_labels(SDL_Renderer *r, int camera) {
 static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, int progress,
                        int static_frame, int static_alpha, int title_bg_frame) {
     /* Frame 2 uses a fixed 1280x720 playfield. The background is usually
-     * the Stopped frame; Random(50)=1 briefly flashes the animated
-     * sequence (played here as the 4-frame 515-518 run). */
+     * the Stopped frame (515); Random(50)=1 briefly flashes one
+     * RRandom(12,14) sequence (516/517/518) for the 0.2 s cut window. */
     SDL_Texture *bg = v->title_bg;
     if (title_bg_frame >= 1 && title_bg_frame <= IMG_TITLE_BG_ANIM_COUNT)
         bg = v->title_bg_anim[title_bg_frame - 1];

@@ -4,7 +4,7 @@ Mapped from the exported Frame 2 object layout and the extracted image bank.
 
 | Fusion object | Native asset | Size | Notes |
 |---|---:|---:|---|
-| Background | `179.png` | 1280x720 | Title background (Stopped sequence; animated sequences 12–14 play as the 4-frame `515.png`–`518.png` flash) |
+| Background | `515.png` | 1280x720 | Title background (Stopped sequence; sequences 12–14 are the single-frame flashes `516.png`/`517.png`/`518.png`, held 0.2 s) |
 | Static | `46.png`–`53.png` | 1280x720 | 8-frame noise loop, alpha flickers 100+Random(100) |
 | Template Title | `464.png` | 266x271 | "Five Nights at Edward's" text card at (64,96) |
 | New | `239.png` | 203x33 | Menu item at (96,448) |

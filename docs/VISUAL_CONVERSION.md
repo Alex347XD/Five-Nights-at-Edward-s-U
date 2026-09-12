@@ -9,8 +9,8 @@ These match `visuals_init` in `src/visuals.c`:
 - `227.png` — office scene (drawn cover-cropped to the 1280-wide view and
   panned by `office_scroll`; mouse at the screen edges reveals more of that
   side, per `[ Office Panning ]`)
-- `160.png`–`175.png` — Left Door shutter (16 frames, open→closed) at [119,0]
-- `144.png`–`159.png` — Right Door shutter (16 frames, open→closed) at [1263,0]
+- `144.png`–`159.png` — Left Door shutter (16 frames, open→closed) at [119,0]
+- `160.png`–`175.png` — Right Door shutter (16 frames, open→closed) at [1263,0]
 - `238.png` — desk scene (1066x511) at [266,177]; doors/desk pan with the office
 - `211.png` — Cam 01 / Hell-volcano environment
 - `379.png` — Cam 02 / Mountain-forest environment

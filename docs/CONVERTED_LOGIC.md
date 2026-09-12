@@ -24,13 +24,13 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
 - Left door uses A/D; right door uses D, matching the exported events.
 - Door animation (Left/Right Door Alterable Value A): 0=open (Stopped frame 0),
   1=closing (Close 0→15), 2=closed (hold 15), 3=opening (Open 15→0), over the
-  existing 0.25 s transitions. Left art is `160.png`–`175.png` (248x720) at
-  [119,0], right art is `144.png`–`159.png` (223x720) at [1263,0] (widths
-  chosen so both wall buttons sit just outside their door span).
+  existing 0.25 s transitions. Left art is `144.png`–`159.png` (223x720) at
+  [119,0], right art is `160.png`–`175.png` (248x720) at [1263,0].
 - Desk (`238.png`, 1066x511) draws at [266,177] in the office view (hidden
   while the camera is up); doors/desk pan with the office scroll.
-- Title background flash: Random(50)=1 plays RRandom(12,14), cut after 0.2 s.
-  Played as one 4-frame flash (`515.png`–`518.png`, one frame per tick).
+- Title background flash: Random(50)=1 plays one RRandom(12,14) sequence —
+  a single frame (`516.png`/`517.png`/`518.png`) held for the 0.2 s cut
+  window — then back to Stopped (`515.png`). Static advances every 3rd tick.
 - Office panning (`[ Office Panning ]`): pointer over the Left 1/2/3 zones
   (X 225/168/119) scrolls left at 2/4/6 px per tick, Right 1/2/3 zones
   (X 1025/1088/1143) scroll right at 2/4/6 px per tick; clamped so the

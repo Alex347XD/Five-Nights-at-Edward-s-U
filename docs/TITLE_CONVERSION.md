@@ -3,7 +3,7 @@
 The native renderer now reconstructs Frame 2 (Title) from the exported Fusion object layout instead of using `2.png`, which is the GOOD JOB CAPTAIN completed-night screen.
 
 Mapped title assets:
-- Background: `179.png`
+- Background: `515.png` (Stopped; `516.png`–`518.png` are the flash frames)
 - New: `239.png`
 - Continue: `240.png`
 - 6th Night: `241.png`

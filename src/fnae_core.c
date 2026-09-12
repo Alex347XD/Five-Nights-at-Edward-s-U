@@ -83,19 +83,20 @@ static void update_music(FnaeGame* g,float dt){
 void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_TITLE; g->night=1; g->progress=0; g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2; }
 
 /* TV-static animation state, shared by the title overlay and the cameras.
- * Mirrors Frame 2 Events.txt: every tick the frame advances, and on
- * Random(10)=1 the flicker alpha becomes 100+Random(100).
+ * Mirrors Frame 2 Events.txt: on Random(10)=1 the flicker alpha becomes
+ * 100+Random(100). The static frames advance every 3rd tick (~20 fps);
+ * advancing every tick strobed far faster than the original.
  * Also drives the title background flash: on Random(50)=1 the Background
- * plays its animated sequence (here the 4-frame 515-518 run, one frame per
- * tick, then back to Stopped — inside Fusion's 0.2 s cut window). */
+ * plays one RRandom(12,14) sequence — a single frame (516/517/518) held
+ * for the 0.2 s cut window (12 ticks) — then back to Stopped (515). */
 void fnae_static_tick(FnaeGame* g){
- g->static_frame=(g->static_frame+1)&7;
+ if(++g->static_div>=3){g->static_div=0;g->static_frame=(g->static_frame+1)&7;}
  if(rnd(10)==1)g->static_alpha=100+rnd(100);
- if(g->frame!=FRAME_TITLE){g->title_bg_frame=0;return;}
+ if(g->frame!=FRAME_TITLE){g->title_bg_frame=0;g->title_bg_timer=0;return;}
  if(g->title_bg_frame>0){
-  if(++g->title_bg_frame>IMG_TITLE_BG_ANIM_COUNT)g->title_bg_frame=0;
+  if(++g->title_bg_timer>=12){g->title_bg_frame=0;g->title_bg_timer=0;}
  } else if(rnd(50)==1){
-  g->title_bg_frame=1;
+  g->title_bg_frame=1+rnd(3);g->title_bg_timer=0;
  }
 }
 
@@ -106,7 +107,7 @@ void fnae_start_night(FnaeGame* g,int night){
  g->cam_anim=CAM_DOWN; g->mask_anim=MASK_UP; g->prevent_flip=0; g->force_down=0; g->view=0; g->camera=1;
   g->left_door=0; g->right_door=0; g->flashlight=0; g->hidden_power=10000; g->power_left=1; g->power_tick=0;
   g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2;
-  g->left_door_frame=0; g->right_door_frame=0; g->title_bg_frame=0;
+   g->left_door_frame=0; g->right_door_frame=0; g->title_bg_frame=0; g->title_bg_timer=0;
  g->movement_out=0; g->movement_timer=0; g->camera_up_check=0;
  g->music_left=2000; g->music_winding=0; g->music_tick=0; g->current_call=0; g->call_muted=0;
  g->cam_anim_timer=g->mask_anim_timer=g->left_door_timer=g->right_door_timer=0;
