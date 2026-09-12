@@ -31,6 +31,9 @@ SDL draws from the top-left, so the native renderer draws it with
 
 - Title: Up/Down or W/S, Enter, mouse menu selection
 - Night: A/D doors, S camera, M mask, Z/Ctrl flashlight, 1–4 camera selection, R/mouse for music-box winding
+- Night: mouse position pans the office view — pointer in the left/right edge
+  zones scrolls toward that side at the Fusion 2/4/6 px-per-tick speeds,
+  clamped to the 1600px-wide office scene (see `CONVERTED_LOGIC.md`)
 - Camera and door transition timers are implemented
 - Flashlight and music-box controls release correctly on key-up
 - Title menu responds to physical Up/Down keys (SDL1-era keycodes `273`/`274`/`308` replaced with `SDLK_` constants; `308` was Left Alt for the flashlight)

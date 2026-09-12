@@ -79,7 +79,7 @@ static void update_music(FnaeGame* g,float dt){
  if(g->music_left<=0 && g->hidden_power>0 && g->death==0 && ((g->cam_anim==CAM_UP&&rnd(5)==1)||(g->mask_anim==MASK_DOWN&&rnd(5)==1))) enter_death(g,1);
 }
 
-void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_TITLE; g->night=1; g->progress=0; g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; }
+void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_TITLE; g->night=1; g->progress=0; g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2; }
 
 /* TV-static animation state, shared by the title overlay and the cameras.
  * Mirrors Frame 2 Events.txt: every tick the frame advances, and on
@@ -94,7 +94,8 @@ void fnae_start_night(FnaeGame* g,int night){
  g->night=night<1?1:(night>7?7:night); g->frame=FRAME_NIGHT; g->time_of_day=12; g->time_to_hour=0;
  g->death=0; g->death_addup=0; g->gf_random=0; g->gf_death_addup=0;
  g->cam_anim=CAM_DOWN; g->mask_anim=MASK_UP; g->prevent_flip=0; g->force_down=0; g->view=0; g->camera=1;
- g->left_door=0; g->right_door=0; g->flashlight=0; g->hidden_power=10000; g->power_left=1; g->power_tick=0;
+  g->left_door=0; g->right_door=0; g->flashlight=0; g->hidden_power=10000; g->power_left=1; g->power_tick=0;
+  g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2;
  g->movement_out=0; g->movement_timer=0; g->camera_up_check=0;
  g->music_left=2000; g->music_winding=0; g->music_tick=0; g->current_call=0; g->call_muted=0;
  g->cam_anim_timer=g->mask_anim_timer=g->left_door_timer=g->right_door_timer=0;
@@ -111,9 +112,32 @@ static void hour(FnaeGame* g){
  if(g->time_of_day>5 && g->time_of_day!=12)g->frame=FRAME_6AM;
 }
 
+void fnae_mouse_move(FnaeGame* g, int x, int y){
+ g->mouse_x=x; g->mouse_y=y;
+}
+
+/* Office panning ("[ Office Panning ]" in Frame 3 Events.txt).
+ * Fusion scrolls the display by moving the Office Center Object while the
+ * pointer hovers the Left 1/2/3 / Right 1/2/3 edge zones (at X 225/168/119
+ * and 1025/1088/1143) at 2/4/6 px per tick, clamped so the 1280-wide view
+ * stays inside the frame. Desktop only (PC/Mobile = 0), office view only.
+ * Speeds are per 1/60 tick, hence the dt*60 scaling. */
+static void update_office_pan(FnaeGame* g, float dt){
+ if(g->death || g->view!=0 || g->cam_anim!=CAM_DOWN) return;
+ if(g->hidden_power<=0 || g->pc_mobile!=0) return;
+ float speed=0;
+ if(g->mouse_x<120) speed=-6; else if(g->mouse_x<170) speed=-4; else if(g->mouse_x<230) speed=-2;
+ else if(g->mouse_x>1140) speed=6; else if(g->mouse_x>1085) speed=4; else if(g->mouse_x>1020) speed=2;
+ else return;
+ g->office_scroll+=speed*dt*60.0f;
+ if(g->office_scroll<0) g->office_scroll=0;
+ if(g->office_scroll>FNAE_OFFICE_SCROLL_MAX) g->office_scroll=(float)FNAE_OFFICE_SCROLL_MAX;
+}
+
 void fnae_update(FnaeGame* g,float dt){
  if(g->frame!=FRAME_NIGHT)return;
  if(g->death){g->death_addup++;if(g->death_addup>=60)g->frame=FRAME_DEATH;return;}
+ update_office_pan(g,dt);
 
  /* Fusion's transition objects have visible animation phases. */
  if(g->cam_anim==CAM_UP_ANIM){
@@ -196,6 +220,7 @@ void fnae_key_up(FnaeGame* g,int key){
 }
 
 void fnae_click(FnaeGame* g,int x,int y){
+ g->mouse_x=x; g->mouse_y=y;
  if(g->frame==FRAME_TITLE){
   if(x>=70&&x<=430&&y>=430&&y<495){g->arrow=0;g->frame=FRAME_NEWSPAPER;return;}
   if(x>=70&&x<=430&&y>=495&&y<560){g->arrow=1;g->frame=FRAME_WHICH_NIGHT;return;}

@@ -22,6 +22,12 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
 - Drain amount: `10 * ((Night / 5) + 1)`.
 - Usage level: `1 + camera_up_check + left_door + right_door + flashlight + Ph Mangle Camera * 2`.
 - Left door uses A/D; right door uses D, matching the exported events.
+- Office panning (`[ Office Panning ]`): pointer over the Left 1/2/3 zones
+  (X 225/168/119) scrolls left at 2/4/6 px per tick, Right 1/2/3 zones
+  (X 1025/1088/1143) scroll right at 2/4/6 px per tick; clamped so the
+  1280-wide view stays inside the 1600-wide office scene. Desktop hover only
+  (PC/Mobile = 0), office view only (View = 0), no pan while dead. Starts
+  centered (Fusion starts at the left edge, X 640).
 - Camera flip uses S; camera 1-4 are Hell, Mountain, Forest, Dinosaur Exhibit.
 - Audio lure uses E on Cam 01.
 - Music box uses the Dinosaur Exhibit camera (view 4).

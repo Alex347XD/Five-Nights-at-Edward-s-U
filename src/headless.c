@@ -178,13 +178,13 @@ int headless_load_script(const char *path, HeadlessScript *out) {
                 break;
             }
             ev->type = strcmp(action, "key") == 0 ? HEV_KEY : HEV_KEYUP;
-        } else if (strcmp(action, "click") == 0) {
+        } else if (strcmp(action, "click") == 0 || strcmp(action, "mouse") == 0) {
             if (nf < 4) {
-                fprintf(stderr, "HEADLESS: %s:%d: click needs X Y\n", path, lineno);
+                fprintf(stderr, "HEADLESS: %s:%d: %s needs X Y\n", path, lineno, action);
                 rc = 1;
                 break;
             }
-            ev->type = HEV_CLICK;
+            ev->type = strcmp(action, "click") == 0 ? HEV_CLICK : HEV_MOUSE;
             ev->x = atoi(arg1);
             ev->y = atoi(arg2);
         } else if (strcmp(action, "shot") == 0) {
@@ -229,6 +229,7 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                 case HEV_KEY: fnae_key(game, ev->key); break;
                 case HEV_KEYUP: fnae_key_up(game, ev->key); break;
                 case HEV_CLICK: fnae_click(game, ev->x, ev->y); break;
+                case HEV_MOUSE: fnae_mouse_move(game, ev->x, ev->y); break;
                 case HEV_SHOT:
                     printf("HEADLESS shot frame=%d path=%s game_frame=%s\n",
                         f, ev->shot, fnae_frame_name(game->frame));
@@ -247,7 +248,8 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                         game->arrow,
                         game->progress,
                         game->static_frame,
-                        game->static_alpha
+                        game->static_alpha,
+                        (int)game->office_scroll
                     );
                     SDL_RenderPresent(r);
                     if (headless_save_screenshot(r, ev->shot) != 0)
@@ -280,7 +282,8 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
             game->arrow,
             game->progress,
             game->static_frame,
-            game->static_alpha
+            game->static_alpha,
+            (int)game->office_scroll
         );
         SDL_RenderPresent(r);
         if ((f + 1) % 60 == 0) {

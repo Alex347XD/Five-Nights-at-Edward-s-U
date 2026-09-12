@@ -21,11 +21,18 @@ typedef struct {
   int music_left; int music_winding; float music_tick;
   int current_call; int call_muted;
   int static_frame; int static_alpha; /* TV-static anim state (shared title/cameras) */
+  int mouse_x, mouse_y;   /* last known pointer position (1280x720 space) */
+  float office_scroll;    /* office pan in source px, 0 = leftmost.
+                           * Mirrors the Fusion Office Center Object X minus
+                           * Game Width / 2; clamped to [0, FNAE_OFFICE_SCROLL_MAX]. */
  int all20; int left_challenge, left_challenge_active;
  float cam_anim_timer, mask_anim_timer, left_door_timer, right_door_timer;
  float ai_timer, power_out_timer, springtrap_timer, phantom_timer;
  int hour_events[13][13];
 } FnaeGame;
+
+/* Office pan range: 1600px-wide office scene over a 1280px-wide view. */
+#define FNAE_OFFICE_SCROLL_MAX 320
 
 void fnae_init(FnaeGame* g);
 void fnae_static_tick(FnaeGame* g);
@@ -34,4 +41,5 @@ void fnae_update(FnaeGame* g, float dt);
 void fnae_key(FnaeGame* g, int key);
 void fnae_key_up(FnaeGame* g, int key);
 void fnae_click(FnaeGame* g, int x, int y);
+void fnae_mouse_move(FnaeGame* g, int x, int y);
 const char* fnae_frame_name(FnaeFrame f);

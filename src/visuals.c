@@ -150,6 +150,31 @@ static void draw_static(SDL_Renderer *r, SDL_Texture *t, int alpha) {
     SDL_SetTextureAlphaMod(t, 255);
 }
 
+/* Office pan: the 1600px-wide office scene is drawn cover-scaled and
+ * cropped to the 1280px-wide view, offset by scroll source px
+ * (0 = leftmost). Fusion centers the display on the Office Center Object;
+ * scroll is that X minus half the view width. */
+static void draw_office_pan(SDL_Renderer *r, SDL_Texture *t, int scroll) {
+    if (!t) return;
+    int rw, rh, tw, th;
+    SDL_GetRendererOutputSize(r, &rw, &rh);
+    SDL_QueryTexture(t, NULL, NULL, &tw, &th);
+
+    float sx = (float)rw / (float)tw;
+    float sy = (float)rh / (float)th;
+    float s = sx > sy ? sx : sy;
+
+    int max_scroll = tw - (int)((float)rw / s);
+    if (max_scroll < 0) max_scroll = 0;
+    if (scroll < 0) scroll = 0;
+    if (scroll > max_scroll) scroll = max_scroll;
+
+    int w = (int)(tw * s);
+    int h = (int)(th * s);
+    SDL_Rect d = {-(int)(scroll * s), (rh - h) / 2, w, h};
+    SDL_RenderCopy(r, t, NULL, &d);
+}
+
 static void draw_power(SDL_Renderer *r, int power) {
     int w = 250, h = 18;
     SDL_Rect border = {30, 30, w, h};
@@ -228,7 +253,7 @@ static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, in
 void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                     int camera_up, int night, int hour, int power,
                     int left_door, int right_door, int mask, int arrow, int progress,
-                    int static_frame, int static_alpha) {
+                    int static_frame, int static_alpha, int office_scroll) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
@@ -241,7 +266,7 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             draw_static(r, v->static_frames[static_frame & 7], 35);
             draw_camera_labels(r, camera);
         } else {
-            fit_center(r, v->office);
+            draw_office_pan(r, v->office, office_scroll);
             draw_power(r, power);
             draw_door_indicators(r, left_door, right_door);
             if (mask) {

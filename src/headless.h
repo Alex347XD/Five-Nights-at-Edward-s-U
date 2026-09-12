@@ -15,6 +15,7 @@ typedef struct {
  *                             up/down/left/right, or a single character)
  *   <frame> keyup <KEY>   release a key
  *   <frame> click <X> <Y> left-click at window coordinates
+ *   <frame> mouse <X> <Y> move the pointer (no click; drives office panning)
  *   <frame> shot <PATH>   save the current frame (extra screenshots mid-run)
  * Blank lines and '#' comments are ignored. <frame> is the 60fps frame
  * index at which the event fires. */
@@ -23,6 +24,7 @@ typedef enum {
     HEV_KEY,
     HEV_KEYUP,
     HEV_CLICK,
+    HEV_MOUSE,
     HEV_SHOT
 } HeadlessEvType;
 
@@ -30,7 +32,7 @@ typedef struct {
     int frame;
     HeadlessEvType type;
     int key;           /* HEV_KEY/HEV_KEYUP: SDL_Keycode */
-    int x, y;          /* HEV_CLICK: window coordinates */
+    int x, y;          /* HEV_CLICK/HEV_MOUSE: window coordinates */
     char shot[256];    /* HEV_SHOT: output path */
 } HeadlessEvent;
 

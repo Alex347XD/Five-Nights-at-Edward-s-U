@@ -6,7 +6,9 @@ The renderer now uses real PNGs extracted from the supplied MFA/CTFAK dump.
 
 These match `visuals_init` in `src/visuals.c`:
 
-- `227.png` — office scene
+- `227.png` — office scene (drawn cover-cropped to the 1280-wide view and
+  panned by `office_scroll`; mouse at the screen edges reveals more of that
+  side, per `[ Office Panning ]`)
 - `211.png` — Cam 01 / Hell-volcano environment
 - `379.png` — Cam 02 / Mountain-forest environment
 - `350.png` — Cam 03 / Forest environment

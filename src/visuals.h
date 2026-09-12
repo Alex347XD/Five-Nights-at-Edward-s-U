@@ -41,6 +41,6 @@ typedef enum {
 void visuals_draw_anchored(SDL_Renderer *r, SDL_Texture *t,
                            int x, int y, FnaeAnchor anchor);
 void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
-                    int camera_up, int night, int hour, int power,
-                    int left_door, int right_door, int mask, int arrow, int progress,
-                    int static_frame, int static_alpha);
+                     int camera_up, int night, int hour, int power,
+                     int left_door, int right_door, int mask, int arrow, int progress,
+                     int static_frame, int static_alpha, int office_scroll);

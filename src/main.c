@@ -18,7 +18,7 @@ static void print_usage(const char *prog) {
     printf("  --frames N          headless frame count (default 600)\n");
     printf("  --screenshot PATH   save final frame (.png or .bmp,\n");
     printf("                      default screenshots/headless.png)\n");
-    printf("  --script PATH       headless input script (key/keyup/click/shot\n");
+    printf("  --script PATH       headless input script (key/keyup/click/mouse/shot\n");
     printf("                      events by frame; see scripts/headless/example.txt)\n");
     printf("Screenshots land under screenshots/; clean them with:\n");
     printf("  cmake --build build --target clean-screenshots\n");
@@ -149,6 +149,8 @@ int main(int argc, char *argv[]) {
                 fnae_key_up(&game, e.key.keysym.sym);
             } else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT) {
                 fnae_click(&game, e.button.x, e.button.y);
+            } else if (e.type == SDL_MOUSEMOTION) {
+                fnae_mouse_move(&game, e.motion.x, e.motion.y);
             }
         }
 
@@ -169,7 +171,8 @@ int main(int argc, char *argv[]) {
             game.arrow,
             game.progress,
             game.static_frame,
-            game.static_alpha
+            game.static_alpha,
+            (int)game.office_scroll
         );
 
         SDL_RenderPresent(r);
