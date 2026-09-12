@@ -12,3 +12,8 @@ Mapped title assets:
 - Star / Star 2 / Star 3: `232.png`
 
 Positions are taken directly from Frame 2 (Title)/Objects.txt.
+
+See `TITLE_ASSET_MAP.md` for the full asset table (with sizes and the
+`233.png`-vs-`238.png` template correction) and `COORDINATES.md` for how
+Fusion hotspot positions translate to SDL draw origins (matters for the
+menu arrow).

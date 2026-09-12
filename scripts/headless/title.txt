@@ -1,0 +1,16 @@
+# Title-screen menu arrow alignment check.
+#
+# Shoots the title with the arrow on "New" (pos 0), moves it down to
+# "Continue" (pos 1, the only other reachable slot at progress 0),
+# shoots again, then moves back up. Compare the shots to verify the
+# arrow sits left of the menu text instead of overlapping it.
+#
+# Run with:
+#   ./build/FNaE/FNaE_Native.exe --headless --frames 60 \
+#     --script scripts/headless/title.txt
+
+5 shot screenshots/title-arrow-0.png
+15 key s
+25 shot screenshots/title-arrow-1.png
+35 key w
+45 shot screenshots/title-arrow-0b.png

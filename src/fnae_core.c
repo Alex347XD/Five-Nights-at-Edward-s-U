@@ -1,4 +1,5 @@
 #include "fnae_core.h"
+#include <SDL_keycode.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -78,7 +79,15 @@ static void update_music(FnaeGame* g,float dt){
  if(g->music_left<=0 && g->hidden_power>0 && g->death==0 && ((g->cam_anim==CAM_UP&&rnd(5)==1)||(g->mask_anim==MASK_DOWN&&rnd(5)==1))) enter_death(g,1);
 }
 
-void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_TITLE; g->night=1; g->progress=0; g->arrow=0; g->pc_mobile=0; }
+void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_TITLE; g->night=1; g->progress=0; g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; }
+
+/* TV-static animation state, shared by the title overlay and the cameras.
+ * Mirrors Frame 2 Events.txt: every tick the frame advances, and on
+ * Random(10)=1 the flicker alpha becomes 100+Random(100). */
+void fnae_static_tick(FnaeGame* g){
+ g->static_frame=(g->static_frame+1)&7;
+ if(rnd(10)==1)g->static_alpha=100+rnd(100);
+}
 
 void fnae_start_night(FnaeGame* g,int night){
  memset(g->hour_events,0,sizeof(g->hour_events));
@@ -148,23 +157,23 @@ void fnae_update(FnaeGame* g,float dt){
 }
 
 void fnae_key(FnaeGame* g,int key){
- if(key==27){g->running=0;return;}
+ if(key==SDLK_ESCAPE){g->running=0;return;}
  if(g->frame==FRAME_TITLE){
-  if(key==13){
+  if(key==SDLK_RETURN){
    if(g->arrow==0){g->six_or_seven=0;g->frame=FRAME_NEWSPAPER;}
    else if(g->arrow==1){g->six_or_seven=0;g->frame=FRAME_WHICH_NIGHT;}
    else if(g->arrow==2){g->six_or_seven=1;g->frame=FRAME_WHICH_NIGHT;}
    else if(g->arrow==3){g->six_or_seven=1;g->frame=FRAME_CUSTOMIZE;}
-  } else if(key==273 || key=='w')g->arrow--;
-  else if(key==274 || key=='s')g->arrow++;
+  } else if(key==SDLK_UP || key=='w')g->arrow--;
+  else if(key==SDLK_DOWN || key=='s')g->arrow++;
   if(g->arrow<0)g->arrow=0;int max=g->progress+1;if(max>3)max=3;if(g->arrow>max)g->arrow=max;return;
  }
- if(g->frame==FRAME_NEWSPAPER){if(key==13)g->frame=FRAME_WHICH_NIGHT;return;}
- if(g->frame==FRAME_WHICH_NIGHT){if(key==13)fnae_start_night(g,g->six_or_seven?(g->night>=7?7:6):g->night);return;}
- if(g->frame==FRAME_CUSTOMIZE){if(key==13)fnae_start_night(g,7);return;}
- if(g->frame==FRAME_6AM){if(key==13){if(g->night>=5)g->frame=FRAME_FINAL;else g->frame=FRAME_WHICH_NIGHT;}return;}
- if(g->frame==FRAME_DEATH){if(key==13)g->frame=FRAME_TITLE;return;}
- if(g->frame==FRAME_FINAL){if(key==13)g->frame=FRAME_TITLE;return;}
+ if(g->frame==FRAME_NEWSPAPER){if(key==SDLK_RETURN)g->frame=FRAME_WHICH_NIGHT;return;}
+ if(g->frame==FRAME_WHICH_NIGHT){if(key==SDLK_RETURN)fnae_start_night(g,g->six_or_seven?(g->night>=7?7:6):g->night);return;}
+ if(g->frame==FRAME_CUSTOMIZE){if(key==SDLK_RETURN)fnae_start_night(g,7);return;}
+ if(g->frame==FRAME_6AM){if(key==SDLK_RETURN){if(g->night>=5)g->frame=FRAME_FINAL;else g->frame=FRAME_WHICH_NIGHT;}return;}
+ if(g->frame==FRAME_DEATH){if(key==SDLK_RETURN)g->frame=FRAME_TITLE;return;}
+ if(g->frame==FRAME_FINAL){if(key==SDLK_RETURN)g->frame=FRAME_TITLE;return;}
  if(g->frame!=FRAME_NIGHT)return;
 
  if(key=='a'&&g->view==0&&g->hidden_power>0){if(g->left_door==0)g->left_door=1;else if(g->left_door==2)g->left_door=3;}
@@ -174,7 +183,7 @@ void fnae_key(FnaeGame* g,int key){
   else if(g->cam_anim==CAM_UP && g->mask_anim==MASK_UP){g->cam_anim=CAM_DOWN_ANIM;g->cam_anim_timer=0;}
  }
  if(key=='m'&&g->hidden_power>0&&g->cam_anim==CAM_DOWN){if(g->mask_anim==MASK_UP){g->mask_anim=MASK_UP_ANIM;g->mask_anim_timer=0;}else if(g->mask_anim==MASK_DOWN){g->mask_anim=MASK_DOWN_ANIM;g->mask_anim_timer=0;}}
- if(key=='z'||key==308)g->flashlight=1;
+ if(key=='z'||key==SDLK_LALT)g->flashlight=1;
  if(g->cam_anim==CAM_UP){if(key>='1'&&key<='4')g->camera=key-'0';}
  if(key=='e'&&g->view==1&&g->hidden_power>0){g->movement_out=1;g->movement_timer=0;}
  /* R is a keyboard test/control for winding the music box; mouse uses fnae_click. */
@@ -182,7 +191,7 @@ void fnae_key(FnaeGame* g,int key){
 }
 
 void fnae_key_up(FnaeGame* g,int key){
- if((key=='z'||key==308) && g->frame==FRAME_NIGHT)g->flashlight=0;
+ if((key=='z'||key==SDLK_LALT) && g->frame==FRAME_NIGHT)g->flashlight=0;
  if(key=='r' && g->frame==FRAME_NIGHT)g->music_winding=0;
 }
 

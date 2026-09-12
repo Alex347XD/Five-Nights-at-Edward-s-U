@@ -1,4 +1,5 @@
 #include "visuals.h"
+#include "fnae_assets.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -33,43 +34,40 @@ static SDL_Texture *load_id(SDL_Renderer *r, int id) {
 int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     memset(v, 0, sizeof *v);
 
-    /* Real extracted gameplay assets. */
-    v->office = load_id(r, 227);
-    v->cams[0] = load_id(r, 211);
+    /* Real extracted gameplay assets (see src/fnae_assets.h). */
+    v->office = load_id(r, IMG_OFFICE);
+    v->cams[0] = load_id(r, IMG_CAM_HELL);
     /* Cam 01 = Hell, Cam 02 = Mountain/forest feed, Cam 03 = Forest, Cam 04 = Dinosaur Exhibit. */
-    v->cams[1] = load_id(r, 379);
-    v->cams[2] = load_id(r, 350);
-    v->cams[3] = load_id(r, 312);
-    v->static_tex = load_id(r, 46);
-    v->six_am = load_id(r, 4);
-    v->death = load_id(r, 1);
-    v->newspaper = load_id(r, 7);
-    v->final_screen = load_id(r, 7);
+    v->cams[1] = load_id(r, IMG_CAM_MOUNTAIN);
+    v->cams[2] = load_id(r, IMG_CAM_FOREST);
+    v->cams[3] = load_id(r, IMG_CAM_DINO);
+    for (int i = 0; i < IMG_STATIC_COUNT; ++i)
+        v->static_frames[i] = load_id(r, IMG_STATIC_FIRST + i);
+    v->six_am = load_id(r, IMG_SIX_AM);
+    v->death = load_id(r, IMG_DEATH);
+    v->newspaper = load_id(r, IMG_NEWSPAPER);
+    v->final_screen = load_id(r, IMG_GOODJOB);
 
     /*
-     * Frame 2 (Title) assets mapped from the exported object layout:
-     *
-     * Background  -> 179 (1280x720 title background)
-     * New         -> 239
-     * Continue    -> 240
-     * 6 Night     -> 241
-     * Custom      -> 242
-     * Arrow       -> 245
-     * Star        -> 232
+     * Frame 2 (Title) assets mapped from the exported object layout
+     * (see src/fnae_assets.h and docs/TITLE_ASSET_MAP.md).
      *
      * The three Star objects all use the same source image in Fusion.
      */
-    v->title_bg = load_id(r, 179);
-    v->title_new = load_id(r, 239);
-    v->title_continue = load_id(r, 240);
-    v->title_6night = load_id(r, 241);
-    v->title_custom = load_id(r, 242);
-    v->title_arrow = load_id(r, 245);
-    v->title_star = load_id(r, 232);
-    /* Template Title is 233 (600x507). 238 is a death-screen animation frame and must NOT be used here. */
-    v->title_template = load_id(r, 233);
-    for (int i = 0; i < 7; ++i)
-        v->title_nights[i] = load_id(r, 246 + i);
+    v->title_bg = load_id(r, IMG_TITLE_BG);
+    v->title_new = load_id(r, IMG_TITLE_NEW);
+    v->title_continue = load_id(r, IMG_TITLE_CONTINUE);
+    v->title_6night = load_id(r, IMG_TITLE_6NIGHT);
+    v->title_custom = load_id(r, IMG_TITLE_CUSTOM);
+    v->title_arrow = load_id(r, IMG_TITLE_ARROW);
+    v->title_star = load_id(r, IMG_TITLE_STAR);
+    /* Template Title is the "Five Nights at Edward's" text card (464,
+     * 266x271) at the Template Title position (64,96). The 600x507 devil
+     *  cards (233/460, sad/wide eyes) are unassigned animation frames —
+     *  owner to confirm which object/sequence they belong to. */
+    v->title_template = load_id(r, IMG_TITLE_TEXT);
+    for (int i = 0; i < IMG_NIGHT_COUNT; ++i)
+        v->title_nights[i] = load_id(r, IMG_NIGHT_FIRST + i);
 
     return v->title_bg ? 0 : -1;
 }
@@ -85,7 +83,8 @@ void visuals_free(FnaeVisuals *v) {
     destroy_texture(&v->office);
     for (int i = 0; i < 4; ++i)
         destroy_texture(&v->cams[i]);
-    destroy_texture(&v->static_tex);
+    for (int i = 0; i < 8; ++i)
+        destroy_texture(&v->static_frames[i]);
     destroy_texture(&v->six_am);
     destroy_texture(&v->death);
     destroy_texture(&v->title_bg);
@@ -109,6 +108,19 @@ static void draw_texture(SDL_Renderer *r, SDL_Texture *t, int x, int y) {
     SDL_QueryTexture(t, NULL, NULL, &w, &h);
     SDL_Rect d = {x, y, w, h};
     SDL_RenderCopy(r, t, NULL, &d);
+}
+
+void visuals_draw_anchored(SDL_Renderer *r, SDL_Texture *t,
+                           int x, int y, FnaeAnchor anchor) {
+    if (!t) return;
+    int w = 0, h = 0;
+    SDL_QueryTexture(t, NULL, NULL, &w, &h);
+    switch (anchor) {
+    case FNAE_ANCHOR_CENTER: x -= w / 2; y -= h / 2; break;
+    case FNAE_ANCHOR_RIGHT_CENTER: x -= w; y -= h / 2; break;
+    case FNAE_ANCHOR_TOP_LEFT: default: break;
+    }
+    draw_texture(r, t, x, y);
 }
 
 static void fit_center(SDL_Renderer *r, SDL_Texture *t) {
@@ -171,25 +183,35 @@ static void draw_camera_labels(SDL_Renderer *r, int camera) {
     (void)rh;
 }
 
-static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, int progress) {
+static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, int progress,
+                       int static_frame, int static_alpha) {
     /* Frame 2 uses a fixed 1280x720 playfield. */
     if (v->title_bg) {
         SDL_Rect d = {0, 0, 1280, 720};
         SDL_RenderCopy(r, v->title_bg, NULL, &d);
     }
 
-    /* These are the actual Frame 2 object positions from Objects.txt. */
+    /* These are the actual Frame 2 object positions from Objects.txt.
+     * Layer order matters: Static lives in the UI layer beneath the
+     * template and menu, so it is drawn before them. */
+    draw_static(r, v->static_frames[static_frame & 7], static_alpha);
     draw_texture(r, v->title_template, 64, 96);
     draw_texture(r, v->title_new,      96, 448);
     draw_texture(r, v->title_continue, 96, 512);
     draw_texture(r, v->title_6night,   96, 576);
     draw_texture(r, v->title_custom,   96, 640);
 
-    /* Arrow is positioned relative to the selected menu object. */
-    static const int arrow_y[4] = {464, 529, 595, 659};
+    /* Arrow is positioned relative to the selected menu object.
+     * Coordinates are verbatim Fusion hotspot positions from Frame 2
+     * Events.txt: each menu item's top-left plus (-10,+16/17/19/19).
+     * The arrow's hotspot is its pointing tip (right-center), so draw it
+     * with FNAE_ANCHOR_RIGHT_CENTER (see docs/COORDINATES.md) instead of
+     * baking the size offset into the numbers. */
     static const int arrow_x[4] = {86, 86, 86, 86};
+    static const int arrow_y[4] = {464, 529, 595, 659};
     int a = arrow < 0 ? 0 : arrow > 3 ? 3 : arrow;
-    draw_texture(r, v->title_arrow, arrow_x[a], arrow_y[a]);
+    visuals_draw_anchored(r, v->title_arrow, arrow_x[a], arrow_y[a],
+                          FNAE_ANCHOR_RIGHT_CENTER);
 
     /* The three stars unlock with progress, exactly like the Fusion events. */
     if (progress > 0) draw_texture(r, v->title_star, 348, 75);
@@ -205,17 +227,18 @@ static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, in
 
 void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                     int camera_up, int night, int hour, int power,
-                    int left_door, int right_door, int mask, int arrow, int progress) {
+                    int left_door, int right_door, int mask, int arrow, int progress,
+                    int static_frame, int static_alpha) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
     if (frame == 2) {
-        draw_title(r, v, night, arrow, progress);
+        draw_title(r, v, night, arrow, progress, static_frame, static_alpha);
     } else if (frame == 3) {
         if (camera_up) {
             if (camera < 0 || camera > 3) camera = 0;
             fit_center(r, v->cams[camera]);
-            draw_static(r, v->static_tex, 35);
+            draw_static(r, v->static_frames[static_frame & 7], 35);
             draw_camera_labels(r, camera);
         } else {
             fit_center(r, v->office);
