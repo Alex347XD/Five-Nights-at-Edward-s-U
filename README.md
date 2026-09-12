@@ -117,11 +117,13 @@ Then build:
 cmake --build build
 ```
 
-If everything succeeds, the executable will be located at:
+If everything succeeds, the self-contained bundle will be located at:
 
 ```text
-build/FNaE_Native.exe
+build/FNaE/
 ```
+
+containing `FNaE_Native.exe` plus `assets/` and the required SDL DLLs.
 
 ---
 
@@ -130,7 +132,7 @@ build/FNaE_Native.exe
 From the project root, run:
 
 ```bash
-./build/FNaE_Native.exe
+./build/FNaE/FNaE_Native.exe
 ```
 
 Run it from the project directory so the game can find:
@@ -139,7 +141,8 @@ Run it from the project directory so the game can find:
 assets/
 ```
 
-Do not move the executable somewhere else unless the asset-loading paths are also changed.
+Alternatively `cd` into `build/FNaE/` and run it there — the bundle
+carries its own copy of `assets/` and the DLLs, so it works standalone.
 
 ---
 
@@ -170,6 +173,27 @@ cmake --build build
 
 ---
 
+# Headless Testing (screenshots without a display)
+
+The game can run scripted sessions and save screenshots — useful for
+verifying visuals without playing through:
+
+```bash
+SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
+  ./build/FNaE/FNaE_Native.exe --headless --frames 60 \
+  --script scripts/headless/title.txt
+```
+
+Scripts live in `scripts/headless/` (`example.txt` shows the format:
+`<frame> <key|keyup|click|shot> <args>`). Screenshots land in
+`screenshots/`; remove them with:
+
+```bash
+cmake --build build --target clean-screenshots
+```
+
+---
+
 # Quick Build Commands
 
 From **MSYS2 UCRT64**:
@@ -181,7 +205,7 @@ cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 
 cmake --build build
 
-./build/FNaE_Native.exe
+./build/FNaE/FNaE_Native.exe
 ```
 
 That's all that is required to build the current Windows version.

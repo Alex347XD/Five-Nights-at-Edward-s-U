@@ -26,6 +26,18 @@ typedef struct {
 
 int visuals_init(FnaeVisuals *v, SDL_Renderer *r);
 void visuals_free(FnaeVisuals *v);
+
+/* Fusion object coordinates address the object's hotspot, while SDL draws
+ * textures from the top-left (see docs/COORDINATES.md). The anchor selects
+ * which point of the texture lands on the given (x, y). */
+typedef enum {
+    FNAE_ANCHOR_TOP_LEFT,    /* hotspot at the object's top-left (Fusion default look) */
+    FNAE_ANCHOR_CENTER,      /* hotspot at the object center */
+    FNAE_ANCHOR_RIGHT_CENTER /* hotspot at the middle of the right edge (pointer tips) */
+} FnaeAnchor;
+
+void visuals_draw_anchored(SDL_Renderer *r, SDL_Texture *t,
+                           int x, int y, FnaeAnchor anchor);
 void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                     int camera_up, int night, int hour, int power,
                     int left_door, int right_door, int mask, int arrow, int progress);

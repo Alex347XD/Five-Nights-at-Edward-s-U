@@ -4,15 +4,21 @@ The renderer now uses real PNGs extracted from the supplied MFA/CTFAK dump.
 
 ## Scene assets wired
 
+These match `visuals_init` in `src/visuals.c`:
+
 - `227.png` — office scene
-- `211.png` — camera scene 1 / Hell-volcano environment
-- `350.png` — camera scene 2 / Forest environment
-- `227.png` — camera scene 3 / office feed
-- `312.png` — camera scene 4 / Dinosaur Exhibit environment
+- `211.png` — Cam 01 / Hell-volcano environment
+- `379.png` — Cam 02 / Mountain-forest environment
+- `350.png` — Cam 03 / Forest environment
+- `312.png` — Cam 04 / Dinosaur Exhibit environment
 - `46.png` — camera static overlay
-- `2.png` — title-sized screen
-- `4.png` — 6 AM-sized screen
-- `7.png` — newspaper/final-sized screen
+- `4.png` — 6 AM screen
+- `1.png` — death screen
+- `7.png` — newspaper / final screens
+
+The title screen is reconstructed from individual parts instead of a single
+image (`2.png` is the GOOD JOB completed-night screen, not the title — see
+`TITLE_CONVERSION.md` and `TITLE_ASSET_MAP.md`).
 
 The source asset IDs are kept as numeric filenames because CTFAK's dump
 renames image-bank entries by ID.

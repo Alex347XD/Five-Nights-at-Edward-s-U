@@ -9,7 +9,8 @@ The native SDL2 build contains the recovered gameplay state machine and extracte
 The title screen now uses the correct Frame 2 asset mapping:
 
 - `179.png` — Background
-- `238.png` — Template Title
+- `233.png` — Template Title (600x507 red-devil card; `238.png` is an office
+  desk scene, not the title card — see `TITLE_ASSET_MAP.md`)
 - `239.png` — New
 - `240.png` — Continue
 - `241.png` — 6 Night
@@ -23,8 +24,8 @@ The previous incorrect mapping of `233.png` has been removed. `233.png` is a dea
 The menu arrow (`245.png`) is placed at the Fusion offsets from Frame 2
 Events.txt ((-10,+16/17/19/19) from each item's top-left), adjusted for the
 hotspot: Fusion positions the arrow by its pointing tip (right-center) while
-SDL draws from the top-left, so the native renderer shifts by the arrow size
-to keep it beside the menu text instead of overlapping it.
+SDL draws from the top-left, so the native renderer draws it with
+`FNAE_ANCHOR_RIGHT_CENTER` (see `COORDINATES.md`).
 
 ## Functional controls
 
