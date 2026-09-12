@@ -20,12 +20,19 @@ The title screen now uses the correct Frame 2 asset mapping:
 
 The previous incorrect mapping of `233.png` has been removed. `233.png` is a death-animation frame.
 
+The menu arrow (`245.png`) is placed at the Fusion offsets from Frame 2
+Events.txt ((-10,+16/17/19/19) from each item's top-left), adjusted for the
+hotspot: Fusion positions the arrow by its pointing tip (right-center) while
+SDL draws from the top-left, so the native renderer shifts by the arrow size
+to keep it beside the menu text instead of overlapping it.
+
 ## Functional controls
 
 - Title: Up/Down or W/S, Enter, mouse menu selection
 - Night: A/D doors, S camera, M mask, Z/Ctrl flashlight, 1–4 camera selection, R/mouse for music-box winding
 - Camera and door transition timers are implemented
 - Flashlight and music-box controls release correctly on key-up
+- Title menu responds to physical Up/Down keys (SDL1-era keycodes `273`/`274`/`308` replaced with `SDLK_` constants; `308` was Left Alt for the flashlight)
 
 ## Known limitations
 

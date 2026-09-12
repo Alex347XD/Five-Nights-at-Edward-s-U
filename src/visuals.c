@@ -185,11 +185,20 @@ static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, in
     draw_texture(r, v->title_6night,   96, 576);
     draw_texture(r, v->title_custom,   96, 640);
 
-    /* Arrow is positioned relative to the selected menu object. */
-    static const int arrow_y[4] = {464, 529, 595, 659};
-    static const int arrow_x[4] = {86, 86, 86, 86};
+    /* Arrow is positioned relative to the selected menu object.
+     * Fusion (Frame 2 Events.txt) places it at (-10,+16/17/19/19) from
+     * each item's top-left, but Fusion coordinates refer to the arrow's
+     * hotspot -- the pointing tip at its right-center -- while SDL draws
+     * from the top-left. Shifting by the arrow size keeps the Fusion
+     * rhythm and lands the tip beside the text instead of on top of it:
+     * x = 96-10-43 = 43, y = item_y + yoff - 13. */
+    static const int item_y[4] = {448, 512, 576, 640};
+    static const int yoff[4] = {16, 17, 19, 19};
     int a = arrow < 0 ? 0 : arrow > 3 ? 3 : arrow;
-    draw_texture(r, v->title_arrow, arrow_x[a], arrow_y[a]);
+    int aw = 43, ah = 26;
+    if (v->title_arrow)
+        SDL_QueryTexture(v->title_arrow, NULL, NULL, &aw, &ah);
+    draw_texture(r, v->title_arrow, 96 - 10 - aw, item_y[a] + yoff[a] - ah / 2);
 
     /* The three stars unlock with progress, exactly like the Fusion events. */
     if (progress > 0) draw_texture(r, v->title_star, 348, 75);

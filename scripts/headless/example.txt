@@ -1,0 +1,23 @@
+# Example headless input script (60fps frame indices).
+#
+# Actions:
+#   <frame> key <KEY>    press a key: return/enter, esc/escape, space,
+#                        up/down/left/right, or a single character
+#   <frame> keyup <KEY>  release a key
+#   <frame> click <X> <Y>  left-click at window coordinates
+#   <frame> shot <PATH>  save the current frame mid-run (.png or .bmp)
+#
+# Run with:
+#   ./build/FNaE/FNaE_Native.exe --headless --frames 300 \
+#     --script scripts/headless/example.txt
+#
+# Copy this file to local.txt (git-ignored scratch space) to experiment:
+#   cp scripts/headless/example.txt scripts/headless/local.txt
+
+10 key return
+40 key return
+70 key return
+120 key s
+150 shot screenshots/example-camera-up.png
+180 key s
+210 click 90 100

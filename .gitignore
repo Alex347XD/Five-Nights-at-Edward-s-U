@@ -2,3 +2,6 @@ build
 # Headless screenshots (keep screenshots/.gitkeep tracked).
 screenshots/*.png
 screenshots/*.bmp
+# Live headless script scratch space (tracked examples live in
+# scripts/headless/*.txt; local.txt is yours to create/modify).
+scripts/headless/local.txt
