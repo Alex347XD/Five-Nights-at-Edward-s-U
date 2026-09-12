@@ -79,7 +79,15 @@ static void update_music(FnaeGame* g,float dt){
  if(g->music_left<=0 && g->hidden_power>0 && g->death==0 && ((g->cam_anim==CAM_UP&&rnd(5)==1)||(g->mask_anim==MASK_DOWN&&rnd(5)==1))) enter_death(g,1);
 }
 
-void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_TITLE; g->night=1; g->progress=0; g->arrow=0; g->pc_mobile=0; }
+void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_TITLE; g->night=1; g->progress=0; g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; }
+
+/* TV-static animation state, shared by the title overlay and the cameras.
+ * Mirrors Frame 2 Events.txt: every tick the frame advances, and on
+ * Random(10)=1 the flicker alpha becomes 100+Random(100). */
+void fnae_static_tick(FnaeGame* g){
+ g->static_frame=(g->static_frame+1)&7;
+ if(rnd(10)==1)g->static_alpha=100+rnd(100);
+}
 
 void fnae_start_night(FnaeGame* g,int night){
  memset(g->hour_events,0,sizeof(g->hour_events));

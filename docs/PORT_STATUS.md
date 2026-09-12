@@ -8,9 +8,9 @@ The native SDL2 build contains the recovered gameplay state machine and extracte
 
 The title screen now uses the correct Frame 2 asset mapping:
 
-- `179.png` — Background
-- `233.png` — Template Title (600x507 red-devil card; `238.png` is an office
-  desk scene, not the title card — see `TITLE_ASSET_MAP.md`)
+- `179.png` — Background (Stopped sequence)
+- `46.png`–`53.png` — animated Static overlay (alpha flickers 100+Random(100))
+- `464.png` — Template Title ("Five Nights at Edward's" text card at (64,96))
 - `239.png` — New
 - `240.png` — Continue
 - `241.png` — 6 Night

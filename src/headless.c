@@ -245,7 +245,9 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                         game->right_door,
                         game->mask_anim == MASK_DOWN,
                         game->arrow,
-                        game->progress
+                        game->progress,
+                        game->static_frame,
+                        game->static_alpha
                     );
                     SDL_RenderPresent(r);
                     if (headless_save_screenshot(r, ev->shot) != 0)
@@ -263,6 +265,7 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                 game->running = 0;
         }
         fnae_update(game, dt);
+        fnae_static_tick(game);
         visuals_render(
             v, r,
             (int)game->frame,
@@ -275,7 +278,9 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
             game->right_door,
             game->mask_anim == MASK_DOWN,
             game->arrow,
-            game->progress
+            game->progress,
+            game->static_frame,
+            game->static_alpha
         );
         SDL_RenderPresent(r);
         if ((f + 1) % 60 == 0) {

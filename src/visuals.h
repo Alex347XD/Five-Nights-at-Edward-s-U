@@ -2,10 +2,12 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
+#include "fnae_assets.h"
+
 typedef struct {
     SDL_Texture *office;
     SDL_Texture *cams[4];
-    SDL_Texture *static_tex;
+    SDL_Texture *static_frames[IMG_STATIC_COUNT]; /* TV-static animation, shared title/cameras */
     SDL_Texture *six_am;
     SDL_Texture *death;
 
@@ -40,4 +42,5 @@ void visuals_draw_anchored(SDL_Renderer *r, SDL_Texture *t,
                            int x, int y, FnaeAnchor anchor);
 void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                     int camera_up, int night, int hour, int power,
-                    int left_door, int right_door, int mask, int arrow, int progress);
+                    int left_door, int right_door, int mask, int arrow, int progress,
+                    int static_frame, int static_alpha);

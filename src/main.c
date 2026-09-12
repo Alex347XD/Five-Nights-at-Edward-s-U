@@ -153,6 +153,7 @@ int main(int argc, char *argv[]) {
         }
 
         fnae_update(&game, dt);
+        fnae_static_tick(&game);
 
         visuals_render(
             &visuals, r,
@@ -166,7 +167,9 @@ int main(int argc, char *argv[]) {
             game.right_door,
             game.mask_anim == MASK_DOWN,
             game.arrow,
-            game.progress
+            game.progress,
+            game.static_frame,
+            game.static_alpha
         );
 
         SDL_RenderPresent(r);

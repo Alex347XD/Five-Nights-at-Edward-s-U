@@ -10,7 +10,8 @@ Windows 10/11 + MSYS2 UCRT64 (see README.md).
 Canonical modules (what actually builds — see `CMakeLists.txt`):
 `src/main.c` (entry, interactive loop), `src/fnae_core.c` (game state
 machine), `src/visuals.c` (SDL renderer), `src/headless.c` (scripted
-headless test runs). `src/game.c` / `src/assets.c` / `src/fnae.h` are an
+headless test runs), `src/fnae_assets.h` (named image-bank IDs).
+`src/game.c` / `src/assets.c` / `src/fnae.h` are an
 unbuilt parallel API — do not mix them in; ask before deleting.
 
 ## Build (MSYS2 UCRT64)
