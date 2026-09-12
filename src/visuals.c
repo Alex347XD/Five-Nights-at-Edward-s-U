@@ -55,6 +55,13 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
      * The three Star objects all use the same source image in Fusion.
      */
     v->title_bg = load_id(r, IMG_TITLE_BG);
+    for (int i = 0; i < IMG_TITLE_BG_ANIM_COUNT; ++i)
+        v->title_bg_anim[i] = load_id(r, IMG_TITLE_BG_ANIM_FIRST + i);
+    v->desk = load_id(r, IMG_DESK_SCENE);
+    for (int i = 0; i < IMG_DOOR_FRAMES; ++i) {
+        v->door_left[i] = load_id(r, IMG_DOOR_LEFT_FIRST + i);
+        v->door_right[i] = load_id(r, IMG_DOOR_RIGHT_FIRST + i);
+    }
     v->title_new = load_id(r, IMG_TITLE_NEW);
     v->title_continue = load_id(r, IMG_TITLE_CONTINUE);
     v->title_6night = load_id(r, IMG_TITLE_6NIGHT);
@@ -88,6 +95,13 @@ void visuals_free(FnaeVisuals *v) {
     destroy_texture(&v->six_am);
     destroy_texture(&v->death);
     destroy_texture(&v->title_bg);
+    for (int i = 0; i < IMG_TITLE_BG_ANIM_COUNT; ++i)
+        destroy_texture(&v->title_bg_anim[i]);
+    for (int i = 0; i < IMG_DOOR_FRAMES; ++i) {
+        destroy_texture(&v->door_left[i]);
+        destroy_texture(&v->door_right[i]);
+    }
+    destroy_texture(&v->desk);
     destroy_texture(&v->title_new);
     destroy_texture(&v->title_continue);
     destroy_texture(&v->title_6night);
@@ -175,6 +189,16 @@ static void draw_office_pan(SDL_Renderer *r, SDL_Texture *t, int scroll) {
     SDL_RenderCopy(r, t, NULL, &d);
 }
 
+/* World-layer object: Fusion frame position minus the pan scroll
+ * (the display is centered on the Office Center Object). */
+static void draw_world(SDL_Renderer *r, SDL_Texture *t, int fx, int fy, int scroll) {
+    if (!t) return;
+    int w, h;
+    SDL_QueryTexture(t, NULL, NULL, &w, &h);
+    SDL_Rect d = {fx - scroll, fy, w, h};
+    SDL_RenderCopy(r, t, NULL, &d);
+}
+
 static void draw_power(SDL_Renderer *r, int power) {
     int w = 250, h = 18;
     SDL_Rect border = {30, 30, w, h};
@@ -209,11 +233,16 @@ static void draw_camera_labels(SDL_Renderer *r, int camera) {
 }
 
 static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, int progress,
-                       int static_frame, int static_alpha) {
-    /* Frame 2 uses a fixed 1280x720 playfield. */
-    if (v->title_bg) {
+                       int static_frame, int static_alpha, int title_bg_frame) {
+    /* Frame 2 uses a fixed 1280x720 playfield. The background is usually
+     * the Stopped frame; Random(50)=1 briefly flashes the animated
+     * sequence (played here as the 4-frame 515-518 run). */
+    SDL_Texture *bg = v->title_bg;
+    if (title_bg_frame >= 1 && title_bg_frame <= IMG_TITLE_BG_ANIM_COUNT)
+        bg = v->title_bg_anim[title_bg_frame - 1];
+    if (bg) {
         SDL_Rect d = {0, 0, 1280, 720};
-        SDL_RenderCopy(r, v->title_bg, NULL, &d);
+        SDL_RenderCopy(r, bg, NULL, &d);
     }
 
     /* These are the actual Frame 2 object positions from Objects.txt.
@@ -253,12 +282,14 @@ static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, in
 void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                     int camera_up, int night, int hour, int power,
                     int left_door, int right_door, int mask, int arrow, int progress,
-                    int static_frame, int static_alpha, int office_scroll) {
+                    int static_frame, int static_alpha, int office_scroll,
+                    int left_door_frame, int right_door_frame, int title_bg_frame) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
     if (frame == 2) {
-        draw_title(r, v, night, arrow, progress, static_frame, static_alpha);
+        draw_title(r, v, night, arrow, progress, static_frame, static_alpha,
+                   title_bg_frame);
     } else if (frame == 3) {
         if (camera_up) {
             if (camera < 0 || camera > 3) camera = 0;
@@ -267,6 +298,16 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             draw_camera_labels(r, camera);
         } else {
             draw_office_pan(r, v->office, office_scroll);
+            /* Layer order mirrors Fusion: office (#1), doors (#2), desk (#3).
+             * Doors/desk are world objects at verbatim Objects.txt positions,
+             * shifted by the pan scroll. */
+            if (left_door_frame < 0) left_door_frame = 0;
+            if (left_door_frame >= IMG_DOOR_FRAMES) left_door_frame = IMG_DOOR_FRAMES - 1;
+            if (right_door_frame < 0) right_door_frame = 0;
+            if (right_door_frame >= IMG_DOOR_FRAMES) right_door_frame = IMG_DOOR_FRAMES - 1;
+            draw_world(r, v->door_left[left_door_frame], 119, 0, office_scroll);
+            draw_world(r, v->door_right[right_door_frame], 1263, 0, office_scroll);
+            draw_world(r, v->desk, 266, 177, office_scroll);
             draw_power(r, power);
             draw_door_indicators(r, left_door, right_door);
             if (mask) {

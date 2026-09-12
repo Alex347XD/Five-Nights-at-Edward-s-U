@@ -172,7 +172,10 @@ int main(int argc, char *argv[]) {
             game.progress,
             game.static_frame,
             game.static_alpha,
-            (int)game.office_scroll
+            (int)game.office_scroll,
+            game.left_door_frame,
+            game.right_door_frame,
+            game.title_bg_frame
         );
 
         SDL_RenderPresent(r);

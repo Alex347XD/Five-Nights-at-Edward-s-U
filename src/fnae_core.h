@@ -25,6 +25,8 @@ typedef struct {
   float office_scroll;    /* office pan in source px, 0 = leftmost.
                            * Mirrors the Fusion Office Center Object X minus
                            * Game Width / 2; clamped to [0, FNAE_OFFICE_SCROLL_MAX]. */
+  int left_door_frame, right_door_frame; /* shutter frame 0..15 (open->closed) */
+  int title_bg_frame;     /* 0 = Stopped (179.png), 1..4 = flash 515.png+frame-1 */
  int all20; int left_challenge, left_challenge_active;
  float cam_anim_timer, mask_anim_timer, left_door_timer, right_door_timer;
  float ai_timer, power_out_timer, springtrap_timer, phantom_timer;

@@ -1,4 +1,5 @@
 #include "fnae_core.h"
+#include "fnae_assets.h"
 #include <SDL_keycode.h>
 #include <stdlib.h>
 #include <string.h>
@@ -83,10 +84,19 @@ void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAM
 
 /* TV-static animation state, shared by the title overlay and the cameras.
  * Mirrors Frame 2 Events.txt: every tick the frame advances, and on
- * Random(10)=1 the flicker alpha becomes 100+Random(100). */
+ * Random(10)=1 the flicker alpha becomes 100+Random(100).
+ * Also drives the title background flash: on Random(50)=1 the Background
+ * plays its animated sequence (here the 4-frame 515-518 run, one frame per
+ * tick, then back to Stopped — inside Fusion's 0.2 s cut window). */
 void fnae_static_tick(FnaeGame* g){
  g->static_frame=(g->static_frame+1)&7;
  if(rnd(10)==1)g->static_alpha=100+rnd(100);
+ if(g->frame!=FRAME_TITLE){g->title_bg_frame=0;return;}
+ if(g->title_bg_frame>0){
+  if(++g->title_bg_frame>IMG_TITLE_BG_ANIM_COUNT)g->title_bg_frame=0;
+ } else if(rnd(50)==1){
+  g->title_bg_frame=1;
+ }
 }
 
 void fnae_start_night(FnaeGame* g,int night){
@@ -96,6 +106,7 @@ void fnae_start_night(FnaeGame* g,int night){
  g->cam_anim=CAM_DOWN; g->mask_anim=MASK_UP; g->prevent_flip=0; g->force_down=0; g->view=0; g->camera=1;
   g->left_door=0; g->right_door=0; g->flashlight=0; g->hidden_power=10000; g->power_left=1; g->power_tick=0;
   g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2;
+  g->left_door_frame=0; g->right_door_frame=0; g->title_bg_frame=0;
  g->movement_out=0; g->movement_timer=0; g->camera_up_check=0;
  g->music_left=2000; g->music_winding=0; g->music_tick=0; g->current_call=0; g->call_muted=0;
  g->cam_anim_timer=g->mask_anim_timer=g->left_door_timer=g->right_door_timer=0;
@@ -154,6 +165,26 @@ void fnae_update(FnaeGame* g,float dt){
  else if(g->left_door==3){g->left_door_timer+=dt;if(g->left_door_timer>=0.25f){g->left_door=0;g->left_door_timer=0;}}
  if(g->right_door==1){g->right_door_timer+=dt;if(g->right_door_timer>=0.25f){g->right_door=2;g->right_door_timer=0;}}
  else if(g->right_door==3){g->right_door_timer+=dt;if(g->right_door_timer>=0.25f){g->right_door=0;g->right_door_timer=0;}}
+
+ /* Door shutter frames (Left/Right Door objects): Fusion Alterable Value A
+  * 0=open(Stopped frame 0), 1=closing(Close 0->15), 2=closed(hold 15),
+  * 3=opening(Open 15->0). Timers above already model the A transitions. */
+ {
+  int f=(int)(15.0f*g->left_door_timer/0.25f);
+  if(f<0)f=0; if(f>15)f=15;
+  if(g->left_door==1)g->left_door_frame=f;
+  else if(g->left_door==2)g->left_door_frame=15;
+  else if(g->left_door==3)g->left_door_frame=15-f;
+  else g->left_door_frame=0;
+ }
+ {
+  int f=(int)(15.0f*g->right_door_timer/0.25f);
+  if(f<0)f=0; if(f>15)f=15;
+  if(g->right_door==1)g->right_door_frame=f;
+  else if(g->right_door==2)g->right_door_frame=15;
+  else if(g->right_door==3)g->right_door_frame=15-f;
+  else g->right_door_frame=0;
+ }
 
  g->time_to_hour+=dt;
  if(g->time_to_hour>=50){g->time_to_hour-=50;hour(g);if(g->frame!=FRAME_NIGHT)return;}
@@ -230,8 +261,11 @@ void fnae_click(FnaeGame* g,int x,int y){
  }
  if(g->frame!=FRAME_NIGHT)return;
  if(g->view==0 && g->hidden_power>0){
-  if(x<180 && y>500){if(g->left_door==0)g->left_door=1;else if(g->left_door==2)g->left_door=3;return;}
-  if(x>1100 && y>500){if(g->right_door==0)g->right_door=1;else if(g->right_door==2)g->right_door=3;return;}
+  /* Door click zones follow the panning doors: compare in frame space
+   * (screen x + scroll) so the zones stay glued to the door art. */
+  int fx=x+(int)g->office_scroll;
+  if(fx<180 && y>500){if(g->left_door==0)g->left_door=1;else if(g->left_door==2)g->left_door=3;return;}
+  if(fx>1100 && y>500){if(g->right_door==0)g->right_door=1;else if(g->right_door==2)g->right_door=3;return;}
   if(x>500 && x<780 && y>560){g->cam_anim=CAM_UP_ANIM;g->cam_anim_timer=0;return;}
  }
  if(g->cam_anim==CAM_UP && y>80){
