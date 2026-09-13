@@ -94,7 +94,29 @@
 #define IMG_TITLE_BG_ANIM_FIRST 516 /* 3 flash frames (516-518), 1280x720 */
 #define IMG_TITLE_BG_ANIM_COUNT 3
 
+/* Mute Call button ("MUTE CALL", 121x31 at [100,55]): reappears while a
+ * night's phone call plays (ch #16) and stops it when clicked. */
+#define IMG_MUTECALL      415 /* Mute Call button art */
 /* Unidentified (owner to confirm object/sequence): */
 #define IMG_UNKNOWN_179   179 /* 1280x720 gray-face frame; NOT the title Background */
 #define IMG_DEVIL_SAD     233 /* 600x507 devil card, sad eyes */
 #define IMG_DEVIL_SHOCKED 460 /* 600x507 devil card, wide eyes */
+
+/* Music-box crank (Frame 3 "[ Music Box ]" group, Cam 04 view only).
+ * The button sits at [569,497] in the camera UI (Layer #5), drawn
+ * center-anchored like the cam/lure buttons. Alterable A (held crank)
+ * swaps Stopped <-> Animation 12; the drain (+100/0.35 s held,
+ * -Night*2/0.07 s released) and the warning badges run in core.
+ * Wind Text [497,475] / Click & Hold [491,534] art is still unmapped
+ * (renders as nothing); Music Left [418,474] is a Counter drawn as
+ * bitmap text. PROVISIONAL (owner to confirm): 133 = Stopped (dark
+ * slate 156x65), 178 = Animation 12 (olive 156x65) — same-size pair,
+ * matching the gray->green convention of the cam buttons. */
+#define IMG_MUSICBTN_OFF  133 /* ? crank released, 156x65 */
+#define IMG_MUSICBTN_ON   178 /* ? crank held, 156x65 */
+/* Low-music badges ("[ Warning Messages ]": <600 steady Stopped,
+ * <200 flashing Animation 12, <=0 hidden; out-of-cam [1228,672] on the
+ * office screen, in-cam [1215,506] on camera views). PROVISIONAL:
+ * 37 = warning triangle 63x55, 38 = black flash frame. */
+#define IMG_WARNBADGE_OFF 37 /* ? */
+#define IMG_WARNBADGE_ON  38 /* ? */

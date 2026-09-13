@@ -6,18 +6,21 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 find_package(SDL2 CONFIG REQUIRED)
 find_package(SDL2_image CONFIG REQUIRED)
+find_package(SDL2_mixer CONFIG REQUIRED)
 
 add_executable(FNaE_Native
     src/main.c
     src/fnae_core.c
     src/headless.c
     src/visuals.c
+    src/audio.c
 )
 
 target_include_directories(FNaE_Native PRIVATE src)
 target_link_libraries(FNaE_Native PRIVATE
     SDL2::SDL2
     SDL2_image::SDL2_image
+    SDL2_mixer::SDL2_mixer
 )
 
 # Self-contained run folder: build/FNaE/FNaE_Native.exe + assets + DLLs,
@@ -46,7 +49,7 @@ add_custom_command(TARGET FNaE_Native POST_BUILD
     COMMAND "${CMAKE_COMMAND}"
         "-DTARGET_FILE=$<TARGET_FILE:FNaE_Native>"
         "-DTARGET_DIR=$<TARGET_FILE_DIR:FNaE_Native>"
-        "-DSEARCH_DIRS=$<TARGET_FILE_DIR:SDL2::SDL2>;$<TARGET_FILE_DIR:SDL2_image::SDL2_image>"
+        "-DSEARCH_DIRS=$<TARGET_FILE_DIR:SDL2::SDL2>;$<TARGET_FILE_DIR:SDL2_image::SDL2_image>;$<TARGET_FILE_DIR:SDL2_mixer::SDL2_mixer>"
         -P "${CMAKE_SOURCE_DIR}/cmake/CopyRuntimeDeps.cmake"
     COMMENT "Copying runtime DLLs to FNaE run folder"
 )

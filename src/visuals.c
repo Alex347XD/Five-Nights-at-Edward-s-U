@@ -84,6 +84,11 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->lure_cd[3] = load_id(r, IMG_LURE_CD_4);
     v->lure_area = load_id(r, IMG_LURE_AREA);
     v->springtrap_stand = load_id(r, IMG_SPRINGTRAP_STAND);
+    v->musicbtn_off = load_id(r, IMG_MUSICBTN_OFF);
+    v->musicbtn_on = load_id(r, IMG_MUSICBTN_ON);
+    v->warn_off = load_id(r, IMG_WARNBADGE_OFF);
+    v->warn_on = load_id(r, IMG_WARNBADGE_ON);
+    v->mutecall = load_id(r, IMG_MUTECALL);
     v->title_new = load_id(r, IMG_TITLE_NEW);
     v->title_continue = load_id(r, IMG_TITLE_CONTINUE);
     v->title_6night = load_id(r, IMG_TITLE_6NIGHT);
@@ -135,6 +140,11 @@ void visuals_free(FnaeVisuals *v) {
         destroy_texture(&v->lure_cd[i]);
     destroy_texture(&v->lure_area);
     destroy_texture(&v->springtrap_stand);
+    destroy_texture(&v->musicbtn_off);
+    destroy_texture(&v->musicbtn_on);
+    destroy_texture(&v->warn_off);
+    destroy_texture(&v->warn_on);
+    destroy_texture(&v->mutecall);
     destroy_texture(&v->title_new);
     destroy_texture(&v->title_continue);
     destroy_texture(&v->title_6night);
@@ -488,6 +498,33 @@ static void draw_minimap(SDL_Renderer *r, FnaeVisuals *v, int camera) {
     }
 }
 
+/* Low-music badge shared by both warning objects: level 1 (<600) shows
+ * the Stopped frame steady, level 2 (<200) flashes the Animation 12
+ * frame on the shared static tick; level 0/3 hides the badge. */
+static void draw_warning(SDL_Renderer *r, FnaeVisuals *v,
+                         int warning, int static_frame, int x, int y) {
+    if (warning < 1 || warning > 2) return;
+    SDL_Texture *t = v->warn_off;
+    if (warning == 2 && (static_frame & 1) && v->warn_on) t = v->warn_on;
+    visuals_draw_anchored(r, t, x, y, FNAE_ANCHOR_CENTER);
+}
+
+/* Frame 3 "[ Music Box ]" UI (Cam 04 view only): the crank button at
+ * [569,497] (Stopped released, Animation 12 held), the Music Left
+ * counter at [418,474], and the in-cam warning badge at [1215,506].
+ * The lure button stays hidden here (Fusion hides it over Cam 04). */
+static void draw_music_box(SDL_Renderer *r, FnaeVisuals *v,
+                           int winding, int music, int warning,
+                           int static_frame) {
+    visuals_draw_anchored(r, winding ? v->musicbtn_on : v->musicbtn_off,
+                          569, 497, FNAE_ANCHOR_CENTER);
+    char ms[24];
+    int m = music < 0 ? 0 : music > 2000 ? 2000 : music;
+    snprintf(ms, sizeof ms, "MUSIC: %d", m);
+    draw_text(r, ms, 418, 474, 2);
+    draw_warning(r, v, warning, static_frame, 1215, 506);
+}
+
 void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                      int camera_up, int night, int hour, int power,
                      int left_door, int right_door, int mask, int arrow, int progress,
@@ -496,7 +533,8 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                      int foxy_pos, int freddy_pos, int cam_static_alpha,
                      int death, int music, int cam_scroll, int usage,
                      int stand, int lure_area, int lure_cam,
-                     int lure_cd, float lure_cd_timer) {
+                     int lure_cd, float lure_cd_timer,
+                     int winding, int warning, int mute_visible) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
@@ -585,6 +623,13 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             }
             /* White Frame Camera reappears with the rest of the camera UI. */
             draw_white_frame(r);
+            if (sel == 4)
+                draw_music_box(r, v, winding, music, warning, static_frame);
+            /* Mute Call button shows on every Frame 3 screen while the
+             * night's call plays (Fusion reappears it every 3 s). */
+            if (mute_visible)
+                visuals_draw_anchored(r, v->mutecall, 100, 55,
+                                      FNAE_ANCHOR_CENTER);
             draw_night_hud(r, sel, 1, night, hour, power, usage);
         } else {
             draw_office_pan(r, v->office, office_scroll, ox, oy);
@@ -598,6 +643,11 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             draw_world(r, v->door_left[left_door_frame], 119, 0, office_scroll, ox, oy);
             draw_world(r, v->door_right[right_door_frame], 1263, 0, office_scroll, ox, oy);
             draw_world(r, v->desk, 266, 177, office_scroll, ox, oy);
+            /* Low-music badge for the office screen (Warning out of cam). */
+            draw_warning(r, v, warning, static_frame, 1228, 672);
+            if (mute_visible)
+                visuals_draw_anchored(r, v->mutecall, 100, 55,
+                                      FNAE_ANCHOR_CENTER);
             /* Power/time/night HUD stays up on the office screen too. */
             int sel = camera < 1 ? 1 : camera > IMG_CAMBTN_COUNT ? IMG_CAMBTN_COUNT : camera;
             draw_night_hud(r, sel, 0, night, hour, power, usage);

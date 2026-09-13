@@ -45,6 +45,13 @@ typedef struct {
     SDL_Texture *lure_cd[4];
     SDL_Texture *lure_area;
     SDL_Texture *springtrap_stand;
+    /* Music-box crank (Cam 04 view only) + low-music warning badges. */
+    SDL_Texture *musicbtn_off;
+    SDL_Texture *musicbtn_on;
+    SDL_Texture *warn_off;
+    SDL_Texture *warn_on;
+    /* Mute Call button (night calls only, while one plays). */
+    SDL_Texture *mutecall;
 } FnaeVisuals;
 
 int visuals_init(FnaeVisuals *v, SDL_Renderer *r);
@@ -69,4 +76,5 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                       int foxy_pos, int freddy_pos, int cam_static_alpha,
                       int death, int music, int cam_scroll, int usage,
                       int springtrap_stand, int lure_area, int lure_cam,
-                      int lure_cd, float lure_cd_timer);
+                      int lure_cd, float lure_cd_timer,
+                      int winding, int warning, int mute_visible);

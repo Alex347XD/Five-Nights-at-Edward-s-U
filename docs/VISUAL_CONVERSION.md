@@ -43,6 +43,19 @@ These match `visuals_init` in `src/visuals.c`:
 - `236.png` — Springtrap Stand figure (full-body blue Edward with stars,
   299x715, Layer #2 at [416,-24], drawn over the feed while viewing
   Springtrap's camera)
+- `133.png` / `178.png` — music-box crank button (156x65 each,
+  center-anchored at [569,497], Cam 04 view only; PROVISIONAL owner to
+  confirm: 133 dark-slate Stopped = released, 178 olive Animation 12 =
+  held). Music Left [418,474] is a Counter drawn as bitmap text
+  ("MUSIC: n"); Wind Text [497,475] / Click & Hold [491,534] art is
+  still unmapped (renders as nothing)
+- `37.png` / `38.png` — low-music warning badges (63x55 each,
+  center-anchored; PROVISIONAL: 37 triangle = Stopped steady below 600,
+  38 black = Animation 12 flash below 200, hidden when empty; out-of-cam
+  at [1228,672] on the office screen, in-cam at [1215,506] on cameras)
+- `415.png` — Mute Call button ("MUTE CALL", 121x31, center-anchored at
+  [100,55] on office and camera screens while the night's call plays;
+  clicking it stops ch #16)
 - White Frame Camera ([-1,0], camera-up only) — no mapped PNG; drawn as a
   2px hollow white feed border inset 8px from the screen edge
 - Night HUD (time of day [1186,65] + am [1200,37], Which Night? [759,85]

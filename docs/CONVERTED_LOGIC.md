@@ -64,7 +64,13 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   independent of the marker: destroying the area never ends it, and a new
   lure requires the cooldown to have fully elapsed.
 - Music box uses the Dinosaur Exhibit camera (view 4).
-- Music box starts at 2000, loses `Night * 2` every 0.07 s, and winding adds 100 every 0.35 s.
+- Music box starts at 2000, loses `Night * 2` every 0.07 s on every screen
+  (the Fusion drain has no view gate — only the crank press needs View 4),
+  and winding adds 100 every 0.35 s. The crank (Alterable A) is held-wound:
+  pointer over the [569,497] button with the mouse down, or the R test key,
+  evaluated every tick with `death = 0`, so releasing, leaving the button,
+  or leaving Cam 04 stops the wind (no latch). Warnings: <600 low (Stopped
+  badge), <200 critical (flashing Animation 12), <=0 empty (hidden).
 - Empty music box can trigger Puppet death while camera is up or mask is down.
 - Freddy route: Cam 01 -> Cam 03 -> left door -> pending death / back to Cam 01.
 - Foxy route: Cam 02 -> Cam 04 -> right door -> pending death / back to Cam 02.
@@ -101,6 +107,25 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   the death wait (GF +/-8).
 - Doorway-figure flags (Freddy at left door, Foxy at right, Springtrap on its
   viewed cam) are exposed for the renderer.
+- Audio (`src/audio.c`, mixer channels = Fusion Sound channels): night entry
+  stops everything then loops fansound #1, In The Depths #2, Camera Audio #3,
+  deepbreaths #6, stare #9, buzzlight #10, With_S2 #13, Music_Box_Melody #8;
+  volumes follow the events (fan 30 office / 10 cams, cam-audio 0 / 50,
+  melody 0/0/20/10/50 by view 0/1/2/3/4, close-ambience 0 / 50, deepbreaths
+  50 masked / 0 unmasked). One-shots: lure echo1/3b/4b + stop (ch #14),
+  doors SFXBible_12478 (#7), flip up/down STEREO_CASSETTE 704/701 (#5),
+  mask on/off FENCING_43/42 (#5), cam change Change (#4), Freddy deep steps /
+  Foxy metallic thud (#12, panned left), Ph BB scream3 (#18), Mangle garble1
+  (#17), Springtrap walk1 (#15), windup2 every 0.50 s while winding (#11),
+  jackinthebox loop on empty (#20), powerdown after stop-all (#19),
+  jumpscares on ch #2 after stop-all (Puppet money-counter, Freddy XSCREAM,
+  Foxy dino-roar, Springtrap scream3, GF XScream2), calls on #16 per night,
+  title static + darkness loop, Which-Night Change, Final music box loop,
+  6 AM Clock Chimes, Death goblin loop (#32).
+- Phone calls (`[ Phone Calls ]`): each night's call starts ~3 s in
+  (`current_call`, ch #16, MP3 for 1-3 / WAV for 4-6); the Mute Call button
+  (`415.png` at [100,55], visible while ch #16 plays) stops the call on
+  click via `FNAE_SND_CALL_STOP`.
 
 ## Deliberately isolated
 

@@ -14,6 +14,20 @@ const char* fnae_frame_name(FnaeFrame f){
  switch(f){case FRAME_WARNING:return "Warning";case FRAME_TITLE:return "Title";case FRAME_NIGHT:return "Night";case FRAME_DEATH:return "Death";case FRAME_FINAL:return "Final";case FRAME_WHICH_NIGHT:return "Which Night";case FRAME_NEWSPAPER:return "Newspaper";case FRAME_CUSTOMIZE:return "Customize";case FRAME_6AM:return "6 AM";} return "Unknown";
 }
 
+void fnae_push_sound(FnaeGame* g,int snd){
+ int next=(g->snd_tail+1)%FNAE_SND_QUEUE;
+ if(next==g->snd_head) return; /* full: drop, never block gameplay */
+ g->snd_queue[g->snd_tail]=snd;
+ g->snd_tail=next;
+}
+
+int fnae_pop_sound(FnaeGame* g){
+ if(g->snd_head==g->snd_tail) return -1;
+ int snd=g->snd_queue[g->snd_head];
+ g->snd_head=(g->snd_head+1)%FNAE_SND_QUEUE;
+ return snd;
+}
+
 static void difficulty(FnaeGame* g,int h){
  int n=g->night;
  if(n==1 && h==12 && !did(g,h,0)){g->foxy_ai=0;g->freddy_ai=3;g->springtrap_ai=3;g->ph_mangle_ai=3;g->ph_bb_ai=3;mark(g,h,0);}
@@ -80,11 +94,32 @@ static void update_gf(FnaeGame* g){
  if(g->gf_death_addup>90) enter_death(g,5);
 }
 
+/* Music-box crank hover: the button is center-anchored (156x65) at
+ * its [569,497] hotspot, so the pointer is over it in
+ * x 491..647, y 465..529 (matches the renderer math). */
+static int over_music_button(FnaeGame* g){
+ return g->mouse_x>=491&&g->mouse_x<647&&g->mouse_y>=465&&g->mouse_y<529;
+}
+
 static void update_music(FnaeGame* g,float dt){
- if(g->view!=4){g->music_winding=0;return;}
+ /* Fusion holds Alterable A while the crank is held: pointer over the
+  * button with the mouse down, or the R test key — evaluated every tick,
+  * so releasing (or leaving the button or the cam) stops the wind. */
+ if(g->view==4&&g->death==0&&(g->key_wind||(g->mouse_down&&over_music_button(g))))
+  g->music_winding=1;
+ else
+  g->music_winding=0;
+ /* The Fusion drain/wind timers have no view gate (only the crank press
+  * needs View 4): A==0 drains every 0.07 s on every screen, A>0 winds
+  * every 0.35 s while held. */
  g->music_tick+=dt;
  if(!g->music_winding && g->music_left>0 && g->music_tick>=0.07f){g->music_tick=0;g->music_left-=g->night==7?g->golden_ai*2:g->night*2;if(g->music_left<0)g->music_left=0;}
  if(g->music_winding && g->music_tick>=0.35f){g->music_tick=0;if(g->music_left>0)g->music_left+=100;if(g->music_left>2000)g->music_left=2000;}
+ /* Fusion replays windup2 every 00''-50 while the button is held. */
+ if(g->music_winding && g->music_left>0){
+  g->windup_snd_tick+=dt;
+  if(g->windup_snd_tick>=0.5f){g->windup_snd_tick=0;fnae_push_sound(g,FNAE_SND_WINDUP);}
+ } else g->windup_snd_tick=0;
  if(g->music_left<=0 && g->hidden_power>0 && g->death==0 && ((g->cam_anim==CAM_UP&&rnd(5)==1)||(g->mask_anim==MASK_DOWN&&rnd(5)==1))) enter_death(g,1);
 }
 
@@ -151,6 +186,8 @@ void fnae_start_night(FnaeGame* g,int night){
   g->lure_cd=0; g->lure_cd_timer=0;
   g->foxy_stand=0; g->freddy_door=0;
  g->music_left=2000; g->music_winding=0; g->music_tick=0; g->current_call=0; g->call_muted=0;
+ g->mouse_down=0; g->key_wind=0;
+ g->windup_snd_tick=0; g->snd_head=g->snd_tail=0;
  g->cam_anim_timer=g->mask_anim_timer=g->left_door_timer=g->right_door_timer=0;
  g->ai_timer=g->power_out_timer=g->springtrap_timer=g->phantom_timer=0;
  ai_reset(&g->foxy,0,2); ai_reset(&g->freddy,0,1); g->springtrap_a=0;g->springtrap_b=0;
@@ -319,7 +356,8 @@ void fnae_update(FnaeGame* g,float dt){
    * requires the cooldown to have fully elapsed. */
   if(g->lure_cd){
    g->lure_cd_timer+=dt;
-   if(g->lure_cd_timer>=2.0f){g->lure_cd=0;g->lure_cd_timer=0;}
+   /* Fusion plays stop on ch #14 when Animation 12 is over. */
+   if(g->lure_cd_timer>=2.0f){g->lure_cd=0;g->lure_cd_timer=0;fnae_push_sound(g,FNAE_SND_LURE_STOP);}
   }
  /* Camera Out ("Connection Lost"): 50% re-tune every 0.5s, forced after 2s. */
  if(g->movement_out>0){
@@ -358,9 +396,9 @@ void fnae_key(FnaeGame* g,int key){
    else if(g->arrow==1){g->six_or_seven=0;enter_which_night(g);}
    else if(g->arrow==2){g->six_or_seven=1;enter_which_night(g);}
    else if(g->arrow==3){g->six_or_seven=2;g->frame=FRAME_CUSTOMIZE;}
-  } else if(key==SDLK_UP || key=='w')g->arrow--;
-  else if(key==SDLK_DOWN || key=='s')g->arrow++;
-  if(g->arrow<0)g->arrow=0;int max=g->progress+1;if(max>3)max=3;if(g->arrow>max)g->arrow=max;return;
+  } else if(key==SDLK_UP || key=='w'){if(g->arrow>0){g->arrow--;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);} }
+  else if(key==SDLK_DOWN || key=='s'){int max=g->progress+1;if(max>3)max=3;if(g->arrow<max){g->arrow++;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);} }
+  if(g->arrow<0)g->arrow=0;{int max=g->progress+1;if(max>3)max=3;if(g->arrow>max)g->arrow=max;}return;
  }
  if(g->frame==FRAME_NEWSPAPER){if(key==SDLK_RETURN)enter_which_night(g);return;}
  if(g->frame==FRAME_WHICH_NIGHT){if(key==SDLK_RETURN)fnae_start_night(g,g->night);return;}
@@ -374,48 +412,64 @@ void fnae_key(FnaeGame* g,int key){
  if(g->frame==FRAME_FINAL){if(key==SDLK_RETURN)g->frame=FRAME_TITLE;return;}
  if(g->frame!=FRAME_NIGHT)return;
 
- if(key=='a'&&g->view==0&&g->hidden_power>0){if(g->left_door==0)g->left_door=1;else if(g->left_door==2)g->left_door=3;}
- if(key=='d'&&g->view==0&&g->hidden_power>0){if(g->right_door==0)g->right_door=1;else if(g->right_door==2)g->right_door=3;}
+ if(key=='a'&&g->view==0&&g->hidden_power>0){if(g->left_door==0){g->left_door=1;fnae_push_sound(g,FNAE_SND_DOOR);}else if(g->left_door==2){g->left_door=3;fnae_push_sound(g,FNAE_SND_DOOR);} }
+ if(key=='d'&&g->view==0&&g->hidden_power>0){if(g->right_door==0){g->right_door=1;fnae_push_sound(g,FNAE_SND_DOOR);}else if(g->right_door==2){g->right_door=3;fnae_push_sound(g,FNAE_SND_DOOR);} }
  if(key=='s' && g->hidden_power>0){
-  if(g->cam_anim==CAM_DOWN && g->mask_anim==MASK_UP){g->cam_anim=CAM_UP_ANIM;g->cam_anim_timer=0;}
-  else if(g->cam_anim==CAM_UP && g->mask_anim==MASK_UP){g->cam_anim=CAM_DOWN_ANIM;g->cam_anim_timer=0;}
+  if(g->cam_anim==CAM_DOWN && g->mask_anim==MASK_UP){g->cam_anim=CAM_UP_ANIM;g->cam_anim_timer=0;fnae_push_sound(g,FNAE_SND_CAM_UP);}
+  else if(g->cam_anim==CAM_UP && g->mask_anim==MASK_UP){g->cam_anim=CAM_DOWN_ANIM;g->cam_anim_timer=0;fnae_push_sound(g,FNAE_SND_CAM_DOWN);}
  }
- if(key=='m'&&g->hidden_power>0&&g->cam_anim==CAM_DOWN){if(g->mask_anim==MASK_UP){g->mask_anim=MASK_UP_ANIM;g->mask_anim_timer=0;}else if(g->mask_anim==MASK_DOWN){g->mask_anim=MASK_DOWN_ANIM;g->mask_anim_timer=0;}}
+ if(key=='m'&&g->hidden_power>0&&g->cam_anim==CAM_DOWN){if(g->mask_anim==MASK_UP){g->mask_anim=MASK_UP_ANIM;g->mask_anim_timer=0;fnae_push_sound(g,FNAE_SND_MASK_ON);}else if(g->mask_anim==MASK_DOWN){g->mask_anim=MASK_DOWN_ANIM;g->mask_anim_timer=0;fnae_push_sound(g,FNAE_SND_MASK_OFF);} }
  if(key=='z'||key==SDLK_LALT)g->flashlight=1;
  if(g->cam_anim==CAM_UP){if(key>='1'&&key<='4')g->camera=key-'0';}
   /* Audio lure: E while watching a camera feed (never from the music-box cam)
    * places a Lure Area on the viewed camera; Springtrap may follow (see update).
    * Gated on the button cooldown only — marker state is unrelated. */
   if(key=='e'&&g->view>0&&g->view!=4&&g->hidden_power>0&&g->death==0&&g->lure_cd==0){
-   g->lure_area=1; g->lure_cam=g->view; g->lure_timer=0; g->lure_cd=1; g->lure_cd_timer=0;}
- /* R is a keyboard test/control for winding the music box; mouse uses fnae_click. */
- if(key=='r'&&g->view==4)g->music_winding=1;
+   g->lure_area=1; g->lure_cam=g->view; g->lure_timer=0; g->lure_cd=1; g->lure_cd_timer=0;
+   /* Fusion sets Lure which to Random(3)+1 for the echo1/3b/4b sample. */
+   fnae_push_sound(g,FNAE_SND_LURE1+rnd(3));}
+ /* R is a keyboard test/control for winding the music box (held state;
+  * the per-tick evaluation in update_music applies the view/death gates). */
+ if(key=='r'&&g->view==4)g->key_wind=1;
 }
 
 void fnae_key_up(FnaeGame* g,int key){
  if((key=='z'||key==SDLK_LALT) && g->frame==FRAME_NIGHT)g->flashlight=0;
- if(key=='r' && g->frame==FRAME_NIGHT)g->music_winding=0;
+ if(key=='r' && g->frame==FRAME_NIGHT)g->key_wind=0;
+}
+
+void fnae_press(FnaeGame* g,int x,int y){
+ g->mouse_x=x; g->mouse_y=y;
+ if(g->frame==FRAME_NIGHT)g->mouse_down=1;
+}
+
+void fnae_release(FnaeGame* g){
+ g->mouse_down=0;
 }
 
 void fnae_click(FnaeGame* g,int x,int y){
  g->mouse_x=x; g->mouse_y=y;
  if(g->frame==FRAME_TITLE){
-  if(x>=70&&x<=430&&y>=430&&y<495){g->arrow=0;g->frame=FRAME_NEWSPAPER;return;}
-  if(x>=70&&x<=430&&y>=495&&y<560){g->arrow=1;g->six_or_seven=0;enter_which_night(g);return;}
-  if(x>=70&&x<=430&&y>=560&&y<625 && g->progress>0){g->arrow=2;g->six_or_seven=1;enter_which_night(g);return;}
-  if(x>=70&&x<=430&&y>=625&&y<700 && g->progress>1){g->arrow=3;g->six_or_seven=2;g->frame=FRAME_CUSTOMIZE;return;}
+  if(x>=70&&x<=430&&y>=430&&y<495){g->arrow=0;g->frame=FRAME_NEWSPAPER;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);return;}
+  if(x>=70&&x<=430&&y>=495&&y<560){g->arrow=1;g->six_or_seven=0;enter_which_night(g);fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);return;}
+  if(x>=70&&x<=430&&y>=560&&y<625 && g->progress>0){g->arrow=2;g->six_or_seven=1;enter_which_night(g);fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);return;}
+  if(x>=70&&x<=430&&y>=625&&y<700 && g->progress>1){g->arrow=3;g->six_or_seven=2;g->frame=FRAME_CUSTOMIZE;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);return;}
   return;
  }
  /* Newspaper advances on any click, like the Fusion event. */
  if(g->frame==FRAME_NEWSPAPER){enter_which_night(g);return;}
  if(g->frame!=FRAME_NIGHT)return;
+ /* Mute Call button (121x31 center-anchored at [100,55]): stops the
+  * night's phone call while it plays. The button only shows then, so a
+  * click elsewhere here is a no-op for it. */
+ if(g->current_call!=0&&x>=40&&x<160&&y>=40&&y<70){g->call_muted=1;fnae_push_sound(g,FNAE_SND_CALL_STOP);return;}
  if(g->view==0 && g->hidden_power>0){
   /* Door click zones follow the panning doors: compare in frame space
    * (screen x + scroll) so the zones stay glued to the door art. */
   int fx=x+(int)g->office_scroll;
-  if(fx<180 && y>500){if(g->left_door==0)g->left_door=1;else if(g->left_door==2)g->left_door=3;return;}
-  if(fx>1100 && y>500){if(g->right_door==0)g->right_door=1;else if(g->right_door==2)g->right_door=3;return;}
-  if(x>500 && x<780 && y>560){g->cam_anim=CAM_UP_ANIM;g->cam_anim_timer=0;return;}
+  if(fx<180 && y>500){if(g->left_door==0){g->left_door=1;fnae_push_sound(g,FNAE_SND_DOOR);}else if(g->left_door==2){g->left_door=3;fnae_push_sound(g,FNAE_SND_DOOR);}return;}
+  if(fx>1100 && y>500){if(g->right_door==0){g->right_door=1;fnae_push_sound(g,FNAE_SND_DOOR);}else if(g->right_door==2){g->right_door=3;fnae_push_sound(g,FNAE_SND_DOOR);}return;}
+  if(x>500 && x<780 && y>560){g->cam_anim=CAM_UP_ANIM;g->cam_anim_timer=0;fnae_push_sound(g,FNAE_SND_CAM_UP);return;}
  }
   /* Camera buttons: clicks on any "CAM 01" box move You onto it and the
    * view follows ("[ Is Up ]" + "[ Cam 01 ]" groups). Rects are the verbatim
@@ -434,8 +488,9 @@ void fnae_click(FnaeGame* g,int x,int y){
       * on the music-box camera (Fusion hides it over Cam 04 Text).
       * Gated on the button cooldown only — marker state is unrelated. */
      if(g->view>0&&g->view!=4&&g->death==0&&g->lure_cd==0){
-      if(x>=744-64&&x<744+64&&y>=296-32&&y<296+32){g->lure_area=1;g->lure_cam=g->view;g->lure_timer=0;g->lure_cd=1;g->lure_cd_timer=0;}
+      if(x>=744-64&&x<744+64&&y>=296-32&&y<296+32){g->lure_area=1;g->lure_cam=g->view;g->lure_timer=0;g->lure_cd=1;g->lure_cd_timer=0;fnae_push_sound(g,FNAE_SND_LURE1+rnd(3));}
     }
    }
- if(g->view==4 && x>500 && x<780 && y>500){g->music_winding=1;}
-}
+  /* Winding is hold-driven (see fnae_press/fnae_release + update_music);
+  * a click alone never latches it. */
+ }

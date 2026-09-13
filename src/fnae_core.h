@@ -6,6 +6,25 @@ typedef enum { CAM_DOWN=0, CAM_UP_ANIM=1, CAM_UP=2, CAM_DOWN_ANIM=3 } CamAnim;
 typedef enum { MASK_UP=0, MASK_UP_ANIM=1, MASK_DOWN=2, MASK_DOWN_ANIM=3 } MaskAnim;
 
 typedef struct { int ai, pos, move, at_door; } FnaeAI;
+
+/* One-shot sound requests: core pushes, audio drains (see src/audio.c).
+ * Channel numbers mirror the Fusion Sound object channels. */
+typedef enum {
+ FNAE_SND_LURE1 = 1, /* echo1 on ch #14 */
+ FNAE_SND_LURE2,     /* echo3b on ch #14 */
+ FNAE_SND_LURE3,     /* echo4b on ch #14 */
+ FNAE_SND_LURE_STOP, /* stop sample on ch #14 (Animation 12 over) */
+ FNAE_SND_DOOR,      /* SFXBible_12478 on ch #7 */
+ FNAE_SND_CAM_UP,    /* STEREO_CASSETTE__90097704 on ch #5 */
+ FNAE_SND_CAM_DOWN,  /* STEREO_CASSETTE__90097701 on ch #5 */
+ FNAE_SND_MASK_ON,   /* FENCING_43 on ch #5 */
+ FNAE_SND_MASK_OFF,  /* FENCING_42 on ch #5 */
+ FNAE_SND_WINDUP,    /* windup2 on ch #11 (every 0.50 s while winding) */
+ FNAE_SND_TITLE_CHANGE, /* Change on ch #3 (title menu move) */
+ FNAE_SND_CALL_STOP  /* halt the phone call on ch #16 (Mute Call button) */
+} FnaeSound;
+
+#define FNAE_SND_QUEUE 32
 typedef struct {
  FnaeFrame frame; int running; int night; int six_or_seven; int arrow; int progress; int challenge;
  int time_of_day; float time_to_hour;
@@ -20,8 +39,11 @@ typedef struct {
  FnaeAI foxy, freddy; int springtrap_a, springtrap_b; int springtrap_alive;
  int ph_mangle_a, ph_mangle_b, ph_mangle_c; int ph_bb_a, ph_bb_b;
  int golden_ai, foxy_ai, freddy_ai, springtrap_ai, ph_mangle_ai, ph_bb_ai;
-  int music_left; int music_winding; float music_tick;
-  int current_call; int call_muted;
+   int music_left; int music_winding; float music_tick;
+   int current_call; int call_muted;
+   int mouse_down; int key_wind; /* held inputs for the music-box crank */
+   float windup_snd_tick; /* windup2 repeats every 0.50 s while winding */
+   int snd_queue[FNAE_SND_QUEUE]; int snd_head, snd_tail; /* one-shot requests */
    int static_frame; int static_alpha; /* TV-static anim state (shared title/cameras) */
    int static_div; /* ticks since last static frame advance (slows 60 Hz ticks to ~20 fps) */
    int cam_static_alpha; float cam_static_tick; /* camera static: 150+Random(50) every 0.08s, 0 while signal lost */
@@ -68,5 +90,11 @@ void fnae_update(FnaeGame* g, float dt);
 void fnae_key(FnaeGame* g, int key);
 void fnae_key_up(FnaeGame* g, int key);
 void fnae_click(FnaeGame* g, int x, int y);
+void fnae_press(FnaeGame* g, int x, int y);
+void fnae_release(FnaeGame* g);
 void fnae_mouse_move(FnaeGame* g, int x, int y);
 const char* fnae_frame_name(FnaeFrame f);
+/* Pushes a one-shot sound request (drops it when the queue is full). */
+void fnae_push_sound(FnaeGame* g, int snd);
+/* Pops the oldest request, or -1 when the queue is empty. */
+int fnae_pop_sound(FnaeGame* g);

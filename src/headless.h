@@ -4,6 +4,7 @@
 
 #include "fnae_core.h"
 #include "visuals.h"
+#include "audio.h"
 
 typedef struct {
     int frames;              /* fixed-step frame count (default 600) */
@@ -48,9 +49,12 @@ void headless_free_script(HeadlessScript *s);
 
 /* Runs the scripted headless session (fixed 1/60 dt) and saves the final
  * frame. If script is NULL, a built-in demo sequence is used.
+ * audio may be NULL (silent); otherwise it is pumped every tick so the
+ * sound queue is exercised under the dummy audio driver.
  * Returns 0 on success, nonzero on failure. */
 int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
-                 const HeadlessOptions *opt, const HeadlessScript *script);
+                 const HeadlessOptions *opt, const HeadlessScript *script,
+                 FnaeAudio *audio);
 
 /* Saves the renderer's current output. Creates missing parent directories.
  * ".png" suffix uses IMG_SavePNG, anything else uses SDL_SaveBMP. */

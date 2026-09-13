@@ -40,7 +40,7 @@ SDL draws from the top-left, so the native renderer draws it with
 ## Functional controls
 
 - Title: Up/Down or W/S, Enter, mouse menu selection
-- Night: A/D doors, S camera, M mask, Z/Ctrl flashlight, 1–4 camera selection, E or Lure-button click for audio lure, R/mouse for music-box winding
+- Night: A/D doors, S camera, M mask, Z/Ctrl flashlight, 1–4 camera selection, E or Lure-button click for audio lure, R or press-and-hold on the crank for music-box winding
 - Night: mouse position pans the office view — pointer in the left/right edge
   zones scrolls toward that side at the Fusion 2/4/6 px-per-tick speeds,
   clamped to the 1600px-wide office scene (see `CONVERTED_LOGIC.md`)
@@ -100,6 +100,18 @@ termination notice, not the newspaper.)
   `236.png`, 299x715 stand at [416,-24]) starts on Cam 02 and steps the
   exported routes (Cam 03 kill room); its stand overlays the feed while
   viewed.
+- Music box (Cam 04 view): crank button (`133.png` released / `178.png`
+  held, 156x65 center-anchored at [569,497], provisional — owner to
+  confirm) with Stopped↔Animation-12 swap on the held crank, `MUSIC: n`
+  counter readout at [418,474], and low-music badges (`37.png` steady
+  below 600, flashing below 200, hidden when empty; [1228,672] office,
+  [1215,506] cameras). Winding is hold-driven — mouse press-and-hold on
+  the button or held R — evaluated every tick, so release/leave/stop
+   ends the wind (the old click latched it on). Wind Text / Click & Hold
+   art still unmapped.
+- Phone calls play per night with a clickable MUTE CALL button (`415.png`
+  at [100,55], visible on office and camera screens while the call plays,
+  stops it on click).
 - Night HUD renders on all Frame 3 screens (office and camera views):
   "12 AM"-style clock top-right (time of day [1186,65] + am [1200,37]),
   "NIGHT n" under it (Which Night? [759,85] + The Night [1245,101]),
@@ -108,6 +120,19 @@ termination notice, not the newspaper.)
   PNG frames, and this port has no font library, so glyphs are a minimal
   built-in 5x7 bitmap. Live state also stays in the window title.
 
+### Audio
+
+Sound is wired via SDL_mixer (`src/audio.c/h`, 42 samples from
+`assets/audio/`): night ambience loops (fan/depths/camera-audio/deepbreaths/
+stare/buzzlight/close-ambience/music-box melody) with the Fusion per-view
+and mask/door volume ducking, one-shots for lure echoes + stop, doors,
+camera/mask flips, cam-change blips, footsteps, phantom scares, windup,
+jack-in-the-box, power-down, jumpscares, phone calls (MP3 1-3, WAV 4-6),
+and frame jingles (title static + darkness music, Which-Night Change,
+Final music box, 6 AM chimes, Death goblin). Core pushes one-shots into
+a queue (`fnae_push_sound`); loops/volumes are derived by polling game
+state, so core still owns state. Headless-safe (dummy driver = silent).
+
 ## Known limitations
 
-The project is still a native reconstruction rather than a byte-for-byte Clickteam runtime replacement. Audio, save/INI persistence, the Customize-screen UI, and exact character animation still need further conversion work. Mask/flashlight/button/counter art is identified only where named in `src/fnae_assets.h`; unmapped objects render as nothing (no invented stand-ins).
+The project is still a native reconstruction rather than a byte-for-byte Clickteam runtime replacement. Save/INI persistence, the Customize-screen UI, and exact character animation still need further conversion work. Mask/flashlight/button/counter art is identified only where named in `src/fnae_assets.h`; unmapped objects render as nothing (no invented stand-ins).
