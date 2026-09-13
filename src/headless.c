@@ -15,6 +15,7 @@
  * when no --script file is given. */
 static void headless_default_script(FnaeGame *game, int frame) {
     switch (frame) {
+    case 5: fnae_key(game, SDLK_RETURN); break;   /* Warning -> Title */
     case 10: fnae_key(game, SDLK_RETURN); break;  /* Title: New -> Newspaper */
     case 40: fnae_key(game, SDLK_RETURN); break;  /* Newspaper -> Which Night */
     case 70: fnae_key(game, SDLK_RETURN); break;  /* Which Night -> start night (skip 2s timer) */

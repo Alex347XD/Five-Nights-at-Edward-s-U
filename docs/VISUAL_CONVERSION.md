@@ -24,6 +24,7 @@ These match `visuals_init` in `src/visuals.c`:
 - `2.png` — GOOD JOB final screen
 - `520.png` — HELP WANTED newspaper screen (Frame 7, shown once on New Game
   before Which Night)
+- `351.png` — Frame 1 warning screen (fullscreen 1280x720 card at [0,0])
 - `246.png`–`252.png` — night cards, reused centered on black for the
   Frame 6 Which Night interstitial (Fusion parks Which Night at (640,360))
 
@@ -51,8 +52,8 @@ to Wii U SDL2.
 The SDL-rectangle debug HUD is gone: no more power bar, door boxes, camera
 label boxes, or mask overlay. Live state (night/hour/power, camera name,
 doors, mask, music) is reported in the window title until the real counter /
-button art is mapped. Warning (1) and Customize (8) stay black — their UI art
-is unmapped and the title background was the wrong image there.
+button art is mapped. Customize (8) stays black — its UI art is
+unmapped.
 
 ## Next exact-visual step
 

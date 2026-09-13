@@ -14,6 +14,7 @@
 # Copy this file to local.txt (git-ignored scratch space) to experiment:
 #   cp scripts/headless/example.txt scripts/headless/local.txt
 
+5 key return
 10 key return
 40 key return
 60 shot screenshots/example-which-night.png

@@ -4,6 +4,14 @@
 
 The native SDL2 build contains the recovered gameplay state machine and extracted visual assets.
 
+### Frame 1 Warning
+
+The game boots on the warning screen (`351.png`, 1280x720 at [0,0]:
+"WARNING! This game contains flashing lights, loud noises, and lots of
+jumpscares!"). It auto-advances to Title after 5 s (Fusion `Timer equals
+05''`) and any key skips it, matching Frame 1 Events.txt (no click
+event there, so clicks don't advance it).
+
 ### Frame 2 title screen
 The title screen now uses the correct Frame 2 asset mapping:
 

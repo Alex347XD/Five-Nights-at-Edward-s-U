@@ -28,6 +28,7 @@
 #define IMG_GOODJOB       2   /* GOOD JOB CAPTAIN final screen (Frame 5) */
 #define IMG_SIX_AM        4   /* overtime paycheck (Frame 9) */
 #define IMG_NEWSPAPER     520 /* HELP WANTED newspaper (Frame 7) */
+#define IMG_WARNING       351 /* Frame 1 warning screen (1280x720) at [0,0] */
 
 #define IMG_TITLE_BG      515 /* Frame 2 Background (Stopped sequence) */
 #define IMG_TITLE_NEW     239

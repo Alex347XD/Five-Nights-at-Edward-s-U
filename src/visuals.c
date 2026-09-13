@@ -55,6 +55,7 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->death = load_id(r, IMG_DEATH);
     v->newspaper = load_id(r, IMG_NEWSPAPER);
     v->final_screen = load_id(r, IMG_GOODJOB);
+    v->warning = load_id(r, IMG_WARNING);
 
     /*
      * Frame 2 (Title) assets mapped from the exported object layout
@@ -122,6 +123,7 @@ void visuals_free(FnaeVisuals *v) {
         destroy_texture(&v->title_nights[i]);
     destroy_texture(&v->newspaper);
     destroy_texture(&v->final_screen);
+    destroy_texture(&v->warning);
     memset(v, 0, sizeof *v);
 }
 
@@ -312,7 +314,14 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
         oy = rand() % (2 * j + 1) - j;
     }
 
-    if (frame == 2) {
+    if (frame == 1) {
+        /* Frame 1 Warning: fullscreen 1280x720 card at [0,0],
+         * like the title background. */
+        if (v->warning) {
+            SDL_Rect d = {0, 0, 1280, 720};
+            SDL_RenderCopy(r, v->warning, NULL, &d);
+        }
+    } else if (frame == 2) {
         draw_title(r, v, night, arrow, progress, static_frame, static_alpha,
                    title_bg_frame);
     } else if (frame == 3) {
@@ -357,8 +366,7 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
     } else if (frame == 7) {
         fit_center(r, v->newspaper);
     }
-    /* Frames 1 (Warning) and 8 (Customize) stay black: their UI art is
-     * still unmapped, and title_bg was the wrong image there. */
+    /* Frame 8 (Customize) stays black: its UI art is still unmapped. */
 
     static const char *cam_names[4] = {"Hell", "Mountain", "Forest", "Dino"};
     int cam = camera - 1;

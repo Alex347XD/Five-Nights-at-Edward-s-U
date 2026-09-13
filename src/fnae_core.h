@@ -10,6 +10,7 @@ typedef struct {
  FnaeFrame frame; int running; int night; int six_or_seven; int arrow; int progress; int challenge;
  int time_of_day; float time_to_hour;
  float which_timer; /* Frame 6 auto-advance: Every 02'' -> Night */
+ float warn_timer; /* Frame 1 auto-advance: Timer equals 05'' -> Title */
  int death; int death_addup; int gf_random; int gf_death_addup;
  int camera; CamAnim cam_anim; MaskAnim mask_anim; int prevent_flip; int force_down; int view;
  int left_door, right_door; int flashlight; int pc_mobile;

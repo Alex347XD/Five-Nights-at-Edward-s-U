@@ -88,7 +88,7 @@ static void update_music(FnaeGame* g,float dt){
  if(g->music_left<=0 && g->hidden_power>0 && g->death==0 && ((g->cam_anim==CAM_UP&&rnd(5)==1)||(g->mask_anim==MASK_DOWN&&rnd(5)==1))) enter_death(g,1);
 }
 
-void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_TITLE; g->night=1; g->progress=0; g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2; g->cam_scroll=FNAE_CAM_SCROLL_MIN; g->cam_scroll_dir=0; g->cam_static_alpha=185; g->power_out_alpha=255;
+void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_WARNING; g->night=1; g->progress=0; g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2; g->cam_scroll=FNAE_CAM_SCROLL_MIN; g->cam_scroll_dir=0; g->cam_static_alpha=185; g->power_out_alpha=255;
  /* Customize-screen defaults straight from Frame 8: everything 0 except Puppet (7). */
  g->custom_freddy=0; g->custom_foxy=0; g->custom_springtrap=0; g->custom_golden=0;
  g->custom_mangle=0; g->custom_bb=0; g->custom_puppet=7; }
@@ -209,6 +209,12 @@ static void update_cam_scroll(FnaeGame* g, float dt){
 }
 
 void fnae_update(FnaeGame* g,float dt){
+ /* Frame 1 interstitial: Timer equals 05'' -> Title, no input required. */
+ if(g->frame==FRAME_WARNING){
+  g->warn_timer+=dt;
+  if(g->warn_timer>=5.0f) g->frame=FRAME_TITLE;
+  return;
+ }
  /* Frame 6 interstitial: Every 02'' -> Night, no input required. */
  if(g->frame==FRAME_WHICH_NIGHT){
   g->which_timer+=dt;
@@ -327,6 +333,8 @@ void fnae_update(FnaeGame* g,float dt){
 
 void fnae_key(FnaeGame* g,int key){
  if(key==SDLK_ESCAPE){g->running=0;return;}
+ /* Frame 1: Upon pressing any key -> Title (Fusion has no click event here). */
+ if(g->frame==FRAME_WARNING){g->frame=FRAME_TITLE;return;}
  if(g->frame==FRAME_TITLE){
   if(key==SDLK_RETURN){
    if(g->arrow==0){g->six_or_seven=0;g->frame=FRAME_NEWSPAPER;}

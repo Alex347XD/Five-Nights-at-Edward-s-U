@@ -25,6 +25,7 @@ typedef struct {
 
     SDL_Texture *newspaper;
     SDL_Texture *final_screen;
+    SDL_Texture *warning; /* Frame 1 warning screen */
 
     /* Frame 3 night-shift art: door shutters (16 frames each) + desk. */
     SDL_Texture *door_left[IMG_DOOR_FRAMES];

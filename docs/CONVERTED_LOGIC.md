@@ -61,6 +61,9 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   see `fnae_set_custom`), and the All-20 star reads those globals, not the nightly rolls.
 - Which Night (Frame 6): 0 = normal night, 1 = 6th, 2 = 7th/custom; the frame
   auto-advances to Night after 2 s (Return skips the wait).
+- Warning (Frame 1): boots here; `Timer equals 05''` auto-advances to Title
+  after 5 s, and any key skips (no click event in Fusion, so clicks don't
+  advance it).
 - 6 AM routes to Final for nights 6/7 or Night Story >= 5, else increments to
   the next night via Which Night. Newspaper advances on any click.
 - Springtrap steps between cameras on its move flag (Cam 01 -> Cam 03 kill
