@@ -24,6 +24,12 @@ These match `visuals_init` in `src/visuals.c`:
 - `2.png` — GOOD JOB final screen
 - `520.png` — HELP WANTED newspaper screen (Frame 7, shown once on New Game
   before Which Night)
+- `28.png` — camera minimap line art (372x322, YOU baked in) at [882,265],
+  drawn only while a camera is up
+- `29.png` / `30.png` — cam button boxes (60x40, gray Stopped / green
+  Animation-12 selected), center-anchored on the four verbatim Frame 3
+  "CAM 01" hotspots
+- `31.png`–`34.png` — "CAM 01".."CAM 04" button labels (31x25, top-left)
 - `351.png` — Frame 1 warning screen (fullscreen 1280x720 card at [0,0])
 - `246.png`–`252.png` — night cards, reused centered on black for the
   Frame 6 Which Night interstitial (Fusion parks Which Night at (640,360))
@@ -59,8 +65,9 @@ unmapped.
 
 The remaining visual work is to bind the individual Active animation sequences
 to their extracted image-bank entries (Freddy/Foxy/Springtrap/phantoms, camera
-flip animation, mask + flashlight, cam flip/mask flip visuals, minimap + cam
-labels, music-box UI, warnings, Rec, Connection Lost, Power Out, mute-call
-button, time/night/power/usage counters). The event logic is already separated
-from this rendering layer, and the doorway-figure / warning / signal-loss
-state it needs is exposed on `FnaeGame`.
+flip animation, mask + flashlight, cam flip/mask flip visuals, White Frame
+Camera, Lure button, music-box UI, warnings, Rec, Connection Lost, Power Out,
+mute-call button, time/night/power/usage counters, Cam Labels room-name
+string). The event logic is already separated from this rendering layer, and
+the doorway-figure / warning / signal-loss state it needs is exposed on
+`FnaeGame`.

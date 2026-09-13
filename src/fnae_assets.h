@@ -53,6 +53,17 @@
 
 #define IMG_DESK_SCENE    238 /* 1066x511 office desk scene, at [266,177] */
 
+/* Frame 3 camera minimap (Layer #5 UI, visible only while a camera is up).
+ * Positions are verbatim Frame 3 Objects.txt hotspots: the map draws
+ * top-left (see docs/COORDINATES.md) while the 60x40 button boxes are
+ * center-anchored, which is what seats each 31x25 label inside its box. */
+#define IMG_MINIMAP       28  /* 372x322 white line-art map (YOU baked in), at [882,265] */
+#define IMG_CAMBTN_OFF    29  /* 60x40 gray cam button box (CAM 01 Stopped) */
+#define IMG_CAMBTN_ON     30  /* 60x40 green cam button box (CAM 01 Animation 12, selected) */
+#define IMG_CAMTXT_FIRST  31  /* "CAM 01".."CAM 04" labels, 4 (31-34), 31x25 each */
+/* Button boxes ("CAM 01" x4) and their text labels ("Cam 0X Text" x4). */
+#define IMG_CAMBTN_COUNT  4
+
 /* Frame 2 Background: 515 is Stopped; Random(50)=1 plays one of the
  * RRandom(12,14) flash sequences (516/517/518), cut back to Stopped
  * after 0.2 s. Each flash sequence is a single held frame. */

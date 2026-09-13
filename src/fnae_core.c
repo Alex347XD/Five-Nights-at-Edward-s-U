@@ -399,8 +399,17 @@ void fnae_click(FnaeGame* g,int x,int y){
   if(fx>1100 && y>500){if(g->right_door==0)g->right_door=1;else if(g->right_door==2)g->right_door=3;return;}
   if(x>500 && x<780 && y>560){g->cam_anim=CAM_UP_ANIM;g->cam_anim_timer=0;return;}
  }
- if(g->cam_anim==CAM_UP && y>80){
-  if(x>980){ if(y<150)g->camera=1; else if(y<220)g->camera=2; else if(y<290)g->camera=3; else if(y<360)g->camera=4; }
- }
+  /* Camera buttons: clicks on any "CAM 01" box move You onto it and the
+   * view follows ("[ Is Up ]" + "[ Cam 01 ]" groups). Rects are the verbatim
+   * Frame 3 Objects.txt button hotspots (60x40 boxes, center-anchored like
+   * the minimap renderer in visuals.c); the viewed feed follows g->camera in
+   * fnae_update, like the Fusion You-overlap events. */
+  if(g->cam_anim==CAM_UP && g->hidden_power>0){
+   static const int btn_x[4]={1016,1179,953,1161};
+   static const int btn_y[4]={339,371,469,505};
+   for(int i=0;i<4;i++){
+    if(x>=btn_x[i]-30&&x<btn_x[i]+30&&y>=btn_y[i]-20&&y<btn_y[i]+20){g->camera=i+1;break;}
+   }
+  }
  if(g->view==4 && x>500 && x<780 && y>500){g->music_winding=1;}
 }

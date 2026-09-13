@@ -76,6 +76,15 @@ termination notice, not the newspaper.)
   (+/-1 px per tick, clamped to the feed image ends so no black bars show),
   drawn cover-cropped so the full 1600px feed scrolls through the view
   instead of letterboxing
+- Camera minimap (`28.png` line art at [882,265], YOU baked in) draws while
+  a camera is up, with the four clickable cam buttons on top: gray box
+  (`29.png`) normally, green box (`30.png`) under the viewed camera, each
+  with its `31.png`–`34.png` "CAM 0X" label. Buttons sit at the verbatim
+  Frame 3 Objects.txt hotspots; boxes are center-anchored (labels top-left),
+  verified with headless screenshots. Clicking a button switches the feed
+  like keys 1–4; the "Cam Labels" room-name string ("Hell", ...) has no PNG
+  (Fusion String object) so it stays window-title-only. Lure button not
+  wired yet.
 
 ## Known limitations
 

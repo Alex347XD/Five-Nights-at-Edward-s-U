@@ -31,6 +31,13 @@ typedef struct {
     SDL_Texture *door_left[IMG_DOOR_FRAMES];
     SDL_Texture *door_right[IMG_DOOR_FRAMES];
     SDL_Texture *desk;
+
+    /* Frame 3 camera minimap (Layer #5 UI): line-art map plus the four
+     * clickable cam buttons (gray/green box + "CAM 0X" label each). */
+    SDL_Texture *minimap;
+    SDL_Texture *cam_btn_off;
+    SDL_Texture *cam_btn_on;
+    SDL_Texture *cam_txt[IMG_CAMBTN_COUNT];
 } FnaeVisuals;
 
 int visuals_init(FnaeVisuals *v, SDL_Renderer *r);

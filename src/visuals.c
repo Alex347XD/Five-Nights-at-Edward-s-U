@@ -71,6 +71,12 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
         v->door_left[i] = load_id(r, IMG_DOOR_LEFT_FIRST + i);
         v->door_right[i] = load_id(r, IMG_DOOR_RIGHT_FIRST + i);
     }
+    /* Camera minimap + buttons (see src/fnae_assets.h for layout). */
+    v->minimap = load_id(r, IMG_MINIMAP);
+    v->cam_btn_off = load_id(r, IMG_CAMBTN_OFF);
+    v->cam_btn_on = load_id(r, IMG_CAMBTN_ON);
+    for (int i = 0; i < IMG_CAMBTN_COUNT; ++i)
+        v->cam_txt[i] = load_id(r, IMG_CAMTXT_FIRST + i);
     v->title_new = load_id(r, IMG_TITLE_NEW);
     v->title_continue = load_id(r, IMG_TITLE_CONTINUE);
     v->title_6night = load_id(r, IMG_TITLE_6NIGHT);
@@ -112,6 +118,11 @@ void visuals_free(FnaeVisuals *v) {
         destroy_texture(&v->door_right[i]);
     }
     destroy_texture(&v->desk);
+    destroy_texture(&v->minimap);
+    destroy_texture(&v->cam_btn_off);
+    destroy_texture(&v->cam_btn_on);
+    for (int i = 0; i < IMG_CAMBTN_COUNT; ++i)
+        destroy_texture(&v->cam_txt[i]);
     destroy_texture(&v->title_new);
     destroy_texture(&v->title_continue);
     destroy_texture(&v->title_6night);
@@ -295,6 +306,30 @@ static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, in
     }
 }
 
+/* Frame 3 camera minimap (Layer #5 UI). Verbatim Objects.txt hotspots
+ * (see src/fnae_assets.h). The map itself draws top-left like the other
+ * scenery, but the button boxes use FNAE_ANCHOR_CENTER: with a top-left
+ * box the 31x25 label at (-21,-12) would hang off the box corner, while
+ * centered the label sits inside the 60x40 box like the Fusion layout.
+ * The button under You highlights green (CAM 01 Animation 12), the rest
+ * stay gray (Stopped); the native selected index is the viewed camera.
+ * The "Cam Labels" room-name string ("Hell", ...) has no PNG (Fusion
+ * String object) so it stays window-title-only. */
+static void draw_minimap(SDL_Renderer *r, FnaeVisuals *v, int camera) {
+    static const int btn_x[IMG_CAMBTN_COUNT] = {1016, 1179, 953, 1161};
+    static const int btn_y[IMG_CAMBTN_COUNT] = {339, 371, 469, 505};
+    static const int txt_x[IMG_CAMBTN_COUNT] = {995, 1158, 932, 1141};
+    static const int txt_y[IMG_CAMBTN_COUNT] = {327, 359, 457, 493};
+
+    draw_texture(r, v->minimap, 882, 265);
+    for (int i = 0; i < IMG_CAMBTN_COUNT; ++i) {
+        visuals_draw_anchored(r,
+            (i == camera - 1) ? v->cam_btn_on : v->cam_btn_off,
+            btn_x[i], btn_y[i], FNAE_ANCHOR_CENTER);
+        draw_texture(r, v->cam_txt[i], txt_x[i], txt_y[i]);
+    }
+}
+
 void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                     int camera_up, int night, int hour, int power,
                     int left_door, int right_door, int mask, int arrow, int progress,
@@ -342,6 +377,9 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
              * full 1600px width scrolls through the 1280px view. */
             draw_cam_pan(r, v->cams[idx][occupied], cam_scroll, ox, oy);
             draw_static(r, v->static_frames[static_frame & 7], cam_static_alpha);
+            /* UI sits above the feed static (Static precedes minimap in Layer #5). */
+            int sel = camera < 1 ? 1 : camera > IMG_CAMBTN_COUNT ? IMG_CAMBTN_COUNT : camera;
+            draw_minimap(r, v, sel);
         } else {
             draw_office_pan(r, v->office, office_scroll, ox, oy);
             /* Layer order mirrors Fusion: office (#1), doors (#2), desk (#3).
