@@ -4,7 +4,7 @@ Canonical instructions for AI agents working in this repo.
 
 ## Stack
 
-C11, CMake 3.16+, Ninja, SDL2 + SDL2_image. Canonical toolchain is
+C11, CMake 3.16+, Ninja, SDL2 + SDL2_image + SDL2_mixer. Canonical toolchain is
 Windows 10/11 + MSYS2 UCRT64 (see README.md).
 
 Canonical modules (what actually builds — see `CMakeLists.txt`):

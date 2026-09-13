@@ -59,6 +59,12 @@ Then install the development tools and SDL libraries:
 pacman -S --needed mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-SDL2 mingw-w64-ucrt-x86_64-SDL2_image
 ```
 
+And:
+
+```bash
+pacman -S mingw-w64-ucrt-x86_64-SDL2_mixer
+```
+
 This installs:
 
 * GCC
@@ -66,6 +72,7 @@ This installs:
 * Ninja
 * SDL2
 * SDL2_image
+* SDL2_mixer
 
 ---
 

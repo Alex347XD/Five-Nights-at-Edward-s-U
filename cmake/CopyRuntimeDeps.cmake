@@ -4,11 +4,11 @@
 #   TARGET_FILE : full path to FNaE_Native.exe
 #   TARGET_DIR  : directory to copy DLLs into (build/FNaE)
 #   SEARCH_DIRS : ";"-separated list of extra directories to search
-#                 (SDL2 / SDL2_image bin dirs, no hardcoded MSYS2 paths)
+#                 (SDL2 / SDL2_image / SDL2_mixer bin dirs, no hardcoded MSYS2 paths)
 #
 # Uses file(GET_RUNTIME_DEPENDENCIES) so the full transitive closure
-# (libpng, libjpeg, libwebp, libavif, ...) is collected, not just the
-# direct SDL2/SDL2_image DLLs.
+# (libpng, libjpeg, libwebp, libavif, mpg123, vorbis, ...) is collected,
+# not just the direct SDL2/SDL2_image/SDL2_mixer DLLs.
 
 if(POLICY CMP0207)
   cmake_policy(SET CMP0207 NEW)

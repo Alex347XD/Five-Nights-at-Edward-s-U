@@ -25,11 +25,36 @@ typedef struct {
 
     SDL_Texture *newspaper;
     SDL_Texture *final_screen;
+    SDL_Texture *warning; /* Frame 1 warning screen */
 
     /* Frame 3 night-shift art: door shutters (16 frames each) + desk. */
     SDL_Texture *door_left[IMG_DOOR_FRAMES];
     SDL_Texture *door_right[IMG_DOOR_FRAMES];
     SDL_Texture *desk;
+
+    /* Frame 3 camera minimap (Layer #5 UI): line-art map plus the four
+     * clickable cam buttons (gray/green box + "CAM 0X" label each). */
+    SDL_Texture *minimap;
+    SDL_Texture *cam_btn_off;
+    SDL_Texture *cam_btn_on;
+    SDL_Texture *cam_txt[IMG_CAMBTN_COUNT];
+    /* Audio-lure button (Layer #5 UI) + cooldown dots (Animation 12) +
+     * Lure Area marker (Layer #5, on the lured cam button) + Springtrap
+     * stand figure (Layer #2 office overlay, over the viewed feed). */
+    SDL_Texture *lure_button;
+    SDL_Texture *lure_cd[4];
+    SDL_Texture *lure_area;
+    SDL_Texture *springtrap_stand;
+    /* Music-box crank (Cam 04 view only) + low-music warning badges. */
+    SDL_Texture *musicbtn_off;
+    SDL_Texture *musicbtn_on;
+    SDL_Texture *music_wind; /* "Give $ To Business Edward" overlay text */
+    SDL_Texture *music_hold; /* "click & hold" hint under the box */
+    SDL_Texture *music_pie[IMG_MUSIC_PIE_COUNT]; /* wind gauge, empty->full */
+    SDL_Texture *warn_off;
+    SDL_Texture *warn_on;
+    /* Mute Call button (night calls only, while one plays). */
+    SDL_Texture *mutecall;
 } FnaeVisuals;
 
 int visuals_init(FnaeVisuals *v, SDL_Renderer *r);
@@ -51,4 +76,8 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                      int left_door, int right_door, int mask, int arrow, int progress,
                      int static_frame, int static_alpha, int office_scroll,
                      int left_door_frame, int right_door_frame, int title_bg_frame,
-                     int foxy_pos, int freddy_pos);
+                      int foxy_pos, int freddy_pos, int cam_static_alpha,
+                      int death, int music, int cam_scroll, int usage,
+                      int springtrap_stand, int lure_area, int lure_cam,
+                      int lure_cd, float lure_cd_timer,
+                      int winding, int warning, int mute_visible);

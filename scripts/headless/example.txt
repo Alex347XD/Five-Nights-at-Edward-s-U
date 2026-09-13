@@ -14,10 +14,12 @@
 # Copy this file to local.txt (git-ignored scratch space) to experiment:
 #   cp scripts/headless/example.txt scripts/headless/local.txt
 
+5 key return
 10 key return
 40 key return
+60 shot screenshots/example-which-night.png
 70 key return
 120 key s
-150 shot screenshots/example-camera-up.png
+165 shot screenshots/example-camera-up.png
 180 key s
 210 click 90 100

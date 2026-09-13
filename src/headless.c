@@ -15,9 +15,10 @@
  * when no --script file is given. */
 static void headless_default_script(FnaeGame *game, int frame) {
     switch (frame) {
-    case 10: fnae_key(game, 13); break;          /* Title: New -> Newspaper */
-    case 40: fnae_key(game, 13); break;          /* Newspaper -> Which Night */
-    case 70: fnae_key(game, 13); break;          /* Which Night -> start night */
+    case 5: fnae_key(game, SDLK_RETURN); break;   /* Warning -> Title */
+    case 10: fnae_key(game, SDLK_RETURN); break;  /* Title: New -> Newspaper */
+    case 40: fnae_key(game, SDLK_RETURN); break;  /* Newspaper -> Which Night */
+    case 70: fnae_key(game, SDLK_RETURN); break;  /* Which Night -> start night (skip 2s timer) */
     case 120: fnae_key(game, 's'); break;        /* camera up */
     case 180: fnae_key(game, 's'); break;        /* camera down */
     case 210: fnae_click(game, 90, 100); break;  /* harmless office click */
@@ -215,7 +216,8 @@ void headless_free_script(HeadlessScript *s) {
 }
 
 int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
-                 const HeadlessOptions *opt, const HeadlessScript *script) {
+                 const HeadlessOptions *opt, const HeadlessScript *script,
+                 FnaeAudio *audio) {
     int frames = opt->frames < 1 ? 1 : opt->frames;
     const float dt = 1.0f / 60.0f;
 
@@ -228,7 +230,9 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                 switch (ev->type) {
                 case HEV_KEY: fnae_key(game, ev->key); break;
                 case HEV_KEYUP: fnae_key_up(game, ev->key); break;
-                case HEV_CLICK: fnae_click(game, ev->x, ev->y); break;
+                /* A scripted click is down+up: edge actions fire, but
+                 * hold-driven states (music-box crank) never latch. */
+                case HEV_CLICK: fnae_press(game, ev->x, ev->y); fnae_click(game, ev->x, ev->y); fnae_release(game); break;
                 case HEV_MOUSE: fnae_mouse_move(game, ev->x, ev->y); break;
                 case HEV_SHOT:
                     printf("HEADLESS shot frame=%d path=%s game_frame=%s\n",
@@ -254,7 +258,20 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                         game->right_door_frame,
                         game->title_bg_frame,
                         game->foxy.pos,
-                        game->freddy.pos
+                        game->freddy.pos,
+                        game->cam_static_alpha,
+                        game->death,
+                        game->music_left,
+                        (int)game->cam_scroll,
+                        game->power_left,
+                        game->springtrap_stand,
+                        game->lure_area,
+                        game->lure_cam,
+                        game->lure_cd,
+                        game->lure_cd_timer,
+                        game->music_winding,
+                        game->warning,
+                        audio ? fnae_audio_call_playing(audio) : 0
                     );
                     SDL_RenderPresent(r);
                     if (headless_save_screenshot(r, ev->shot) != 0)
@@ -273,6 +290,8 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
         }
         fnae_update(game, dt);
         fnae_static_tick(game);
+        if (audio)
+            fnae_audio_frame(audio, game);
         visuals_render(
             v, r,
             (int)game->frame,
@@ -293,7 +312,20 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
             game->right_door_frame,
             game->title_bg_frame,
             game->foxy.pos,
-            game->freddy.pos
+            game->freddy.pos,
+            game->cam_static_alpha,
+            game->death,
+            game->music_left,
+            (int)game->cam_scroll,
+            game->power_left,
+            game->springtrap_stand,
+            game->lure_area,
+            game->lure_cam,
+            game->lure_cd,
+            game->lure_cd_timer,
+            game->music_winding,
+            game->warning,
+            audio ? fnae_audio_call_playing(audio) : 0
         );
         SDL_RenderPresent(r);
         if ((f + 1) % 60 == 0) {

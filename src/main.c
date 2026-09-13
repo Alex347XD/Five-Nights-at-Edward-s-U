@@ -8,6 +8,7 @@
 #include "fnae_core.h"
 #include "headless.h"
 #include "visuals.h"
+#include "audio.h"
 
 #include <string.h>
 
@@ -118,10 +119,16 @@ int main(int argc, char *argv[]) {
     FnaeGame game;
     fnae_init(&game);
 
+    /* Audio is best-effort: init failure means silent play, never a crash.
+     * Works headless too (SDL_AUDIODRIVER=dummy), draining the queue. */
+    FnaeAudio audio;
+    fnae_audio_init(&audio, "assets/audio");
+
     if (headless) {
         int rc = headless_run(r, &visuals, &game, &hopt,
-                              script_path ? &script : NULL);
+                              script_path ? &script : NULL, &audio);
         headless_free_script(&script);
+        fnae_audio_free(&audio);
         visuals_free(&visuals);
         SDL_DestroyRenderer(r);
         SDL_DestroyWindow(w);
@@ -148,7 +155,10 @@ int main(int argc, char *argv[]) {
             } else if (e.type == SDL_KEYUP && !e.key.repeat) {
                 fnae_key_up(&game, e.key.keysym.sym);
             } else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT) {
+                fnae_press(&game, e.button.x, e.button.y);
                 fnae_click(&game, e.button.x, e.button.y);
+            } else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT) {
+                fnae_release(&game);
             } else if (e.type == SDL_MOUSEMOTION) {
                 fnae_mouse_move(&game, e.motion.x, e.motion.y);
             }
@@ -156,6 +166,7 @@ int main(int argc, char *argv[]) {
 
         fnae_update(&game, dt);
         fnae_static_tick(&game);
+        fnae_audio_frame(&audio, &game);
 
         visuals_render(
             &visuals, r,
@@ -177,13 +188,27 @@ int main(int argc, char *argv[]) {
             game.right_door_frame,
             game.title_bg_frame,
             game.foxy.pos,
-            game.freddy.pos
+            game.freddy.pos,
+            game.cam_static_alpha,
+            game.death,
+            game.music_left,
+            (int)game.cam_scroll,
+            game.power_left,
+            game.springtrap_stand,
+            game.lure_area,
+            game.lure_cam,
+            game.lure_cd,
+            game.lure_cd_timer,
+            game.music_winding,
+            game.warning,
+            fnae_audio_call_playing(&audio)
         );
 
         SDL_RenderPresent(r);
     }
 
     headless_free_script(&script);
+    fnae_audio_free(&audio);
     visuals_free(&visuals);
     SDL_DestroyRenderer(r);
     SDL_DestroyWindow(w);
