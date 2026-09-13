@@ -38,7 +38,10 @@ typedef struct {
  int movement_out; float movement_timer; int camera_up_check;
  int foxy_stand; int freddy_door;
  FnaeAI foxy, freddy; int springtrap_a, springtrap_b; int springtrap_alive;
-  int ph_mangle_a, ph_mangle_b, ph_mangle_c; int ph_bb_a, ph_bb_b;
+    int ph_mangle_a, ph_mangle_b, ph_mangle_c; int ph_bb_a, ph_bb_b;
+    int ph_prev_view, ph_prev_cam; /* edge detect: phantoms roll once on cam open/switch, stable while viewing */
+   int ph_bb_scare, ph_bb_scare_on; /* Scare overlay alpha 0-255 (+7/tick while <255, no gate) + first-trigger gate (see update_phantoms) */
+   float ph_bb_scare_timer; /* hold at full opacity before the jumpscare clears */
   int ph_annoy_a, ph_annoy_b; /* office-annoy descent (A 0-224) / linger (B 0-7) once C==1 */
  int golden_ai, foxy_ai, freddy_ai, springtrap_ai, ph_mangle_ai, ph_bb_ai;
    int music_left; int music_winding; float music_tick;

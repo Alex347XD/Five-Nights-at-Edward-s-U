@@ -1,0 +1,11 @@
+# Phantom-hunt scratch: cam up at 120, catch overlays, cam down at 700,
+# then office (annoy risen + scare faded in).
+5 key return
+10 key return
+40 key return
+70 key return
+120 key s
+250 shot screenshots/ph-cam-250.png
+400 shot screenshots/ph-cam-400.png
+700 key s
+730 shot screenshots/ph-office-730.png

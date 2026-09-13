@@ -55,6 +55,11 @@ typedef struct {
     SDL_Texture *warn_on;
     /* Mute Call button (night calls only, while one plays). */
     SDL_Texture *mutecall;
+    /* Phantom Mangle + Phantom BB (Layer #6 top overlays + office Annoy). */
+    SDL_Texture *phmangle_cam;   /* camera overlay (A==1 while haunting) */
+    SDL_Texture *phmangle_annoy; /* office riser (Layer #3, above the desk) */
+    SDL_Texture *phbb_cam;       /* camera overlay (A==1 while haunting) */
+    SDL_Texture *phbb_scare;     /* post-scare fade (alpha 0->255) */
 } FnaeVisuals;
 
 int visuals_init(FnaeVisuals *v, SDL_Renderer *r);
@@ -80,4 +85,6 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                       int death, int music, int cam_scroll, int usage,
                       int springtrap_stand, int lure_area, int lure_cam,
                       int lure_cd, float lure_cd_timer,
-                      int winding, int warning, int mute_visible);
+                      int winding, int warning, int mute_visible,
+                      int ph_mangle_cam, int ph_bb_cam,
+                      int ph_bb_scare, int ph_bb_scare_on, int ph_annoy_a);

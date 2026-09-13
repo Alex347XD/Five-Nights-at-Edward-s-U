@@ -271,7 +271,12 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                         game->lure_cd_timer,
                         game->music_winding,
                         game->warning,
-                        audio ? fnae_audio_call_playing(audio) : 0
+                        audio ? fnae_audio_call_playing(audio) : 0,
+                        game->ph_mangle_a == 1,
+                        game->ph_bb_a == 1,
+                        game->ph_bb_scare,
+                        game->ph_bb_scare_on,
+                        game->ph_annoy_a
                     );
                     SDL_RenderPresent(r);
                     if (headless_save_screenshot(r, ev->shot) != 0)
@@ -325,7 +330,12 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
             game->lure_cd_timer,
             game->music_winding,
             game->warning,
-            audio ? fnae_audio_call_playing(audio) : 0
+            audio ? fnae_audio_call_playing(audio) : 0,
+            game->ph_mangle_a == 1,
+            game->ph_bb_a == 1,
+            game->ph_bb_scare,
+            game->ph_bb_scare_on,
+            game->ph_annoy_a
         );
         SDL_RenderPresent(r);
         if ((f + 1) % 60 == 0) {

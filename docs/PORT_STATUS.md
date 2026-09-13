@@ -117,6 +117,11 @@ termination notice, not the newspaper.)
 - Phone calls play per night with a clickable MUTE CALL button (`415.png`
   at [100,55], visible on office and camera screens while the call plays,
   stops it on click).
+- Phantoms render: Phantom Mangle's camera face (`405.png` x2.7, Layer #6
+  top) and office Annoy (`380.png` rising from [508,720], Layer #3 above
+  the desk, panning with the office), Phantom BB's camera face (`352.png`
+  x2.7, Layer #6 top, dismissed by clicking a cam button) and post-scare
+  fade (`349.png` x2.7, alpha 0→255 after the 80-tick force-down).
 - Night HUD renders on all Frame 3 screens (office and camera views):
   "12 AM"-style clock top-right (time of day [1186,65] + am [1200,37]),
   "NIGHT n" under it (Which Night? [759,85] + The Night [1245,101]),

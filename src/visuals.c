@@ -93,6 +93,10 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->warn_off = load_id(r, IMG_WARNBADGE_OFF);
     v->warn_on = load_id(r, IMG_WARNBADGE_ON);
     v->mutecall = load_id(r, IMG_MUTECALL);
+    v->phmangle_cam = load_id(r, IMG_PHMANGLE_CAM);
+    v->phmangle_annoy = load_id(r, IMG_PHMANGLE_ANNOY);
+    v->phbb_cam = load_id(r, IMG_PHBB_CAM);
+    v->phbb_scare = load_id(r, IMG_PHBB_SCARE);
     v->title_new = load_id(r, IMG_TITLE_NEW);
     v->title_continue = load_id(r, IMG_TITLE_CONTINUE);
     v->title_6night = load_id(r, IMG_TITLE_6NIGHT);
@@ -153,6 +157,10 @@ void visuals_free(FnaeVisuals *v) {
     destroy_texture(&v->warn_off);
     destroy_texture(&v->warn_on);
     destroy_texture(&v->mutecall);
+    destroy_texture(&v->phmangle_cam);
+    destroy_texture(&v->phmangle_annoy);
+    destroy_texture(&v->phbb_cam);
+    destroy_texture(&v->phbb_scare);
     destroy_texture(&v->title_new);
     destroy_texture(&v->title_continue);
     destroy_texture(&v->title_6night);
@@ -523,6 +531,25 @@ static void draw_warning(SDL_Renderer *r, FnaeVisuals *v,
     visuals_draw_anchored(r, t, x, y, FNAE_ANCHOR_CENTER);
 }
 
+/* Layer #6 phantom camera overlay: 480x270 art at [0,0] with the Fusion
+ * scale 2.7 (1296x729, slightly overflowing the 1280x720 view right and
+ * bottom, like the original). Baked per-pixel alpha blends the face over
+ * the scene; the Scare additionally fades via the global alpha 0->255. */
+static void draw_phantom_cam(SDL_Renderer *r, SDL_Texture *t, int alpha,
+                             int ox, int oy) {
+    if (!t || alpha <= 0) return;
+    int w, h;
+    SDL_QueryTexture(t, NULL, NULL, &w, &h);
+    SDL_Rect d = {ox, oy, (int)(w * 2.7f), (int)(h * 2.7f)};
+    if (alpha < 255) {
+        SDL_SetTextureBlendMode(t, SDL_BLENDMODE_BLEND);
+        SDL_SetTextureAlphaMod(t, (Uint8)alpha);
+    }
+    SDL_RenderCopy(r, t, NULL, &d);
+    if (alpha < 255)
+        SDL_SetTextureAlphaMod(t, 255);
+}
+
 /* Frame 3 "[ Music Box ]" UI (Cam 04 view only), Layer #5 order: crank
  * box at [569,497] (Stopped released, Animation 12 held), Wind Text on
  * top of it ([497,475] top-left, inside the 156x65 box), Click & Hold
@@ -555,7 +582,9 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                      int death, int music, int cam_scroll, int usage,
                      int stand, int lure_area, int lure_cam,
                      int lure_cd, float lure_cd_timer,
-                     int winding, int warning, int mute_visible) {
+                     int winding, int warning, int mute_visible,
+                     int ph_mangle_cam, int ph_bb_cam,
+                     int ph_bb_scare, int ph_bb_scare_on, int ph_annoy_a) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
@@ -664,6 +693,12 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             draw_world(r, v->door_left[left_door_frame], 119, 0, office_scroll, ox, oy);
             draw_world(r, v->door_right[right_door_frame], 1263, 0, office_scroll, ox, oy);
             draw_world(r, v->desk, 266, 177, office_scroll, ox, oy);
+            /* Ph Mangle Annoy (Layer #3, above the desk): rises from
+             * [508,720] by Annoy A px while C==1, then sinks back once
+             * B>=7. A world object, so it pans with the office scroll. */
+            if (ph_annoy_a > 0)
+                draw_world(r, v->phmangle_annoy, 508, 720 - ph_annoy_a,
+                           office_scroll, ox, oy);
             /* Low-music badge for the office screen (Warning out of cam). */
             draw_warning(r, v, warning, static_frame, 1228, 672);
             if (mute_visible)
@@ -673,6 +708,15 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             int sel = camera < 1 ? 1 : camera > IMG_CAMBTN_COUNT ? IMG_CAMBTN_COUNT : camera;
             draw_night_hud(r, sel, 0, night, hour, power, usage);
         }
+        /* Layer #6 top overlays (Phantom Mangle / Phantom BB camera haunts
+         * + the BB scare fade): above feed, office, and camera UI alike,
+         * in Objects.txt layer order. The camera haunts show while A==1
+         * (cameras-up phase); the scare fades in over the office after
+         * the B>80 force-down (gated on the first trigger in core). */
+        if (ph_mangle_cam) draw_phantom_cam(r, v->phmangle_cam, 255, ox, oy);
+        if (ph_bb_cam) draw_phantom_cam(r, v->phbb_cam, 255, ox, oy);
+        if (ph_bb_scare_on && ph_bb_scare > 0)
+            draw_phantom_cam(r, v->phbb_scare, ph_bb_scare, ox, oy);
     } else if (frame == 6) {
         draw_which_night(r, v, night);
     } else if (frame == 9) {

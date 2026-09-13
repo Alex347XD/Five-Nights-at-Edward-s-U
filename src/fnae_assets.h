@@ -97,6 +97,19 @@
 /* Mute Call button ("MUTE CALL", 121x31 at [100,55]): reappears while a
  * night's phone call plays (ch #16) and stops it when clicked. */
 #define IMG_MUTECALL      415 /* Mute Call button art */
+/* Phantom Mangle + Phantom BB (Frame 3 "[ Phantom Mangle ]" / "[ Phantom BB ]"
+ * groups, Layer #6 top overlays at [0,0] with scale 2.7, plus the office
+ * Annoy riser on Layer #3). Owner-confirmed IDs: 405 = Ph Mangle Camera
+ * overlay (480x270, x2.7 ~= fullscreen), 380 = Ph Mangle Annoy office
+ * figure (400x225, starts at [508,720], climbs 224px). 352 = Ph BB
+ * Camera overlay, 349 = Ph BB Scare fade (480x270 gray grinning top-hat
+ * face, per owner).
+ * 480x270 x 2.7 = 1296x729, i.e. the overlay slightly overflows the
+ * 1280x720 view to the right/bottom like the Fusion scale. */
+#define IMG_PHMANGLE_CAM   405 /* gray cracked-rock face, 480x270 */
+#define IMG_PHMANGLE_ANNOY 380 /* gray cracked-rock figure, 400x225 */
+#define IMG_PHBB_CAM       352 /* gray grin + top hat, 480x270 */
+#define IMG_PHBB_SCARE     349 /* gray grin + top hat, 480x270, alpha-faded */
 /* Unidentified (owner to confirm object/sequence): */
 #define IMG_UNKNOWN_179   179 /* 1280x720 gray-face frame; NOT the title Background */
 #define IMG_DEVIL_SAD     233 /* 600x507 devil card, sad eyes */
