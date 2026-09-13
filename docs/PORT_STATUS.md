@@ -123,16 +123,16 @@ termination notice, not the newspaper.)
   "POWER: n%" + "USAGE:" bars bottom-left (Power [129,627] + Power Left
   [24,616] + Usage Text [24,632]). Fusion counters/strings are text, not
   PNG frames, and this port has no font library, so glyphs are a minimal
-  built-in 5x7 bitmap. Live state also stays in the window title.
+  built-in 5x7 bitmap (full A-Z, so "DINOSAUR EXHIBIT" renders intact). Live state also stays in the window title.
 
 ### Audio
 
 Sound is wired via SDL_mixer (`src/audio.c/h`, 43 samples from
 `assets/audio/`): night ambience loops (fan/depths/camera-audio/deepbreaths/
 stare/buzzlight/close-ambience/music-box melody) with the Fusion per-view,
-mask/door/signal-loss/flashlight volume ducking (stare 0 live / 50 on
-Connection Lost, buzzlight 0 / 70 with flashlight; Change/flip/mask
-one-shots at 50), one-shots for lure echoes + stop, doors,
+mask/door/signal-loss/flashlight volume ducking (deepbreaths/stare/buzzlight
+start silent; stare 0 live / 50 on Connection Lost, buzzlight 0 / 70 with
+flashlight; Change/flip/mask one-shots at 50, title menu blips on ch #3), one-shots for lure echoes + stop, doors,
 camera/mask flips, cam-change blips, footsteps, phantom scares (Mangle
 garble loop + breathing, Ph BB scream3), windup,
 jack-in-the-box, power-down, jumpscares, phone calls (MP3 1-3, WAV 4-6),
