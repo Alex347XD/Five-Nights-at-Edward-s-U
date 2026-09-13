@@ -69,4 +69,4 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                       int foxy_pos, int freddy_pos, int cam_static_alpha,
                       int death, int music, int cam_scroll, int usage,
                       int springtrap_stand, int lure_area, int lure_cam,
-                      float lure_timer);
+                      int lure_cd, float lure_cd_timer);

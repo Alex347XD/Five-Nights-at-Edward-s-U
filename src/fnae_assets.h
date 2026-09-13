@@ -71,11 +71,13 @@
  * The Lure Button sits at [744,296] in the camera UI (Layer #5): visible
  * while a camera is up except on Cam 04 (music box). Its Stopped frame is
  * the "Lure" card; Animation 12 is the 4-frame cooldown run of white
- * square dots (1 dot -> 2 -> 3 -> 4) that plays while a lure is active,
- * then cuts back to Stopped when the Lure Area is destroyed.
- * The Lure Area spawns at (0,0) from the viewed CAM 01 button, so the
- * gray circle draws centered over the lured camera's minimap button
- * until it resolves. Springtrap Stand is the full-body blue
+ * square dots (1 dot -> 2 -> 3 -> 4) that plays over the ~2 s cooldown
+ * window, independent of the Lure Area marker: destroying the marker
+ * never shortens the cooldown, and a new lure requires the cooldown to
+ * have fully elapsed. The Lure Area spawns at (0,0) from the viewed
+ * CAM 01 button, so the gray circle draws mostly transparent
+ * (alpha ~70) centered over the lured camera's minimap button until it
+ * resolves. Springtrap Stand is the full-body blue
  * Edward with stars (299x715) at [416,-24] in the office overlay
  * (Layer #2), drawn over the feed while viewing Springtrap's camera. */
 #define IMG_LURE_BUTTON     381 /* "Lure" button, 128x64, Stopped */

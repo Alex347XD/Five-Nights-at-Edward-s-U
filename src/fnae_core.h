@@ -29,7 +29,8 @@ typedef struct {
    int power_out_alpha; /* Power Out overlay fade 255->0 once power is gone */
    int springtrap_pos; /* Springtrap camera index 1-4 */
    int springtrap_stand; /* Springtrap visible in office (viewing its cam) */
-   int lure_area; int lure_cam; float lure_timer; /* audio-lure placement + pull delay */
+   int lure_area; int lure_cam; float lure_timer; /* audio-lure marker + pull delay */
+   int lure_cd; float lure_cd_timer; /* lure-button cooldown (Animation 12): gates placement, independent of marker destroy */
    float movement_half_tick, movement_force_tick; /* Camera Out re-tune timers */
    int custom_freddy, custom_foxy, custom_springtrap, custom_golden;
    int custom_mangle, custom_bb, custom_puppet; /* Customize-frame AI levels for night 7 */

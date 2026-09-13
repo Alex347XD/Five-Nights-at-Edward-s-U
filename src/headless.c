@@ -264,7 +264,8 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                         game->springtrap_stand,
                         game->lure_area,
                         game->lure_cam,
-                        game->lure_timer
+                        game->lure_cd,
+                        game->lure_cd_timer
                     );
                     SDL_RenderPresent(r);
                     if (headless_save_screenshot(r, ev->shot) != 0)
@@ -312,7 +313,8 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
             game->springtrap_stand,
             game->lure_area,
             game->lure_cam,
-            game->lure_timer
+            game->lure_cd,
+            game->lure_cd_timer
         );
         SDL_RenderPresent(r);
         if ((f + 1) % 60 == 0) {

@@ -496,7 +496,7 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                      int foxy_pos, int freddy_pos, int cam_static_alpha,
                      int death, int music, int cam_scroll, int usage,
                      int stand, int lure_area, int lure_cam,
-                     float lure_timer) {
+                     int lure_cd, float lure_cd_timer) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
@@ -552,24 +552,30 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
              * viewed CAM 01 button, so it draws center-anchored over the
              * lured camera's minimap button until the lure resolves
              * (~2 s). Hidden with the rest of the camera UI when the
-             * cameras are down. */
+             * cameras are down. Drawn mostly transparent so the cam
+             * button stays readable underneath. */
             if (lure_area && lure_cam >= 1 && lure_cam <= IMG_CAMBTN_COUNT) {
                 static const int btn_x[IMG_CAMBTN_COUNT] = {1016, 1179, 953, 1161};
                 static const int btn_y[IMG_CAMBTN_COUNT] = {307, 371, 469, 505};
+                SDL_SetTextureBlendMode(v->lure_area, SDL_BLENDMODE_BLEND);
+                SDL_SetTextureAlphaMod(v->lure_area, 70);
                 visuals_draw_anchored(r, v->lure_area,
                                       btn_x[lure_cam - 1], btn_y[lure_cam - 1],
                                       FNAE_ANCHOR_CENTER);
+                SDL_SetTextureAlphaMod(v->lure_area, 255);
             }
             /* Lure Button reappears with the camera UI except on Cam 04
              * (the music-box camera). Center-anchored like the cam
-             * buttons. While a lure is active the button plays its
-             * Animation 12 cooldown (1 -> 2 -> 3 -> 4 square dots over
-             * the ~2 s lure window, transparent frames so only the dots
-             * show); otherwise the Stopped "Lure" frame shows. */
+             * buttons. While the button cooldown is active the button
+             * plays its Animation 12 cooldown (1 -> 2 -> 3 -> 4 square
+             * dots over the ~2 s window, transparent frames so only the
+             * dots show); otherwise the Stopped "Lure" frame shows.
+             * The cooldown is independent of the marker: destroying the
+             * Lure Area never shortens it. */
             if (sel != 4) {
                 SDL_Texture *lure = v->lure_button;
-                if (lure_area) {
-                    int f = (int)(lure_timer / 2.0f * 4.0f);
+                if (lure_cd) {
+                    int f = (int)(lure_cd_timer / 2.0f * 4.0f);
                     if (f < 0) f = 0;
                     if (f > 3) f = 3;
                     if (v->lure_cd[f]) lure = v->lure_cd[f];

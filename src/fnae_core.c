@@ -148,6 +148,7 @@ void fnae_start_night(FnaeGame* g,int night){
   /* Springtrap starts on Cam 02's box ("Start of Frame + Cam 02 Text
    * overlapping CAM 01 -> Springtrap at (0,0) from CAM 01"). */
   g->springtrap_pos=2; g->springtrap_stand=0; g->lure_area=0; g->lure_cam=0; g->lure_timer=0;
+  g->lure_cd=0; g->lure_cd_timer=0;
   g->foxy_stand=0; g->freddy_door=0;
  g->music_left=2000; g->music_winding=0; g->music_tick=0; g->current_call=0; g->call_muted=0;
  g->cam_anim_timer=g->mask_anim_timer=g->left_door_timer=g->right_door_timer=0;
@@ -304,13 +305,22 @@ void fnae_update(FnaeGame* g,float dt){
     if(g->springtrap_pos==1||g->springtrap_pos==2) g->springtrap_b=rr(0,1);
    }
  }
- /* Audio lure: 2s after placing it, 50% to pull Springtrap to the lured cam. */
- if(g->lure_area){
-  g->lure_timer+=dt;
-  if(g->lure_timer>=2.0f){g->lure_timer-=2.0f;
-   if(rnd(2)==1){g->springtrap_pos=g->lure_cam;g->movement_out=1;g->movement_half_tick=0;g->movement_force_tick=0;}
-   g->lure_area=0;}
- }
+  /* Audio lure marker: 2s after placing it, 50% to pull Springtrap to
+   * the lured cam. Destroying the marker does NOT end the button
+   * cooldown (see below); placement is gated on the cooldown only. */
+  if(g->lure_area){
+   g->lure_timer+=dt;
+   if(g->lure_timer>=2.0f){g->lure_timer-=2.0f;
+    if(rnd(2)==1){g->springtrap_pos=g->lure_cam;g->movement_out=1;g->movement_half_tick=0;g->movement_force_tick=0;}
+    g->lure_area=0;}
+  }
+  /* Lure-button cooldown (Animation 12, ~2 s window): runs independently
+   * of the marker so an early destroy never shortens it. A new lure
+   * requires the cooldown to have fully elapsed. */
+  if(g->lure_cd){
+   g->lure_cd_timer+=dt;
+   if(g->lure_cd_timer>=2.0f){g->lure_cd=0;g->lure_cd_timer=0;}
+  }
  /* Camera Out ("Connection Lost"): 50% re-tune every 0.5s, forced after 2s. */
  if(g->movement_out>0){
   g->movement_half_tick+=dt; g->movement_force_tick+=dt;
@@ -373,10 +383,11 @@ void fnae_key(FnaeGame* g,int key){
  if(key=='m'&&g->hidden_power>0&&g->cam_anim==CAM_DOWN){if(g->mask_anim==MASK_UP){g->mask_anim=MASK_UP_ANIM;g->mask_anim_timer=0;}else if(g->mask_anim==MASK_DOWN){g->mask_anim=MASK_DOWN_ANIM;g->mask_anim_timer=0;}}
  if(key=='z'||key==SDLK_LALT)g->flashlight=1;
  if(g->cam_anim==CAM_UP){if(key>='1'&&key<='4')g->camera=key-'0';}
- /* Audio lure: E while watching a camera feed (never from the music-box cam)
-  * puts a Lure Area on the viewed camera; Springtrap may follow (see update). */
- if(key=='e'&&g->view>0&&g->view!=4&&g->hidden_power>0&&g->death==0&&g->lure_area==0){
-  g->lure_area=1; g->lure_cam=g->view; g->lure_timer=0;}
+  /* Audio lure: E while watching a camera feed (never from the music-box cam)
+   * places a Lure Area on the viewed camera; Springtrap may follow (see update).
+   * Gated on the button cooldown only — marker state is unrelated. */
+  if(key=='e'&&g->view>0&&g->view!=4&&g->hidden_power>0&&g->death==0&&g->lure_cd==0){
+   g->lure_area=1; g->lure_cam=g->view; g->lure_timer=0; g->lure_cd=1; g->lure_cd_timer=0;}
  /* R is a keyboard test/control for winding the music box; mouse uses fnae_click. */
  if(key=='r'&&g->view==4)g->music_winding=1;
 }
@@ -418,11 +429,12 @@ void fnae_click(FnaeGame* g,int x,int y){
     for(int i=0;i<4;i++){
      if(x>=btn_x[i]-30&&x<btn_x[i]+30&&y>=btn_y[i]-20&&y<btn_y[i]+20){g->camera=i+1;break;}
     }
-    /* Audio-lure button ("Lure" 128x64 at [744,296], center-anchored
-     * like the cam buttons): clicking it lures like the E key, except
-     * on the music-box camera (Fusion hides it over Cam 04 Text). */
-    if(g->view>0&&g->view!=4&&g->death==0&&g->lure_area==0){
-     if(x>=744-64&&x<744+64&&y>=296-32&&y<296+32){g->lure_area=1;g->lure_cam=g->view;g->lure_timer=0;}
+     /* Audio-lure button ("Lure" 128x64 at [744,296], center-anchored
+      * like the cam buttons): clicking it lures like the E key, except
+      * on the music-box camera (Fusion hides it over Cam 04 Text).
+      * Gated on the button cooldown only — marker state is unrelated. */
+     if(g->view>0&&g->view!=4&&g->death==0&&g->lure_cd==0){
+      if(x>=744-64&&x<744+64&&y>=296-32&&y<296+32){g->lure_area=1;g->lure_cam=g->view;g->lure_timer=0;g->lure_cd=1;g->lure_cd_timer=0;}
     }
    }
  if(g->view==4 && x>500 && x<780 && y>500){g->music_winding=1;}

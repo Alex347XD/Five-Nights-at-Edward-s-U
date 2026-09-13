@@ -186,7 +186,8 @@ int main(int argc, char *argv[]) {
             game.springtrap_stand,
             game.lure_area,
             game.lure_cam,
-            game.lure_timer
+            game.lure_cd,
+            game.lure_cd_timer
         );
 
         SDL_RenderPresent(r);
