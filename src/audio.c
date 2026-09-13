@@ -270,6 +270,7 @@ void fnae_audio_frame(FnaeAudio *a, FnaeGame *g) {
   a->prev_fstand = g->foxy_stand;
   a->prev_mangle = g->ph_mangle_c;
   a->prev_mangle_act = 0;
+  a->prev_annoy_end = 0;
   a->prev_move = g->movement_out;
   a->prev_foxy_pos = g->foxy.pos;
   a->prev_freddy_pos = g->freddy.pos;
@@ -323,21 +324,25 @@ void fnae_audio_frame(FnaeAudio *a, FnaeGame *g) {
        (g->view > 0 && a->prev_view == 0) ||
        (g->movement_out > 0 && a->prev_move == 0))
     play(a, CH_CHANGE, a->change, 0, V(50));
-   /* Phantom Mangle (ch #17): garble1 loops while the annoy runs
-    * (B<7, A>0), breathing plays once it ends (B>=7); both Stop the
-    * channel first, like the Fusion events. */
+   /* Phantom Mangle (ch #17): garble1 loops while the office annoy
+    * descends (C==1, Annoy A>0, B<7); breathing plays once B hits 7.
+    * Both Stop the channel first, like the Fusion events. The
+    * camera-haunt phase (A==1/B counting, C==0) stays silent here, so
+    * cam open/close keeps its stereo-cassette flip on ch #5. */
    {
-    int mact = (g->ph_mangle_a == 1 || g->ph_mangle_b > 0) && !g->ph_mangle_c;
-    if (g->ph_mangle_c && !a->prev_mangle) {
+    int garble = g->ph_mangle_c && g->ph_annoy_a > 0 && g->ph_annoy_b < 7;
+    int ended = g->ph_mangle_c && g->ph_annoy_b >= 7;
+    if (ended && !a->prev_annoy_end) {
      Mix_HaltChannel(CH_MANGLE);
      play(a, CH_MANGLE, a->manglebreath, 0, V(50));
-    } else if (mact && !a->prev_mangle_act) {
+    } else if (garble && !a->prev_mangle_act) {
      Mix_HaltChannel(CH_MANGLE);
      play(a, CH_MANGLE, a->garble, -1, V(50));
-    } else if (!mact && a->prev_mangle_act && !g->ph_mangle_c) {
+    } else if (!garble && a->prev_mangle_act) {
      Mix_HaltChannel(CH_MANGLE);
     }
-    a->prev_mangle_act = mact;
+    a->prev_mangle_act = garble;
+    a->prev_annoy_end = ended;
    }
 
    /* Continuous volumes. */

@@ -133,8 +133,9 @@ stare/buzzlight/close-ambience/music-box melody) with the Fusion per-view,
 mask/door/signal-loss/flashlight volume ducking (deepbreaths/stare/buzzlight
 start silent; stare 0 live / 50 on Connection Lost, buzzlight 0 / 70 with
 flashlight; Change/flip/mask one-shots at 50, title menu blips on ch #3), one-shots for lure echoes + stop, doors,
-camera/mask flips, cam-change blips, footsteps, phantom scares (Mangle
-garble loop + breathing, Ph BB scream3), windup,
+camera/mask flips (stereo-cassette; the camera-haunt phase stays silent on
+ch #17 so cam open/close never plays garble1), cam-change blips, footsteps,
+phantom scares (Mangle garble loop + breathing, Ph BB scream3), windup,
 jack-in-the-box, power-down, jumpscares, phone calls (MP3 1-3, WAV 4-6),
 and frame jingles (title static + darkness music, Which-Night Change,
 Final music box, 6 AM chimes, Death goblin). Core pushes one-shots into

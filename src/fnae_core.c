@@ -77,7 +77,7 @@ static void ai_move(FnaeGame* g){
  if(g->springtrap_ai>0 && rnd(30)+1<g->springtrap_ai && g->springtrap_a==0)g->springtrap_a=1;
 }
 
-static void update_phantoms(FnaeGame* g){
+static void update_phantoms(FnaeGame* g,float dt){
  if(g->view>0 && g->ph_bb_ai>0 && g->ph_bb_a==0) g->ph_bb_a=rnd(23-g->ph_bb_ai);
  if(g->view==0) { g->ph_bb_a=0; g->ph_bb_b=0; }
  /* B>80 completion (Fusion plays scream3 on ch #18 here): leaving the
@@ -88,6 +88,20 @@ static void update_phantoms(FnaeGame* g){
   * (A==0 + B<>0 -> B=0), so a stale count never shortens the next haunt. */
  if(g->view==0) { g->ph_mangle_a=0; g->ph_mangle_b=0; }
  if(g->ph_mangle_a==1){g->ph_mangle_b++; if(g->ph_mangle_b>60){g->ph_mangle_c=1;g->ph_mangle_a=0;g->ph_mangle_b=0;g->force_down=5;}}
+ /* Office annoy ([ Phantom Mangle ] Annoy events): once C==1 the Annoy
+  * descends (A 0->224 while B==0), lingers (B+1 every 1s at A>=224),
+  * then ascends (A->0 once B>=7) and C clears. ch17 audio keys off
+  * Annoy A/B (see audio.c); the camera-haunt phase above stays silent,
+  * so cam open/close keeps its stereo-cassette flip. */
+ if(g->ph_mangle_c==1){
+  if(g->ph_annoy_b>=7){
+   if(g->ph_annoy_a>0) g->ph_annoy_a--;
+   else { g->ph_annoy_a=0; g->ph_annoy_b=0; g->ph_mangle_c=0; }
+  } else if(g->ph_annoy_a>=224){
+   g->phantom_timer+=dt;
+   if(g->phantom_timer>=1.0f){g->phantom_timer=0;g->ph_annoy_b++;}
+  } else g->ph_annoy_a++;
+ }
 }
 
 static void update_gf(FnaeGame* g){
@@ -195,7 +209,7 @@ void fnae_start_night(FnaeGame* g,int night){
  g->cam_anim_timer=g->mask_anim_timer=g->left_door_timer=g->right_door_timer=0;
  g->ai_timer=g->power_out_timer=g->springtrap_timer=g->phantom_timer=0;
  ai_reset(&g->foxy,0,2); ai_reset(&g->freddy,0,1); g->springtrap_a=0;g->springtrap_b=0;
- g->ph_mangle_a=g->ph_mangle_b=g->ph_mangle_c=0;g->ph_bb_a=g->ph_bb_b=0;
+  g->ph_mangle_a=g->ph_mangle_b=g->ph_mangle_c=0;g->ph_annoy_a=g->ph_annoy_b=0;g->ph_bb_a=g->ph_bb_b=0;
  g->golden_ai=0;g->foxy_ai=g->freddy_ai=g->springtrap_ai=g->ph_mangle_ai=g->ph_bb_ai=0;
  difficulty(g,12);
  /* All-20 star reads the Customize-screen globals, not the nightly rolls. */
@@ -383,7 +397,7 @@ void fnae_update(FnaeGame* g,float dt){
  g->foxy_stand=(g->foxy.pos==5 && g->view==0 && g->hidden_power>0)?1:0;
  g->freddy_door=(g->freddy.pos==6 && g->view==0 && g->hidden_power>0)?1:0;
  g->springtrap_stand=(g->view>0 && g->view==g->springtrap_pos && g->hidden_power>0)?1:0;
- update_phantoms(g); update_gf(g); update_music(g,dt);
+  update_phantoms(g,dt); update_gf(g); update_music(g,dt);
  if(g->springtrap_pos==3 && g->view==3 && g->hidden_power>0 && g->death==0){g->springtrap_timer+=dt;if(g->springtrap_timer>=4){g->springtrap_timer=0;if(rnd(2)==1)enter_death(g,4);}}
  if(g->current_call==0 && g->time_to_hour>=3)g->current_call=g->night;
  if(g->cam_anim==CAM_UP)g->view=g->camera; else if(g->cam_anim==CAM_DOWN)g->view=0;

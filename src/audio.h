@@ -22,7 +22,8 @@ struct FnaeAudio {
  /* Previous-frame state for edge detection. */
  int init, prev_frame, prev_night, prev_death, prev_view, prev_camera;
  int prev_call, prev_power, prev_empty, prev_spring, prev_fdoor, prev_fstand;
- int prev_mangle, prev_mangle_act; /* C edge + garble-loop activity */
+ int prev_mangle, prev_mangle_act; /* garble-loop activity + annoy-end edge */
+ int prev_annoy_end; /* set once Annoy B hits 7 (breathing played) */
  int prev_move; /* movement_out edge (Connection Lost sets Change=1) */
  int prev_foxy_pos, prev_freddy_pos; /* doorway-knock edges (view-independent) */
 };

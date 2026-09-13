@@ -79,7 +79,10 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
 - Golden Freddy death id = 5.
 - Puppet death id = 1.
 - Phantom BB forces the camera down after its 80-tick camera state.
-- Phantom Mangle forces the camera down after its 60-tick camera state.
+- Phantom Mangle forces the camera down after its 60-tick camera state, then
+  runs the office annoy (A 0→224 while B==0, B+1 every 1 s at A>=224, A→0
+  once B>=7, then C clears); ch17 stays silent through the camera phase so
+  cam open/close keeps its stereo-cassette flip.
 - Golden Freddy uses the exported random/death-addup logic.
 - Nights 1-7 difficulty values and hourly changes are translated from the event text.
 - Night 7 loads AI from the Customize-screen globals (defaults 0, Puppet 7;
@@ -122,7 +125,8 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   flip-up, and Connection Lost, Freddy deep steps / Foxy metallic thud (#12,
   panned left, fired on the AI reaching the door with no view gate),
   Ph BB scream3 (#18, on the 80-tick scare), Mangle garble1 loop while the
-  annoy runs + breathing once it ends (#17), Springtrap walk1 (#15),
+  office annoy descends (C==1, Annoy A>0/B<7) + breathing once B hits 7
+  (#17), Springtrap walk1 (#15),
   windup2 every 0.50 s while winding (#11), jackinthebox loop on empty (#20),
   powerdown after stop-all (#19), jumpscares on ch #2 after stop-all
   (Puppet money-counter, Freddy XSCREAM, Foxy dino-roar, Springtrap scream3,
