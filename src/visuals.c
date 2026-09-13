@@ -201,6 +201,30 @@ static void draw_office_pan(SDL_Renderer *r, SDL_Texture *t, int scroll, int ox,
     SDL_RenderCopy(r, t, NULL, &d);
 }
 
+/* Camera-feed pan: the 1600px-wide feed is drawn cover-scaled and
+ * cropped to the 1280px-wide view, offset by scroll source px
+ * (the display left edge). Unlike the office, the Fusion Camera Center
+ * Object overshoots by 120 px on each side (scroll range [-120,440]),
+ * so past the feed edges the cleared black background shows through. */
+static void draw_cam_pan(SDL_Renderer *r, SDL_Texture *t, int scroll, int ox, int oy) {
+    if (!t) return;
+    int rw, rh, tw, th;
+    SDL_GetRendererOutputSize(r, &rw, &rh);
+    SDL_QueryTexture(t, NULL, NULL, &tw, &th);
+
+    float sx = (float)rw / (float)tw;
+    float sy = (float)rh / (float)th;
+    float s = sx > sy ? sx : sy;
+
+    if (scroll < -120) scroll = -120;
+    if (scroll > 440) scroll = 440;
+
+    int w = (int)(tw * s);
+    int h = (int)(th * s);
+    SDL_Rect d = {-(int)(scroll * s) + ox, (rh - h) / 2 + oy, w, h};
+    SDL_RenderCopy(r, t, NULL, &d);
+}
+
 /* World-layer object: Fusion frame position minus the pan scroll
  * (the display is centered on the Office Center Object). */
 static void draw_world(SDL_Renderer *r, SDL_Texture *t, int fx, int fy, int scroll, int ox, int oy) {
@@ -275,7 +299,7 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                     int static_frame, int static_alpha, int office_scroll,
                     int left_door_frame, int right_door_frame, int title_bg_frame,
                     int foxy_pos, int freddy_pos, int cam_static_alpha,
-                    int death, int music) {
+                    int death, int music, int cam_scroll) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
@@ -304,7 +328,10 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             else if (idx == 1 && foxy_pos == 2) occupied = 1;
             else if (idx == 2 && freddy_pos == 3) occupied = 1;
             else if (idx == 3 && foxy_pos == 4) occupied = 1;
-            fit_center_off(r, v->cams[idx][occupied], ox, oy);
+            /* The feed auto-pans left <-> right on the Camera Center
+             * Object (see update_cam_scroll); drawn cover-cropped so the
+             * full 1600px width scrolls through the 1280px view. */
+            draw_cam_pan(r, v->cams[idx][occupied], cam_scroll, ox, oy);
             draw_static(r, v->static_frames[static_frame & 7], cam_static_alpha);
         } else {
             draw_office_pan(r, v->office, office_scroll, ox, oy);

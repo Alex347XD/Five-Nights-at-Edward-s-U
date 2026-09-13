@@ -88,7 +88,7 @@ static void update_music(FnaeGame* g,float dt){
  if(g->music_left<=0 && g->hidden_power>0 && g->death==0 && ((g->cam_anim==CAM_UP&&rnd(5)==1)||(g->mask_anim==MASK_DOWN&&rnd(5)==1))) enter_death(g,1);
 }
 
-void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_TITLE; g->night=1; g->progress=0; g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2; g->cam_static_alpha=185; g->power_out_alpha=255;
+void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_TITLE; g->night=1; g->progress=0; g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2; g->cam_scroll=FNAE_CAM_SCROLL_MIN; g->cam_scroll_dir=0; g->cam_static_alpha=185; g->power_out_alpha=255;
  /* Customize-screen defaults straight from Frame 8: everything 0 except Puppet (7). */
  g->custom_freddy=0; g->custom_foxy=0; g->custom_springtrap=0; g->custom_golden=0;
  g->custom_mangle=0; g->custom_bb=0; g->custom_puppet=7; }
@@ -140,6 +140,7 @@ void fnae_start_night(FnaeGame* g,int night){
  g->cam_anim=CAM_DOWN; g->mask_anim=MASK_UP; g->prevent_flip=0; g->force_down=0; g->view=0; g->camera=1;
   g->left_door=0; g->right_door=0; g->flashlight=0; g->hidden_power=10000; g->power_left=1; g->power_tick=0;
   g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2;
+  g->cam_scroll=FNAE_CAM_SCROLL_MIN; g->cam_scroll_dir=0;
    g->left_door_frame=0; g->right_door_frame=0; g->title_bg_frame=0; g->title_bg_timer=0;
   g->movement_out=0; g->movement_timer=0; g->movement_half_tick=0; g->movement_force_tick=0;
   g->camera_up_check=0; g->cam_static_alpha=185; g->cam_static_tick=0;
@@ -186,6 +187,26 @@ static void update_office_pan(FnaeGame* g, float dt){
  if(g->office_scroll>FNAE_OFFICE_SCROLL_MAX) g->office_scroll=(float)FNAE_OFFICE_SCROLL_MAX;
 }
 
+/* Camera-feed auto-pan ("[ Camera Scrolling ]" in Frame 3 Events.txt).
+ * The Camera Center Object starts at Game Width / 2 - 120 and drifts
+ * +/-1 px per tick, bouncing between Game Width / 2 - 120 and
+ * Frame Width - Game Width / 2 + 120; while a camera feed is up the
+ * display centers on it, so the feed slowly pans left <-> right.
+ * Alterable Value B is set to 1 at Start of Frame and never changes,
+ * so the drift runs unconditionally (even with the cameras down).
+ * Speeds are per 1/60 tick, hence the dt*60 scaling. */
+static void update_cam_scroll(FnaeGame* g, float dt){
+ if(g->frame!=FRAME_NIGHT) return;
+ float step=dt*60.0f;
+ if(g->cam_scroll_dir==0){
+  g->cam_scroll+=step;
+  if(g->cam_scroll>=FNAE_CAM_SCROLL_MAX){g->cam_scroll=FNAE_CAM_SCROLL_MAX;g->cam_scroll_dir=1;}
+ } else {
+  g->cam_scroll-=step;
+  if(g->cam_scroll<=FNAE_CAM_SCROLL_MIN){g->cam_scroll=FNAE_CAM_SCROLL_MIN;g->cam_scroll_dir=0;}
+ }
+}
+
 void fnae_update(FnaeGame* g,float dt){
  /* Frame 6 interstitial: Every 02'' -> Night, no input required. */
  if(g->frame==FRAME_WHICH_NIGHT){
@@ -194,6 +215,7 @@ void fnae_update(FnaeGame* g,float dt){
   return;
  }
  if(g->frame!=FRAME_NIGHT)return;
+ update_cam_scroll(g,dt);
  if(g->death){g->death_addup++;if(g->death_addup>=60)g->frame=FRAME_DEATH;return;}
  update_office_pan(g,dt);
 

@@ -38,6 +38,11 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   (PC/Mobile = 0), office view only (View = 0), no pan while dead. Starts
   centered (Fusion starts at the left edge, X 640).
 - Camera flip uses S; camera 1-4 are Hell, Mountain, Forest, Dinosaur Exhibit.
+- Camera-feed auto-pan (`[ Camera Scrolling ]`): the Camera Center Object
+  starts at Game Width / 2 - 120 and drifts +/-1 px per tick, bouncing
+  between 520 and 1080 (display left edge -120..440, 120 px of overscan
+  past each feed edge); the feed view follows it whenever a camera is up.
+  Alterable B stays 1, so the drift runs unconditionally.
 - Audio lure uses E on Cam 01.
 - Music box uses the Dinosaur Exhibit camera (view 4).
 - Music box starts at 2000, loses `Night * 2` every 0.07 s, and winding adds 100 every 0.35 s.

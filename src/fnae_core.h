@@ -33,9 +33,14 @@ typedef struct {
    int custom_freddy, custom_foxy, custom_springtrap, custom_golden;
    int custom_mangle, custom_bb, custom_puppet; /* Customize-frame AI levels for night 7 */
   int mouse_x, mouse_y;   /* last known pointer position (1280x720 space) */
-  float office_scroll;    /* office pan in source px, 0 = leftmost.
-                           * Mirrors the Fusion Office Center Object X minus
-                           * Game Width / 2; clamped to [0, FNAE_OFFICE_SCROLL_MAX]. */
+   float office_scroll;    /* office pan in source px, 0 = leftmost.
+                            * Mirrors the Fusion Office Center Object X minus
+                            * Game Width / 2; clamped to [0, FNAE_OFFICE_SCROLL_MAX]. */
+   float cam_scroll;       /* camera-feed pan: display left edge in source px.
+                            * Mirrors the Fusion Camera Center Object X minus
+                            * Game Width / 2; drifts in
+                            * [FNAE_CAM_SCROLL_MIN, FNAE_CAM_SCROLL_MAX]. */
+   int cam_scroll_dir;     /* 0 = panning right (+1 px/tick), 1 = panning left */
   int left_door_frame, right_door_frame; /* shutter frame 0..15 (open->closed) */
    int title_bg_frame;     /* 0 = Stopped (515.png), 1..3 = flash 516.png+frame-1 */
    int title_bg_timer;     /* ticks the current flash frame has been held (0.2 s = 12 ticks) */
@@ -47,6 +52,12 @@ typedef struct {
 
 /* Office pan range: 1600px-wide office scene over a 1280px-wide view. */
 #define FNAE_OFFICE_SCROLL_MAX 320
+
+/* Camera-feed pan range: the Fusion Camera Center Object drifts between
+ * Game Width / 2 - 120 (= 520) and Frame Width - Game Width / 2 + 120
+ * (= 1080); minus Game Width / 2 this is the display left edge range. */
+#define FNAE_CAM_SCROLL_MIN -120
+#define FNAE_CAM_SCROLL_MAX 440
 
 void fnae_init(FnaeGame* g);
 void fnae_static_tick(FnaeGame* g);

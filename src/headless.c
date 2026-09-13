@@ -257,7 +257,8 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                         game->freddy.pos,
                         game->cam_static_alpha,
                         game->death,
-                        game->music_left
+                        game->music_left,
+                        (int)game->cam_scroll
                     );
                     SDL_RenderPresent(r);
                     if (headless_save_screenshot(r, ev->shot) != 0)
@@ -299,7 +300,8 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
             game->freddy.pos,
             game->cam_static_alpha,
             game->death,
-            game->music_left
+            game->music_left,
+            (int)game->cam_scroll
         );
         SDL_RenderPresent(r);
         if ((f + 1) % 60 == 0) {

@@ -180,7 +180,8 @@ int main(int argc, char *argv[]) {
             game.freddy.pos,
             game.cam_static_alpha,
             game.death,
-            game.music_left
+            game.music_left,
+            (int)game.cam_scroll
         );
 
         SDL_RenderPresent(r);
