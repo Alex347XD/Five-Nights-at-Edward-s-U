@@ -79,12 +79,23 @@ termination notice, not the newspaper.)
 - Camera minimap (`28.png` line art at [882,265], YOU baked in) draws while
   a camera is up, with the four clickable cam buttons on top: gray box
   (`29.png`) normally, green box (`30.png`) under the viewed camera, each
-  with its `31.png`–`34.png` "CAM 0X" label. Buttons sit at the verbatim
-  Frame 3 Objects.txt hotspots; boxes are center-anchored (labels top-left),
-  verified with headless screenshots. Clicking a button switches the feed
-  like keys 1–4; the "Cam Labels" room-name string ("Hell", ...) has no PNG
-  (Fusion String object) so it stays window-title-only. Lure button not
-  wired yet.
+  with its `31.png`–`34.png` "CAM 0X" label. Buttons sit at the Frame 3
+  Objects.txt hotspots except CAM 01, which rides 12px above its hotspot
+  ([1016,339] → [1016,327], label with it) so the box sits high in its
+  room outline (owner request, verified with headless screenshots); boxes
+  are center-anchored (labels top-left). Clicking a button switches the
+  feed like keys 1–4. The thin hollow white feed border (Fusion White
+  Frame Camera at [-1,0], camera-up only) is drawn as a 2px outline.
+  The "Cam Labels" room-name string ("Hell", ...) has no PNG (Fusion
+  String object) so it renders as bitmap text at [888,272]. Lure button
+  not wired yet.
+- Night HUD renders on all Frame 3 screens (office and camera views):
+  "12 AM"-style clock top-right (time of day [1186,65] + am [1200,37]),
+  "NIGHT n" under it (Which Night? [759,85] + The Night [1245,101]),
+  "POWER: n%" + "USAGE:" bars bottom-left (Power [129,627] + Power Left
+  [24,616] + Usage Text [24,632]). Fusion counters/strings are text, not
+  PNG frames, and this port has no font library, so glyphs are a minimal
+  built-in 5x7 bitmap. Live state also stays in the window title.
 
 ## Known limitations
 

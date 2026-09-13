@@ -306,20 +306,165 @@ static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, in
     }
 }
 
-/* Frame 3 camera minimap (Layer #5 UI). Verbatim Objects.txt hotspots
- * (see src/fnae_assets.h). The map itself draws top-left like the other
- * scenery, but the button boxes use FNAE_ANCHOR_CENTER: with a top-left
- * box the 31x25 label at (-21,-12) would hang off the box corner, while
- * centered the label sits inside the 60x40 box like the Fusion layout.
- * The button under You highlights green (CAM 01 Animation 12), the rest
- * stay gray (Stopped); the native selected index is the viewed camera.
- * The "Cam Labels" room-name string ("Hell", ...) has no PNG (Fusion
- * String object) so it stays window-title-only. */
+/* Tiny 5x7 bitmap font for the Fusion counter/string HUD (time, night,
+ * power %, usage, cam room names). Counters in Fusion are rendered text,
+ * not PNG frames, and this port links only SDL2 + SDL2_image (no TTF),
+ * so glyphs are drawn as filled rects. Only the chars the HUD needs. */
+static const unsigned char font5x7_digits[10][7] = {
+    {0x0E,0x11,0x13,0x15,0x19,0x11,0x0E}, /* 0 */
+    {0x04,0x0C,0x04,0x04,0x04,0x04,0x0E}, /* 1 */
+    {0x0E,0x11,0x01,0x06,0x08,0x10,0x1F}, /* 2 */
+    {0x1F,0x02,0x04,0x02,0x01,0x11,0x0E}, /* 3 */
+    {0x02,0x06,0x0A,0x12,0x1F,0x02,0x02}, /* 4 */
+    {0x1F,0x10,0x1E,0x01,0x01,0x11,0x0E}, /* 5 */
+    {0x06,0x08,0x10,0x1E,0x11,0x11,0x0E}, /* 6 */
+    {0x1F,0x01,0x02,0x04,0x08,0x08,0x08}, /* 7 */
+    {0x0E,0x11,0x11,0x0E,0x11,0x11,0x0E}, /* 8 */
+    {0x0E,0x11,0x11,0x0F,0x01,0x02,0x0C}, /* 9 */
+};
+static void font_rows(char c, unsigned char out[7]) {
+    if (c >= '0' && c <= '9') {
+        for (int i = 0; i < 7; ++i) out[i] = font5x7_digits[c - '0'][i];
+        return;
+    }
+    switch (c) {
+    case 'A': { static const unsigned char g[7]={0x0E,0x11,0x11,0x1F,0x11,0x11,0x11}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'C': { static const unsigned char g[7]={0x0E,0x11,0x10,0x10,0x10,0x11,0x0E}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'D': { static const unsigned char g[7]={0x1E,0x11,0x11,0x11,0x11,0x11,0x1E}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'E': { static const unsigned char g[7]={0x1F,0x10,0x10,0x1E,0x10,0x10,0x1F}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'F': { static const unsigned char g[7]={0x1F,0x10,0x10,0x1E,0x10,0x10,0x10}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'G': { static const unsigned char g[7]={0x0E,0x11,0x10,0x1B,0x11,0x11,0x0F}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'H': { static const unsigned char g[7]={0x11,0x11,0x11,0x1F,0x11,0x11,0x11}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'I': { static const unsigned char g[7]={0x0E,0x04,0x04,0x04,0x04,0x04,0x0E}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'L': { static const unsigned char g[7]={0x10,0x10,0x10,0x10,0x10,0x10,0x1F}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'M': { static const unsigned char g[7]={0x11,0x1B,0x15,0x11,0x11,0x11,0x11}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'N': { static const unsigned char g[7]={0x11,0x19,0x19,0x15,0x13,0x13,0x11}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'O': { static const unsigned char g[7]={0x0E,0x11,0x11,0x11,0x11,0x11,0x0E}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'P': { static const unsigned char g[7]={0x1E,0x11,0x11,0x1E,0x10,0x10,0x10}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'R': { static const unsigned char g[7]={0x1E,0x11,0x11,0x1E,0x14,0x12,0x11}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'S': { static const unsigned char g[7]={0x0F,0x10,0x10,0x0E,0x01,0x01,0x1E}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'T': { static const unsigned char g[7]={0x1F,0x04,0x04,0x04,0x04,0x04,0x04}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'U': { static const unsigned char g[7]={0x11,0x11,0x11,0x11,0x11,0x11,0x0E}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'W': { static const unsigned char g[7]={0x11,0x11,0x11,0x15,0x15,0x1B,0x11}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'X': { static const unsigned char g[7]={0x11,0x11,0x0A,0x04,0x0A,0x11,0x11}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case 'Y': { static const unsigned char g[7]={0x11,0x11,0x0A,0x04,0x04,0x04,0x04}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case ':': { static const unsigned char g[7]={0x00,0x04,0x00,0x00,0x00,0x04,0x00}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case '%': { static const unsigned char g[7]={0x19,0x1A,0x02,0x04,0x08,0x14,0x13}; for(int i=0;i<7;++i)out[i]=g[i]; break; }
+    case ' ': default: { for (int i = 0; i < 7; ++i) out[i] = 0x00; break; }
+    }
+}
+
+/* Draws uppercase text at 1280x720 coordinates, scale 2 or 3. */
+static void draw_text(SDL_Renderer *r, const char *s, int x, int y, int scale) {
+    if (!s || scale < 1) return;
+    SDL_SetRenderDrawColor(r, 255, 255, 255, 255);
+    int cx = x;
+    for (const char *p = s; *p; ++p) {
+        char c = *p;
+        if (c >= 'a' && c <= 'z') c -= 'a' - 'A';
+        if (c == ' ') { cx += 5 * scale + 1 * scale; continue; }
+        unsigned char rows[7];
+        font_rows(c, rows);
+        for (int row = 0; row < 7; ++row) {
+            for (int col = 0; col < 5; ++col) {
+                if (rows[row] & (0x10 >> col)) {
+                    SDL_Rect d = {cx + col * scale, y + row * scale, scale, scale};
+                    SDL_RenderFillRect(r, &d);
+                }
+            }
+        }
+        cx += 5 * scale + 1 * scale;
+    }
+}
+
+static int text_width(const char *s, int scale) {
+    int n = 0;
+    for (const char *p = s; *p; ++p) ++n;
+    if (n == 0) return 0;
+    return n * 5 * scale + (n - 1) * 1 * scale;
+}
+
+/* Thin hollow white frame around the camera feed (Fusion "White Frame
+ * Camera" at [-1,0], Layer #5, visible only while a camera is up). */
+static void draw_white_frame(SDL_Renderer *r) {
+    SDL_SetRenderDrawColor(r, 255, 255, 255, 255);
+    const int t = 2, m = 2;
+    int rw, rh;
+    SDL_GetRendererOutputSize(r, &rw, &rh);
+    SDL_Rect top = {m, m, rw - 2 * m, t};
+    SDL_Rect bottom = {m, rh - m - t, rw - 2 * m, t};
+    SDL_Rect left = {m, m, t, rh - 2 * m};
+    SDL_Rect right = {rw - m - t, m, t, rh - 2 * m};
+    SDL_RenderFillRect(r, &top);
+    SDL_RenderFillRect(r, &bottom);
+    SDL_RenderFillRect(r, &left);
+    SDL_RenderFillRect(r, &right);
+}
+
+/* Night HUD, drawn on every Frame 3 screen (office and camera views).
+ * Positions follow Frame 3 Objects.txt: time of day [1186,65] + am
+ * [1200,37] top-right, Which Night? [759,85] + The Night [1245,101],
+ * Power [129,627] + Power Left [24,616] + Usage Text [24,632]
+ * bottom-left, Cam Labels [888,272] room name while a camera is up. */
+static void draw_night_hud(SDL_Renderer *r, int camera, int camera_up,
+                            int night, int hour, int power, int usage) {
+    char time_s[16], night_s[16], power_s[24];
+    int h12 = hour;
+    if (h12 < 1) h12 = 12;
+    if (h12 > 12) h12 = ((h12 - 1) % 12) + 1;
+    snprintf(time_s, sizeof time_s, "%d AM", h12);
+    int n = night < 1 ? 1 : night > 7 ? 7 : night;
+    snprintf(night_s, sizeof night_s, "NIGHT %d", n);
+    int pct = power / 100;
+    if (pct < 0) pct = 0;
+    if (pct > 100) pct = 100;
+    snprintf(power_s, sizeof power_s, "POWER: %d%%", pct);
+
+    /* Top-right: time above night, right edges aligned near x=1256. */
+    int tx = 1256 - text_width(time_s, 3);
+    draw_text(r, time_s, tx, 37, 3);
+    int nx = 1256 - text_width(night_s, 2);
+    draw_text(r, night_s, nx, 72, 2);
+
+    /* Bottom-left power + usage (Fusion Power/Power Left/Usage Text). */
+    draw_text(r, power_s, 24, 600, 2);
+    draw_text(r, "USAGE:", 24, 632, 2);
+    int bx = 24 + text_width("USAGE: ", 2);
+    int u = usage < 1 ? 1 : usage > 5 ? 5 : usage;
+    SDL_SetRenderDrawColor(r, 255, 255, 255, 255);
+    for (int i = 0; i < 5; ++i) {
+        SDL_Rect bar = {bx + i * 20, 632, 14, 14};
+        if (i < u)
+            SDL_RenderFillRect(r, &bar);
+        else
+            SDL_RenderDrawRect(r, &bar);
+    }
+
+    /* Cam room name while a camera is up (Fusion Cam Labels string). */
+    if (camera_up) {
+        static const char *cam_names[4] = {"HELL", "MOUNTAIN", "FOREST", "DINOSAUR EXHIBIT"};
+        int cam = camera - 1;
+        if (cam < 0 || cam > 3) cam = 0;
+        draw_text(r, cam_names[cam], 888, 272, 2);
+    }
+}
+
+/* Frame 3 camera minimap (Layer #5 UI). Button hotspots come from
+ * Objects.txt (see src/fnae_assets.h); the map itself draws top-left
+ * like the other scenery, but the button boxes use FNAE_ANCHOR_CENTER:
+ * with a top-left box the 31x25 label at (-21,-12) would hang off the
+ * box corner, while centered the label sits inside the 60x40 box like
+ * the Fusion layout. The button under You highlights green (CAM 01
+ * Animation 12), the rest stay gray (Stopped); the native selected
+ * index is the viewed camera.
+ * CAM 01 sits 12px above its Objects.txt hotspot (339 -> 327): at the
+ * verbatim spot the box rode low against its room outline, verified
+ * with headless screenshots (owner request). */
 static void draw_minimap(SDL_Renderer *r, FnaeVisuals *v, int camera) {
     static const int btn_x[IMG_CAMBTN_COUNT] = {1016, 1179, 953, 1161};
-    static const int btn_y[IMG_CAMBTN_COUNT] = {339, 371, 469, 505};
+    static const int btn_y[IMG_CAMBTN_COUNT] = {327, 371, 469, 505};
     static const int txt_x[IMG_CAMBTN_COUNT] = {995, 1158, 932, 1141};
-    static const int txt_y[IMG_CAMBTN_COUNT] = {327, 359, 457, 493};
+    static const int txt_y[IMG_CAMBTN_COUNT] = {315, 359, 457, 493};
 
     draw_texture(r, v->minimap, 882, 265);
     for (int i = 0; i < IMG_CAMBTN_COUNT; ++i) {
@@ -331,12 +476,12 @@ static void draw_minimap(SDL_Renderer *r, FnaeVisuals *v, int camera) {
 }
 
 void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
-                    int camera_up, int night, int hour, int power,
-                    int left_door, int right_door, int mask, int arrow, int progress,
-                    int static_frame, int static_alpha, int office_scroll,
-                    int left_door_frame, int right_door_frame, int title_bg_frame,
-                    int foxy_pos, int freddy_pos, int cam_static_alpha,
-                    int death, int music, int cam_scroll) {
+                     int camera_up, int night, int hour, int power,
+                     int left_door, int right_door, int mask, int arrow, int progress,
+                     int static_frame, int static_alpha, int office_scroll,
+                     int left_door_frame, int right_door_frame, int title_bg_frame,
+                     int foxy_pos, int freddy_pos, int cam_static_alpha,
+                     int death, int music, int cam_scroll, int usage) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
@@ -380,6 +525,9 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             /* UI sits above the feed static (Static precedes minimap in Layer #5). */
             int sel = camera < 1 ? 1 : camera > IMG_CAMBTN_COUNT ? IMG_CAMBTN_COUNT : camera;
             draw_minimap(r, v, sel);
+            /* White Frame Camera reappears with the rest of the camera UI. */
+            draw_white_frame(r);
+            draw_night_hud(r, sel, 1, night, hour, power, usage);
         } else {
             draw_office_pan(r, v->office, office_scroll, ox, oy);
             /* Layer order mirrors Fusion: office (#1), doors (#2), desk (#3).
@@ -392,6 +540,9 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             draw_world(r, v->door_left[left_door_frame], 119, 0, office_scroll, ox, oy);
             draw_world(r, v->door_right[right_door_frame], 1263, 0, office_scroll, ox, oy);
             draw_world(r, v->desk, 266, 177, office_scroll, ox, oy);
+            /* Power/time/night HUD stays up on the office screen too. */
+            int sel = camera < 1 ? 1 : camera > IMG_CAMBTN_COUNT ? IMG_CAMBTN_COUNT : camera;
+            draw_night_hud(r, sel, 0, night, hour, power, usage);
         }
     } else if (frame == 6) {
         draw_which_night(r, v, night);

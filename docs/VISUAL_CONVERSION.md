@@ -27,9 +27,18 @@ These match `visuals_init` in `src/visuals.c`:
 - `28.png` — camera minimap line art (372x322, YOU baked in) at [882,265],
   drawn only while a camera is up
 - `29.png` / `30.png` — cam button boxes (60x40, gray Stopped / green
-  Animation-12 selected), center-anchored on the four verbatim Frame 3
-  "CAM 01" hotspots
-- `31.png`–`34.png` — "CAM 01".."CAM 04" button labels (31x25, top-left)
+  Animation-12 selected), center-anchored on the Frame 3 "CAM 01"
+  hotspots; CAM 01 draws 12px above its hotspot ([1016,327] instead of
+  [1016,339]) per owner request
+- `31.png`–`34.png` — "CAM 01".."CAM 04" button labels (31x25, top-left,
+  CAM 01 label shifted with its box)
+- White Frame Camera ([-1,0], camera-up only) — no mapped PNG; drawn as a
+  2px hollow white feed border
+- Night HUD (time of day [1186,65] + am [1200,37], Which Night? [759,85]
+  + The Night [1245,101], Power [129,627] + Power Left [24,616] + Usage
+  Text [24,632], Cam Labels [888,272]) — Fusion text/counter objects with
+  no PNG frames; drawn with a built-in 5x7 bitmap font on office and
+  camera views alike
 - `351.png` — Frame 1 warning screen (fullscreen 1280x720 card at [0,0])
 - `246.png`–`252.png` — night cards, reused centered on black for the
   Frame 6 Which Night interstitial (Fusion parks Which Night at (640,360))

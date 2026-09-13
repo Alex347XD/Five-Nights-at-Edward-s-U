@@ -404,9 +404,10 @@ void fnae_click(FnaeGame* g,int x,int y){
    * Frame 3 Objects.txt button hotspots (60x40 boxes, center-anchored like
    * the minimap renderer in visuals.c); the viewed feed follows g->camera in
    * fnae_update, like the Fusion You-overlap events. */
-  if(g->cam_anim==CAM_UP && g->hidden_power>0){
-   static const int btn_x[4]={1016,1179,953,1161};
-   static const int btn_y[4]={339,371,469,505};
+   if(g->cam_anim==CAM_UP && g->hidden_power>0){
+    /* CAM 01 rides 12px above its Objects.txt hotspot (see visuals.c). */
+    static const int btn_x[4]={1016,1179,953,1161};
+    static const int btn_y[4]={327,371,469,505};
    for(int i=0;i<4;i++){
     if(x>=btn_x[i]-30&&x<btn_x[i]+30&&y>=btn_y[i]-20&&y<btn_y[i]+20){g->camera=i+1;break;}
    }

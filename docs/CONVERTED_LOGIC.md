@@ -40,9 +40,15 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
 - Camera flip uses S; camera 1-4 are Hell, Mountain, Forest, Dinosaur Exhibit.
 - Camera buttons (`[ Is Up ]` + `[ Cam 01 ]` groups): clicking any "CAM 01"
   box moves You onto it and the view follows the overlapped "Cam 0X Text".
-  Native click zones are the verbatim Objects.txt button hotspots
-  ([1016,339], [1179,371], [953,469], [1161,505], 60x40 center-anchored);
+  Native click zones are the Objects.txt button hotspots (60x40
+  center-anchored: [1179,371], [953,469], [1161,505] verbatim, CAM 01 at
+  [1016,327] — 12px above its [1016,339] hotspot per owner request);
   the feed follows `g->camera` in `fnae_update`, like the You-overlap events.
+- Camera UI visibility (`[ Camera Buttons Visibility ]`): minimap, cam
+  labels/texts, static, White Frame Camera, CAM 01 boxes, and Rec appear
+  with View > 0 and hide at View = 0; the native White Frame is a 2px
+  hollow border, and the text/counter HUD (time/night/power/usage/room)
+  additionally stays up on the office screen.
 - Camera-feed auto-pan (`[ Camera Scrolling ]`): the Camera Center Object
   drifts +/-1 px per tick and bounces direction at each end; the feed view
   follows it whenever a camera is up. The pan is clamped to the feed image
