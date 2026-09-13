@@ -57,7 +57,7 @@
  * Positions are Frame 3 Objects.txt hotspots: the map draws top-left
  * (see docs/COORDINATES.md) while the 60x40 button boxes are
  * center-anchored, which is what seats each 31x25 label inside its box.
- * Exception: CAM 01 draws 12px above its [1016,339] hotspot (owner
+ * Exception: CAM 01 draws 32px above its [1016,339] hotspot (owner
  * request); see draw_minimap in visuals.c and the click zones in
  * fnae_core.c, which stay in sync. */
 #define IMG_MINIMAP       28  /* 372x322 white line-art map (YOU baked in), at [882,265] */

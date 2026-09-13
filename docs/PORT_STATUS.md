@@ -80,12 +80,14 @@ termination notice, not the newspaper.)
   a camera is up, with the four clickable cam buttons on top: gray box
   (`29.png`) normally, green box (`30.png`) under the viewed camera, each
   with its `31.png`–`34.png` "CAM 0X" label. Buttons sit at the Frame 3
-  Objects.txt hotspots except CAM 01, which rides 12px above its hotspot
-  ([1016,339] → [1016,327], label with it) so the box sits high in its
-  room outline (owner request, verified with headless screenshots); boxes
-  are center-anchored (labels top-left). Clicking a button switches the
-  feed like keys 1–4. The thin hollow white feed border (Fusion White
-  Frame Camera at [-1,0], camera-up only) is drawn as a 2px outline.
+  Objects.txt hotspots except CAM 01, which rides 32px above its hotspot
+  ([1016,339] → [1016,307], label with it) so the box straddles its
+  room's top edge like the other buttons (owner request, verified with
+  headless screenshots); boxes are center-anchored (labels top-left).
+  Clicking a button switches the feed like keys 1–4. The thin hollow
+  white feed border (Fusion White Frame Camera at [-1,0], camera-up
+  only) is drawn as a 2px outline inset 8px so a slight gap shows to
+  the screen edge.
   The "Cam Labels" room-name string ("Hell", ...) has no PNG (Fusion
   String object) so it renders as bitmap text at [888,272]. Lure button
   not wired yet.

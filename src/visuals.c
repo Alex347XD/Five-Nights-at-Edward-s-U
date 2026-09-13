@@ -388,7 +388,7 @@ static int text_width(const char *s, int scale) {
  * Camera" at [-1,0], Layer #5, visible only while a camera is up). */
 static void draw_white_frame(SDL_Renderer *r) {
     SDL_SetRenderDrawColor(r, 255, 255, 255, 255);
-    const int t = 2, m = 2;
+    const int t = 2, m = 8;
     int rw, rh;
     SDL_GetRendererOutputSize(r, &rw, &rh);
     SDL_Rect top = {m, m, rw - 2 * m, t};
@@ -457,14 +457,15 @@ static void draw_night_hud(SDL_Renderer *r, int camera, int camera_up,
  * the Fusion layout. The button under You highlights green (CAM 01
  * Animation 12), the rest stay gray (Stopped); the native selected
  * index is the viewed camera.
- * CAM 01 sits 12px above its Objects.txt hotspot (339 -> 327): at the
- * verbatim spot the box rode low against its room outline, verified
- * with headless screenshots (owner request). */
+ * CAM 01 sits 32px above its Objects.txt hotspot (339 -> 307): at the
+ * verbatim spot the box sat fully inside its room outline instead of
+ * straddling the top edge like the other buttons, verified with
+ * headless screenshots (owner request). */
 static void draw_minimap(SDL_Renderer *r, FnaeVisuals *v, int camera) {
     static const int btn_x[IMG_CAMBTN_COUNT] = {1016, 1179, 953, 1161};
-    static const int btn_y[IMG_CAMBTN_COUNT] = {327, 371, 469, 505};
+    static const int btn_y[IMG_CAMBTN_COUNT] = {307, 371, 469, 505};
     static const int txt_x[IMG_CAMBTN_COUNT] = {995, 1158, 932, 1141};
-    static const int txt_y[IMG_CAMBTN_COUNT] = {315, 359, 457, 493};
+    static const int txt_y[IMG_CAMBTN_COUNT] = {295, 359, 457, 493};
 
     draw_texture(r, v->minimap, 882, 265);
     for (int i = 0; i < IMG_CAMBTN_COUNT; ++i) {

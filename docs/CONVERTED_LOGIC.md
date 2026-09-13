@@ -42,7 +42,7 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   box moves You onto it and the view follows the overlapped "Cam 0X Text".
   Native click zones are the Objects.txt button hotspots (60x40
   center-anchored: [1179,371], [953,469], [1161,505] verbatim, CAM 01 at
-  [1016,327] — 12px above its [1016,339] hotspot per owner request);
+  [1016,307] — 32px above its [1016,339] hotspot per owner request);
   the feed follows `g->camera` in `fnae_update`, like the You-overlap events.
 - Camera UI visibility (`[ Camera Buttons Visibility ]`): minimap, cam
   labels/texts, static, White Frame Camera, CAM 01 boxes, and Rec appear

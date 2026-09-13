@@ -28,12 +28,12 @@ These match `visuals_init` in `src/visuals.c`:
   drawn only while a camera is up
 - `29.png` / `30.png` — cam button boxes (60x40, gray Stopped / green
   Animation-12 selected), center-anchored on the Frame 3 "CAM 01"
-  hotspots; CAM 01 draws 12px above its hotspot ([1016,327] instead of
+  hotspots; CAM 01 draws 32px above its hotspot ([1016,307] instead of
   [1016,339]) per owner request
 - `31.png`–`34.png` — "CAM 01".."CAM 04" button labels (31x25, top-left,
   CAM 01 label shifted with its box)
 - White Frame Camera ([-1,0], camera-up only) — no mapped PNG; drawn as a
-  2px hollow white feed border
+  2px hollow white feed border inset 8px from the screen edge
 - Night HUD (time of day [1186,65] + am [1200,37], Which Night? [759,85]
   + The Night [1245,101], Power [129,627] + Power Left [24,616] + Usage
   Text [24,632], Cam Labels [888,272]) — Fusion text/counter objects with
