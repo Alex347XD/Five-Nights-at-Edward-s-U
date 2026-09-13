@@ -22,7 +22,8 @@ These match `visuals_init` in `src/visuals.c`:
 - `4.png` — 6 AM screen
 - `1.png` — death screen
 - `2.png` — GOOD JOB final screen
-- `7.png` — newspaper screen
+- `520.png` — HELP WANTED newspaper screen (Frame 7, shown once on New Game
+  before Which Night)
 - `246.png`–`252.png` — night cards, reused centered on black for the
   Frame 6 Which Night interstitial (Fusion parks Which Night at (640,360))
 

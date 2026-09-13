@@ -27,7 +27,7 @@
 #define IMG_DEATH         1   /* GAME OVER screen */
 #define IMG_GOODJOB       2   /* GOOD JOB CAPTAIN final screen (Frame 5) */
 #define IMG_SIX_AM        4   /* overtime paycheck (Frame 9) */
-#define IMG_NEWSPAPER     7   /* termination notice (Frame 7) */
+#define IMG_NEWSPAPER     520 /* HELP WANTED newspaper (Frame 7) */
 
 #define IMG_TITLE_BG      515 /* Frame 2 Background (Stopped sequence) */
 #define IMG_TITLE_NEW     239

@@ -51,6 +51,12 @@ the night card (`246.png`–`252.png`) centered on black, routes 0 = normal /
 auto-advances to Night after 2 s like the Fusion `Every 02''` event. 6 AM
 now progresses to the next night instead of replaying the same one.
 
+### Frame 7 Newspaper
+
+New Game shows the HELP WANTED newspaper (`520.png`) before Which Night;
+Continue / 6 Night skip it, matching the Fusion jumps. (`7.png` is the
+termination notice, not the newspaper.)
+
 ### Night scene
 
 - Placeholder HUD rectangles (power bar, door boxes, camera label boxes,
