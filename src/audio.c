@@ -154,9 +154,12 @@ static void start_night(FnaeAudio *a) {
  play(a, CH_FAN, a->fan, -1, V(30));
  play(a, CH_DEPTHS, a->depths, -1, V(50));
  play(a, CH_CAMAU, a->camau, -1, 0);
- play(a, CH_BREATH, a->breath, -1, V(50));
- play(a, CH_STARE, a->stare, -1, MIX_MAX_VOLUME);
- play(a, CH_BUZZ, a->buzz, -1, MIX_MAX_VOLUME);
+ /* deepbreaths/stare/buzzlight start silent: the Fusion edge events set
+  * them to 50/50/70 only once the mask is down / signal is lost /
+  * flashlight is on. Starting them loud blasts for a tick. */
+ play(a, CH_BREATH, a->breath, -1, 0);
+ play(a, CH_STARE, a->stare, -1, 0);
+ play(a, CH_BUZZ, a->buzz, -1, 0);
  play(a, CH_CLOSE, a->closeamb, -1, 0);
  play(a, CH_MELODY, a->melody, -1, 0);
   Mix_Volume(CH_WINDUP, V(75));
@@ -196,7 +199,10 @@ static void drain_queue(FnaeAudio *a, FnaeGame *g) {
    case FNAE_SND_MASK_OFF: play(a, CH_FLIP, a->mask_off, 0, V(50)); break;
    case FNAE_SND_WINDUP: play(a, CH_WINDUP, a->windup, 0, V(75)); break;
    case FNAE_SND_CALL_STOP: Mix_HaltChannel(CH_CALL); break;
-   case FNAE_SND_TITLE_CHANGE: play(a, CH_CHANGE, a->change, 0, V(50)); break;
+   /* Title menu blips live on ch #3, night camera Change blips on ch #4. */
+   case FNAE_SND_TITLE_CHANGE:
+    play(a, g->frame == FRAME_TITLE ? CH_CAMAU : CH_CHANGE, a->change, 0, V(50));
+    break;
    case FNAE_SND_PHBB: play(a, CH_PHBB, a->phbb, 0, V(50)); break;
   default: break;
   }
@@ -230,6 +236,8 @@ void fnae_audio_frame(FnaeAudio *a, FnaeGame *g) {
    case FRAME_TITLE:
     play(a, CH_FAN, a->title_static, 0, V(50));
     play(a, CH_DEPTHS, a->darkness, -1, V(50));
+    /* Title Start-of-Frame also fires a Change blip on ch #3. */
+    play(a, CH_CAMAU, a->change, 0, V(50));
     break;
    case FRAME_WHICH_NIGHT:
     play(a, CH_FAN, a->change, 0, V(50));
@@ -262,6 +270,9 @@ void fnae_audio_frame(FnaeAudio *a, FnaeGame *g) {
   a->prev_fstand = g->foxy_stand;
   a->prev_mangle = g->ph_mangle_c;
   a->prev_mangle_act = 0;
+  a->prev_move = g->movement_out;
+  a->prev_foxy_pos = g->foxy.pos;
+  a->prev_freddy_pos = g->freddy.pos;
   return;
  }
 
@@ -297,13 +308,20 @@ void fnae_audio_frame(FnaeAudio *a, FnaeGame *g) {
   /* Springtrap stepping onto the Forest cam knocks (walk1, ch #15). */
   if (g->springtrap_pos == 3 && a->prev_spring != 3)
    play(a, CH_WALK, a->walk, 0, V(50));
-  /* Doorway arrivals knock on ch #12. */
-  if (g->freddy_door && !a->prev_fdoor)
+  /* Doorway arrivals knock on ch #12. Fusion fires on the overlap
+   * (Foxy pos 5 = Right Door, Freddy pos 6 = Left Door) with no view
+   * gate, so track the AI positions -- not the view-gated stand
+   * flags -- or knocks go missing while the cameras are up. */
+  if (g->freddy.pos == 6 && a->prev_freddy_pos != 6)
    play(a, CH_FOOT, a->steps, 0, V(40));
-  if (g->foxy_stand && !a->prev_fstand)
+  if (g->foxy.pos == 5 && a->prev_foxy_pos != 5)
    play(a, CH_FOOT, a->thud, 0, V(40));
-   /* Camera switch blip (Change on ch #4, vol 50). */
-   if (g->view > 0 && g->camera != a->prev_camera)
+   /* Camera Change blip (Change on ch #4, vol 50). Fusion sets Change=1
+    * on the View>0 edge (flip-up), on CAM 01 clicks (camera switch),
+    * and on the Connection Lost edge, each playing Change on ch #4. */
+   if ((g->view > 0 && g->camera != a->prev_camera) ||
+       (g->view > 0 && a->prev_view == 0) ||
+       (g->movement_out > 0 && a->prev_move == 0))
     play(a, CH_CHANGE, a->change, 0, V(50));
    /* Phantom Mangle (ch #17): garble1 loops while the annoy runs
     * (B<7, A>0), breathing plays once it ends (B>=7); both Stop the
@@ -354,4 +372,7 @@ void fnae_audio_frame(FnaeAudio *a, FnaeGame *g) {
   a->prev_fdoor = g->freddy_door;
   a->prev_fstand = g->foxy_stand;
   a->prev_mangle = g->ph_mangle_c;
+  a->prev_move = g->movement_out;
+  a->prev_foxy_pos = g->foxy.pos;
+  a->prev_freddy_pos = g->freddy.pos;
 }

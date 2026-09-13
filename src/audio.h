@@ -23,6 +23,8 @@ struct FnaeAudio {
  int init, prev_frame, prev_night, prev_death, prev_view, prev_camera;
  int prev_call, prev_power, prev_empty, prev_spring, prev_fdoor, prev_fstand;
  int prev_mangle, prev_mangle_act; /* C edge + garble-loop activity */
+ int prev_move; /* movement_out edge (Connection Lost sets Change=1) */
+ int prev_foxy_pos, prev_freddy_pos; /* doorway-knock edges (view-independent) */
 };
 
 /* Loads every sample under dir (e.g. "assets/audio"). Never fatal:
