@@ -145,7 +145,9 @@ void fnae_start_night(FnaeGame* g,int night){
   g->movement_out=0; g->movement_timer=0; g->movement_half_tick=0; g->movement_force_tick=0;
   g->camera_up_check=0; g->cam_static_alpha=185; g->cam_static_tick=0;
   g->warning=0; g->power_out_alpha=255;
-  g->springtrap_pos=1; g->springtrap_stand=0; g->lure_area=0; g->lure_cam=0; g->lure_timer=0;
+  /* Springtrap starts on Cam 02's box ("Start of Frame + Cam 02 Text
+   * overlapping CAM 01 -> Springtrap at (0,0) from CAM 01"). */
+  g->springtrap_pos=2; g->springtrap_stand=0; g->lure_area=0; g->lure_cam=0; g->lure_timer=0;
   g->foxy_stand=0; g->freddy_door=0;
  g->music_left=2000; g->music_winding=0; g->music_tick=0; g->current_call=0; g->call_muted=0;
  g->cam_anim_timer=g->mask_anim_timer=g->left_door_timer=g->right_door_timer=0;
@@ -286,16 +288,21 @@ void fnae_update(FnaeGame* g,float dt){
 
   g->ai_timer+=dt;
  if(g->ai_timer>=5){g->ai_timer-=5;ai_move(g);
-  /* Springtrap steps between cameras on its move flag, then clears it. */
-  if(g->springtrap_a && g->death==0){
-   g->springtrap_a=0;
-   int p=g->springtrap_pos;
-   if(p==1) g->springtrap_pos=3;
-   else if(p==2) g->springtrap_pos=(g->springtrap_b==0)?4:1;
-   else if(p==4) g->springtrap_pos=(g->springtrap_b==0)?2:1;
-   /* pos 3 is the kill room: Springtrap waits there for the death rolls. */
-   if(g->springtrap_pos==1||g->springtrap_pos==2) g->springtrap_b=rr(0,1);
-  }
+   /* Springtrap steps between cameras on its move flag, then clears it.
+    * Routes mirror the "[ Springtrap (Audio Lure) ]" overlap events:
+    * Cam 01 -> Cam 03 (B=0) / Cam 02 (B=1), Cam 02 -> Cam 04 (B=0) /
+    * Cam 01 (B=1), Cam 03 -> Cam 01, Cam 04 -> Cam 02. B re-rolls on
+    * Cam 01/02 like the Fusion RRandom(0,1) sets. */
+   if(g->springtrap_a && g->death==0){
+    g->springtrap_a=0;
+    int p=g->springtrap_pos;
+    if(p==1) g->springtrap_pos=(g->springtrap_b==0)?3:2;
+    else if(p==2) g->springtrap_pos=(g->springtrap_b==0)?4:1;
+    else if(p==3) g->springtrap_pos=1;
+    else if(p==4) g->springtrap_pos=2;
+    /* pos 3 is the kill room: Springtrap waits there for the death rolls. */
+    if(g->springtrap_pos==1||g->springtrap_pos==2) g->springtrap_b=rr(0,1);
+   }
  }
  /* Audio lure: 2s after placing it, 50% to pull Springtrap to the lured cam. */
  if(g->lure_area){
@@ -404,13 +411,19 @@ void fnae_click(FnaeGame* g,int x,int y){
    * Frame 3 Objects.txt button hotspots (60x40 boxes, center-anchored like
    * the minimap renderer in visuals.c); the viewed feed follows g->camera in
    * fnae_update, like the Fusion You-overlap events. */
-   if(g->cam_anim==CAM_UP && g->hidden_power>0){
-    /* CAM 01 rides 32px above its Objects.txt hotspot (see visuals.c). */
-    static const int btn_x[4]={1016,1179,953,1161};
-    static const int btn_y[4]={307,371,469,505};
-   for(int i=0;i<4;i++){
-    if(x>=btn_x[i]-30&&x<btn_x[i]+30&&y>=btn_y[i]-20&&y<btn_y[i]+20){g->camera=i+1;break;}
+    if(g->cam_anim==CAM_UP && g->hidden_power>0){
+     /* CAM 01 rides 32px above its Objects.txt hotspot (see visuals.c). */
+     static const int btn_x[4]={1016,1179,953,1161};
+     static const int btn_y[4]={307,371,469,505};
+    for(int i=0;i<4;i++){
+     if(x>=btn_x[i]-30&&x<btn_x[i]+30&&y>=btn_y[i]-20&&y<btn_y[i]+20){g->camera=i+1;break;}
+    }
+    /* Audio-lure button ("Lure" 128x64 at [744,296], center-anchored
+     * like the cam buttons): clicking it lures like the E key, except
+     * on the music-box camera (Fusion hides it over Cam 04 Text). */
+    if(g->view>0&&g->view!=4&&g->death==0&&g->lure_area==0){
+     if(x>=744-64&&x<744+64&&y>=296-32&&y<296+32){g->lure_area=1;g->lure_cam=g->view;g->lure_timer=0;}
+    }
    }
-  }
  if(g->view==4 && x>500 && x<780 && y>500){g->music_winding=1;}
 }

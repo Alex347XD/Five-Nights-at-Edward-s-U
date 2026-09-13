@@ -32,6 +32,12 @@ These match `visuals_init` in `src/visuals.c`:
   [1016,339]) per owner request
 - `31.png`–`34.png` — "CAM 01".."CAM 04" button labels (31x25, top-left,
   CAM 01 label shifted with its box)
+- `381.png` — "Lure" audio-lure button (128x64 Stopped frame, Layer #5 UI
+  at [744,296] center-anchored, camera-up only, hidden on Cam 04; the
+  Animation-12 press frames are unidentified so Stopped shows throughout)
+- `256.png` — Springtrap Stand figure (blue Edward, 150x200, Layer #2 at
+  [416,-24], drawn over the feed while viewing Springtrap's camera;
+  visually identified, owner to confirm)
 - White Frame Camera ([-1,0], camera-up only) — no mapped PNG; drawn as a
   2px hollow white feed border inset 8px from the screen edge
 - Night HUD (time of day [1186,65] + am [1200,37], Which Night? [759,85]
@@ -73,9 +79,10 @@ unmapped.
 ## Next exact-visual step
 
 The remaining visual work is to bind the individual Active animation sequences
-to their extracted image-bank entries (Freddy/Foxy/Springtrap/phantoms, camera
-flip animation, mask + flashlight, cam flip/mask flip visuals, White Frame
-Camera, Lure button, music-box UI, warnings, Rec, Connection Lost, Power Out,
+to their extracted image-bank entries (Freddy/Foxy/phantoms, camera
+ flip animation, mask + flashlight, cam flip/mask flip visuals, White Frame
+ Camera, Lure-button press frames, Lure Area marker, music-box UI,
+ warnings, Rec, Connection Lost, Power Out,
 mute-call button, time/night/power/usage counters, Cam Labels room-name
 string). The event logic is already separated from this rendering layer, and
 the doorway-figure / warning / signal-loss state it needs is exposed on

@@ -54,7 +54,10 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   follows it whenever a camera is up. The pan is clamped to the feed image
   ends (display left edge 0..320), so no black bars show. Alterable B
   stays 1, so the drift runs unconditionally.
-- Audio lure uses E on Cam 01.
+- Audio lure: E or clicking the Lure button (`381.png` "Lure" at [744,296],
+  camera-up only, hidden on the Cam 04 music-box view) places a lure on
+  the viewed camera; 2 s later it pulls Springtrap there on a 50% roll
+  with a Camera Out static burst.
 - Music box uses the Dinosaur Exhibit camera (view 4).
 - Music box starts at 2000, loses `Night * 2` every 0.07 s, and winding adds 100 every 0.35 s.
 - Empty music box can trigger Puppet death while camera is up or mask is down.
@@ -77,9 +80,12 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   advance it).
 - 6 AM routes to Final for nights 6/7 or Night Story >= 5, else increments to
   the next night via Which Night. Newspaper advances on any click.
-- Springtrap steps between cameras on its move flag (Cam 01 -> Cam 03 kill
-  room, Cam 02 <-> Cam 04 with the exported random branch); E places an audio
-  lure on the viewed camera that can pull Springtrap to it after ~2 s.
+- Springtrap starts on Cam 02's box (Fusion Start-of-Frame placement) and
+  steps between cameras on its move flag: Cam 01 -> Cam 03 (B=0) / Cam 02
+  (B=1), Cam 02 -> Cam 04 (B=0) / Cam 01 (B=1), Cam 03 -> Cam 01,
+  Cam 04 -> Cam 02, with B re-rolled on Cam 01/02 like the Fusion
+  RRandom(0,1) sets. Cam 03 is the kill room (4 s watch -> 50% death id 4).
+  The Stand figure reappears while viewing Springtrap's camera.
 - Camera Out ("Connection Lost"): 50% re-tune every 0.5 s, forced clear after
   2 s; camera static runs 150+Random(50) every 0.08 s while the feed is live,
   0 on signal loss.

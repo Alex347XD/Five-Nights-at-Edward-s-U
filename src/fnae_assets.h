@@ -67,6 +67,17 @@
 /* Button boxes ("CAM 01" x4) and their text labels ("Cam 0X Text" x4). */
 #define IMG_CAMBTN_COUNT  4
 
+/* Audio-lure + Springtrap (Frame 3 "[ Springtrap (Audio Lure) ]" group).
+ * The Lure Button sits at [744,296] in the camera UI (Layer #5): visible
+ * while a camera is up except on Cam 04 (music box). Only its Stopped
+ * ("Lure") frame is mapped so far; the Animation-12 press-flash frames
+ * are unidentified. Springtrap Stand (the blue Edward, 150x200) sits at
+ * [416,-24] in the office overlay (Layer #2) and appears over the feed
+ * while viewing Springtrap's camera. Both visually identified from the
+ * bank — owner to confirm (the Stand could be a jumpscare frame). */
+#define IMG_LURE_BUTTON     381 /* "Lure" button, 128x64, Stopped */
+#define IMG_SPRINGTRAP_STAND 256 /* blue Edward stand figure, 150x200 ? */
+
 /* Frame 2 Background: 515 is Stopped; Random(50)=1 plays one of the
  * RRandom(12,14) flash sequences (516/517/518), cut back to Stopped
  * after 0.2 s. Each flash sequence is a single held frame. */

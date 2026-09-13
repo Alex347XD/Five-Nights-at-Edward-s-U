@@ -40,7 +40,7 @@ SDL draws from the top-left, so the native renderer draws it with
 ## Functional controls
 
 - Title: Up/Down or W/S, Enter, mouse menu selection
-- Night: A/D doors, S camera, M mask, Z/Ctrl flashlight, 1–4 camera selection, E audio lure, R/mouse for music-box winding
+- Night: A/D doors, S camera, M mask, Z/Ctrl flashlight, 1–4 camera selection, E or Lure-button click for audio lure, R/mouse for music-box winding
 - Night: mouse position pans the office view — pointer in the left/right edge
   zones scrolls toward that side at the Fusion 2/4/6 px-per-tick speeds,
   clamped to the 1600px-wide office scene (see `CONVERTED_LOGIC.md`)
@@ -89,8 +89,13 @@ termination notice, not the newspaper.)
   only) is drawn as a 2px outline inset 8px so a slight gap shows to
   the screen edge.
   The "Cam Labels" room-name string ("Hell", ...) has no PNG (Fusion
-  String object) so it renders as bitmap text at [888,272]. Lure button
-  not wired yet.
+  String object) so it renders as bitmap text at [888,272].
+- Audio lure (`381.png` "Lure" button at [744,296], camera-up only,
+  hidden on Cam 04): E or click places a lure on the viewed camera,
+  resolved 2 s later with a 50% pull + static burst. Springtrap (blue
+  Edward, `256.png` stand at [416,-24]) starts on Cam 02 and steps the
+  exported routes (Cam 03 kill room); its stand overlays the feed while
+  viewed. Springtrap art is visually identified, owner to confirm.
 - Night HUD renders on all Frame 3 screens (office and camera views):
   "12 AM"-style clock top-right (time of day [1186,65] + am [1200,37]),
   "NIGHT n" under it (Which Night? [759,85] + The Night [1245,101]),

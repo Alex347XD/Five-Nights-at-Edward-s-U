@@ -77,6 +77,8 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->cam_btn_on = load_id(r, IMG_CAMBTN_ON);
     for (int i = 0; i < IMG_CAMBTN_COUNT; ++i)
         v->cam_txt[i] = load_id(r, IMG_CAMTXT_FIRST + i);
+    v->lure_button = load_id(r, IMG_LURE_BUTTON);
+    v->springtrap_stand = load_id(r, IMG_SPRINGTRAP_STAND);
     v->title_new = load_id(r, IMG_TITLE_NEW);
     v->title_continue = load_id(r, IMG_TITLE_CONTINUE);
     v->title_6night = load_id(r, IMG_TITLE_6NIGHT);
@@ -123,6 +125,8 @@ void visuals_free(FnaeVisuals *v) {
     destroy_texture(&v->cam_btn_on);
     for (int i = 0; i < IMG_CAMBTN_COUNT; ++i)
         destroy_texture(&v->cam_txt[i]);
+    destroy_texture(&v->lure_button);
+    destroy_texture(&v->springtrap_stand);
     destroy_texture(&v->title_new);
     destroy_texture(&v->title_continue);
     destroy_texture(&v->title_6night);
@@ -482,7 +486,8 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                      int static_frame, int static_alpha, int office_scroll,
                      int left_door_frame, int right_door_frame, int title_bg_frame,
                      int foxy_pos, int freddy_pos, int cam_static_alpha,
-                     int death, int music, int cam_scroll, int usage) {
+                     int death, int music, int cam_scroll, int usage,
+                     int stand) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
@@ -523,9 +528,24 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
              * full 1600px width scrolls through the 1280px view. */
             draw_cam_pan(r, v->cams[idx][occupied], cam_scroll, ox, oy);
             draw_static(r, v->static_frames[static_frame & 7], cam_static_alpha);
+            /* Layer order mirrors Fusion: feed (#1), Springtrap Stand (#2),
+             * then the camera UI (#5: minimap, lure button, frame, HUD).
+             * The Stand is a world object at its Objects.txt position,
+             * shifted by the feed scroll like doors shift with the office.
+             * It reappears only while viewing Springtrap's camera
+             * ("View > 0 + You overlapping Springtrap"). */
+            if (stand)
+                draw_world(r, v->springtrap_stand, 416, -24, cam_scroll, ox, oy);
             /* UI sits above the feed static (Static precedes minimap in Layer #5). */
             int sel = camera < 1 ? 1 : camera > IMG_CAMBTN_COUNT ? IMG_CAMBTN_COUNT : camera;
             draw_minimap(r, v, sel);
+            /* Lure Button reappears with the camera UI except on Cam 04
+             * (the music-box camera). Center-anchored like the cam
+             * buttons; the Animation-12 press frames are unmapped so the
+             * Stopped frame shows while a lure plays. */
+            if (sel != 4)
+                visuals_draw_anchored(r, v->lure_button, 744, 296,
+                                      FNAE_ANCHOR_CENTER);
             /* White Frame Camera reappears with the rest of the camera UI. */
             draw_white_frame(r);
             draw_night_hud(r, sel, 1, night, hour, power, usage);

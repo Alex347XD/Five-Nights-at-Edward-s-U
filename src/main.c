@@ -182,7 +182,8 @@ int main(int argc, char *argv[]) {
             game.death,
             game.music_left,
             (int)game.cam_scroll,
-            game.power_left
+            game.power_left,
+            game.springtrap_stand
         );
 
         SDL_RenderPresent(r);

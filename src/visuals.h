@@ -38,6 +38,10 @@ typedef struct {
     SDL_Texture *cam_btn_off;
     SDL_Texture *cam_btn_on;
     SDL_Texture *cam_txt[IMG_CAMBTN_COUNT];
+    /* Audio-lure button (Layer #5 UI) + Springtrap stand figure
+     * (Layer #2 office overlay, drawn over the viewed feed). */
+    SDL_Texture *lure_button;
+    SDL_Texture *springtrap_stand;
 } FnaeVisuals;
 
 int visuals_init(FnaeVisuals *v, SDL_Renderer *r);
@@ -60,4 +64,5 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                      int static_frame, int static_alpha, int office_scroll,
                      int left_door_frame, int right_door_frame, int title_bg_frame,
                      int foxy_pos, int freddy_pos, int cam_static_alpha,
-                     int death, int music, int cam_scroll, int usage);
+                     int death, int music, int cam_scroll, int usage,
+                     int springtrap_stand);
