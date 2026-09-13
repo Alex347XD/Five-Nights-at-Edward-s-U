@@ -6,13 +6,14 @@
 
 typedef struct {
     SDL_Texture *office;
-    SDL_Texture *cams[4];
+    SDL_Texture *cams[4][2]; /* per camera: [0] empty base, [1] animatronic present */
     SDL_Texture *static_frames[IMG_STATIC_COUNT]; /* TV-static animation, shared title/cameras */
     SDL_Texture *six_am;
     SDL_Texture *death;
 
     /* Title-screen components from the exported Fusion asset bank. */
     SDL_Texture *title_bg;
+    SDL_Texture *title_bg_anim[IMG_TITLE_BG_ANIM_COUNT]; /* 3-frame bg flash (516-518) */
     SDL_Texture *title_new;
     SDL_Texture *title_continue;
     SDL_Texture *title_6night;
@@ -24,6 +25,11 @@ typedef struct {
 
     SDL_Texture *newspaper;
     SDL_Texture *final_screen;
+
+    /* Frame 3 night-shift art: door shutters (16 frames each) + desk. */
+    SDL_Texture *door_left[IMG_DOOR_FRAMES];
+    SDL_Texture *door_right[IMG_DOOR_FRAMES];
+    SDL_Texture *desk;
 } FnaeVisuals;
 
 int visuals_init(FnaeVisuals *v, SDL_Renderer *r);
@@ -41,6 +47,8 @@ typedef enum {
 void visuals_draw_anchored(SDL_Renderer *r, SDL_Texture *t,
                            int x, int y, FnaeAnchor anchor);
 void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
-                    int camera_up, int night, int hour, int power,
-                    int left_door, int right_door, int mask, int arrow, int progress,
-                    int static_frame, int static_alpha);
+                     int camera_up, int night, int hour, int power,
+                     int left_door, int right_door, int mask, int arrow, int progress,
+                     int static_frame, int static_alpha, int office_scroll,
+                     int left_door_frame, int right_door_frame, int title_bg_frame,
+                     int foxy_pos, int freddy_pos);

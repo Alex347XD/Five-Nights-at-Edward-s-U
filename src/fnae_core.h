@@ -20,12 +20,23 @@ typedef struct {
  int golden_ai, foxy_ai, freddy_ai, springtrap_ai, ph_mangle_ai, ph_bb_ai;
   int music_left; int music_winding; float music_tick;
   int current_call; int call_muted;
-  int static_frame; int static_alpha; /* TV-static anim state (shared title/cameras) */
+   int static_frame; int static_alpha; /* TV-static anim state (shared title/cameras) */
+   int static_div; /* ticks since last static frame advance (slows 60 Hz ticks to ~20 fps) */
+  int mouse_x, mouse_y;   /* last known pointer position (1280x720 space) */
+  float office_scroll;    /* office pan in source px, 0 = leftmost.
+                           * Mirrors the Fusion Office Center Object X minus
+                           * Game Width / 2; clamped to [0, FNAE_OFFICE_SCROLL_MAX]. */
+  int left_door_frame, right_door_frame; /* shutter frame 0..15 (open->closed) */
+   int title_bg_frame;     /* 0 = Stopped (515.png), 1..3 = flash 516.png+frame-1 */
+   int title_bg_timer;     /* ticks the current flash frame has been held (0.2 s = 12 ticks) */
  int all20; int left_challenge, left_challenge_active;
  float cam_anim_timer, mask_anim_timer, left_door_timer, right_door_timer;
  float ai_timer, power_out_timer, springtrap_timer, phantom_timer;
  int hour_events[13][13];
 } FnaeGame;
+
+/* Office pan range: 1600px-wide office scene over a 1280px-wide view. */
+#define FNAE_OFFICE_SCROLL_MAX 320
 
 void fnae_init(FnaeGame* g);
 void fnae_static_tick(FnaeGame* g);
@@ -34,4 +45,5 @@ void fnae_update(FnaeGame* g, float dt);
 void fnae_key(FnaeGame* g, int key);
 void fnae_key_up(FnaeGame* g, int key);
 void fnae_click(FnaeGame* g, int x, int y);
+void fnae_mouse_move(FnaeGame* g, int x, int y);
 const char* fnae_frame_name(FnaeFrame f);

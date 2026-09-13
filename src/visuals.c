@@ -36,11 +36,17 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
 
     /* Real extracted gameplay assets (see src/fnae_assets.h). */
     v->office = load_id(r, IMG_OFFICE);
-    v->cams[0] = load_id(r, IMG_CAM_HELL);
-    /* Cam 01 = Hell, Cam 02 = Mountain/forest feed, Cam 03 = Forest, Cam 04 = Dinosaur Exhibit. */
-    v->cams[1] = load_id(r, IMG_CAM_MOUNTAIN);
-    v->cams[2] = load_id(r, IMG_CAM_FOREST);
-    v->cams[3] = load_id(r, IMG_CAM_DINO);
+    /* Cam 01 = Hell, Cam 02 = Mountain, Cam 03 = Forest,
+     * Cam 04 = Dinosaur Exhibit. Each camera has an empty base frame
+     * plus an occupied frame for its haunting animatronic. */
+    v->cams[0][0] = load_id(r, IMG_CAM_HELL);
+    v->cams[0][1] = load_id(r, IMG_CAM_HELL_FRED);
+    v->cams[1][0] = load_id(r, IMG_CAM_MOUNTAIN);
+    v->cams[1][1] = load_id(r, IMG_CAM_MOUNTAIN_FOXY);
+    v->cams[2][0] = load_id(r, IMG_CAM_FOREST);
+    v->cams[2][1] = load_id(r, IMG_CAM_FOREST_FRED);
+    v->cams[3][0] = load_id(r, IMG_CAM_DINO);
+    v->cams[3][1] = load_id(r, IMG_CAM_DINO_FOXY);
     for (int i = 0; i < IMG_STATIC_COUNT; ++i)
         v->static_frames[i] = load_id(r, IMG_STATIC_FIRST + i);
     v->six_am = load_id(r, IMG_SIX_AM);
@@ -55,6 +61,13 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
      * The three Star objects all use the same source image in Fusion.
      */
     v->title_bg = load_id(r, IMG_TITLE_BG);
+    for (int i = 0; i < IMG_TITLE_BG_ANIM_COUNT; ++i)
+        v->title_bg_anim[i] = load_id(r, IMG_TITLE_BG_ANIM_FIRST + i);
+    v->desk = load_id(r, IMG_DESK_SCENE);
+    for (int i = 0; i < IMG_DOOR_FRAMES; ++i) {
+        v->door_left[i] = load_id(r, IMG_DOOR_LEFT_FIRST + i);
+        v->door_right[i] = load_id(r, IMG_DOOR_RIGHT_FIRST + i);
+    }
     v->title_new = load_id(r, IMG_TITLE_NEW);
     v->title_continue = load_id(r, IMG_TITLE_CONTINUE);
     v->title_6night = load_id(r, IMG_TITLE_6NIGHT);
@@ -82,12 +95,20 @@ static void destroy_texture(SDL_Texture **t) {
 void visuals_free(FnaeVisuals *v) {
     destroy_texture(&v->office);
     for (int i = 0; i < 4; ++i)
-        destroy_texture(&v->cams[i]);
+        for (int j = 0; j < 2; ++j)
+            destroy_texture(&v->cams[i][j]);
     for (int i = 0; i < 8; ++i)
         destroy_texture(&v->static_frames[i]);
     destroy_texture(&v->six_am);
     destroy_texture(&v->death);
     destroy_texture(&v->title_bg);
+    for (int i = 0; i < IMG_TITLE_BG_ANIM_COUNT; ++i)
+        destroy_texture(&v->title_bg_anim[i]);
+    for (int i = 0; i < IMG_DOOR_FRAMES; ++i) {
+        destroy_texture(&v->door_left[i]);
+        destroy_texture(&v->door_right[i]);
+    }
+    destroy_texture(&v->desk);
     destroy_texture(&v->title_new);
     destroy_texture(&v->title_continue);
     destroy_texture(&v->title_6night);
@@ -150,6 +171,41 @@ static void draw_static(SDL_Renderer *r, SDL_Texture *t, int alpha) {
     SDL_SetTextureAlphaMod(t, 255);
 }
 
+/* Office pan: the 1600px-wide office scene is drawn cover-scaled and
+ * cropped to the 1280px-wide view, offset by scroll source px
+ * (0 = leftmost). Fusion centers the display on the Office Center Object;
+ * scroll is that X minus half the view width. */
+static void draw_office_pan(SDL_Renderer *r, SDL_Texture *t, int scroll) {
+    if (!t) return;
+    int rw, rh, tw, th;
+    SDL_GetRendererOutputSize(r, &rw, &rh);
+    SDL_QueryTexture(t, NULL, NULL, &tw, &th);
+
+    float sx = (float)rw / (float)tw;
+    float sy = (float)rh / (float)th;
+    float s = sx > sy ? sx : sy;
+
+    int max_scroll = tw - (int)((float)rw / s);
+    if (max_scroll < 0) max_scroll = 0;
+    if (scroll < 0) scroll = 0;
+    if (scroll > max_scroll) scroll = max_scroll;
+
+    int w = (int)(tw * s);
+    int h = (int)(th * s);
+    SDL_Rect d = {-(int)(scroll * s), (rh - h) / 2, w, h};
+    SDL_RenderCopy(r, t, NULL, &d);
+}
+
+/* World-layer object: Fusion frame position minus the pan scroll
+ * (the display is centered on the Office Center Object). */
+static void draw_world(SDL_Renderer *r, SDL_Texture *t, int fx, int fy, int scroll) {
+    if (!t) return;
+    int w, h;
+    SDL_QueryTexture(t, NULL, NULL, &w, &h);
+    SDL_Rect d = {fx - scroll, fy, w, h};
+    SDL_RenderCopy(r, t, NULL, &d);
+}
+
 static void draw_power(SDL_Renderer *r, int power) {
     int w = 250, h = 18;
     SDL_Rect border = {30, 30, w, h};
@@ -184,11 +240,16 @@ static void draw_camera_labels(SDL_Renderer *r, int camera) {
 }
 
 static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, int progress,
-                       int static_frame, int static_alpha) {
-    /* Frame 2 uses a fixed 1280x720 playfield. */
-    if (v->title_bg) {
+                       int static_frame, int static_alpha, int title_bg_frame) {
+    /* Frame 2 uses a fixed 1280x720 playfield. The background is usually
+     * the Stopped frame (515); Random(50)=1 briefly flashes one
+     * RRandom(12,14) sequence (516/517/518) for the 0.2 s cut window. */
+    SDL_Texture *bg = v->title_bg;
+    if (title_bg_frame >= 1 && title_bg_frame <= IMG_TITLE_BG_ANIM_COUNT)
+        bg = v->title_bg_anim[title_bg_frame - 1];
+    if (bg) {
         SDL_Rect d = {0, 0, 1280, 720};
-        SDL_RenderCopy(r, v->title_bg, NULL, &d);
+        SDL_RenderCopy(r, bg, NULL, &d);
     }
 
     /* These are the actual Frame 2 object positions from Objects.txt.
@@ -228,20 +289,43 @@ static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, in
 void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                     int camera_up, int night, int hour, int power,
                     int left_door, int right_door, int mask, int arrow, int progress,
-                    int static_frame, int static_alpha) {
+                    int static_frame, int static_alpha, int office_scroll,
+                    int left_door_frame, int right_door_frame, int title_bg_frame,
+                    int foxy_pos, int freddy_pos) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
     if (frame == 2) {
-        draw_title(r, v, night, arrow, progress, static_frame, static_alpha);
+        draw_title(r, v, night, arrow, progress, static_frame, static_alpha,
+                   title_bg_frame);
     } else if (frame == 3) {
         if (camera_up) {
-            if (camera < 0 || camera > 3) camera = 0;
-            fit_center(r, v->cams[camera]);
+            /* Core camera numbers are 1-based (1..4); the image bank is 0-based. */
+            int idx = camera - 1;
+            if (idx < 0 || idx > 3) idx = 0;
+            /* Occupied frame follows the haunting animatronic's route:
+             * Freddy Cam 01 (pos 1) -> Cam 03 (pos 3);
+             * Foxy Cam 02 (pos 2) -> Cam 04 (pos 4). */
+            int occupied = 0;
+            if (idx == 0 && freddy_pos == 1) occupied = 1;
+            else if (idx == 1 && foxy_pos == 2) occupied = 1;
+            else if (idx == 2 && freddy_pos == 3) occupied = 1;
+            else if (idx == 3 && foxy_pos == 4) occupied = 1;
+            fit_center(r, v->cams[idx][occupied]);
             draw_static(r, v->static_frames[static_frame & 7], 35);
-            draw_camera_labels(r, camera);
+            draw_camera_labels(r, idx);
         } else {
-            fit_center(r, v->office);
+            draw_office_pan(r, v->office, office_scroll);
+            /* Layer order mirrors Fusion: office (#1), doors (#2), desk (#3).
+             * Doors/desk are world objects at verbatim Objects.txt positions,
+             * shifted by the pan scroll. */
+            if (left_door_frame < 0) left_door_frame = 0;
+            if (left_door_frame >= IMG_DOOR_FRAMES) left_door_frame = IMG_DOOR_FRAMES - 1;
+            if (right_door_frame < 0) right_door_frame = 0;
+            if (right_door_frame >= IMG_DOOR_FRAMES) right_door_frame = IMG_DOOR_FRAMES - 1;
+            draw_world(r, v->door_left[left_door_frame], 119, 0, office_scroll);
+            draw_world(r, v->door_right[right_door_frame], 1263, 0, office_scroll);
+            draw_world(r, v->desk, 266, 177, office_scroll);
             draw_power(r, power);
             draw_door_indicators(r, left_door, right_door);
             if (mask) {
