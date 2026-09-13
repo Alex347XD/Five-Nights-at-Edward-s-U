@@ -15,9 +15,9 @@
  * when no --script file is given. */
 static void headless_default_script(FnaeGame *game, int frame) {
     switch (frame) {
-    case 10: fnae_key(game, 13); break;          /* Title: New -> Newspaper */
-    case 40: fnae_key(game, 13); break;          /* Newspaper -> Which Night */
-    case 70: fnae_key(game, 13); break;          /* Which Night -> start night */
+    case 10: fnae_key(game, SDLK_RETURN); break;  /* Title: New -> Newspaper */
+    case 40: fnae_key(game, SDLK_RETURN); break;  /* Newspaper -> Which Night */
+    case 70: fnae_key(game, SDLK_RETURN); break;  /* Which Night -> start night (skip 2s timer) */
     case 120: fnae_key(game, 's'); break;        /* camera up */
     case 180: fnae_key(game, 's'); break;        /* camera down */
     case 210: fnae_click(game, 90, 100); break;  /* harmless office click */
@@ -254,7 +254,10 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                         game->right_door_frame,
                         game->title_bg_frame,
                         game->foxy.pos,
-                        game->freddy.pos
+                        game->freddy.pos,
+                        game->cam_static_alpha,
+                        game->death,
+                        game->music_left
                     );
                     SDL_RenderPresent(r);
                     if (headless_save_screenshot(r, ev->shot) != 0)
@@ -293,7 +296,10 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
             game->right_door_frame,
             game->title_bg_frame,
             game->foxy.pos,
-            game->freddy.pos
+            game->freddy.pos,
+            game->cam_static_alpha,
+            game->death,
+            game->music_left
         );
         SDL_RenderPresent(r);
         if ((f + 1) % 60 == 0) {

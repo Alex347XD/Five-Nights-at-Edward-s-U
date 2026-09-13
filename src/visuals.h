@@ -51,4 +51,5 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                      int left_door, int right_door, int mask, int arrow, int progress,
                      int static_frame, int static_alpha, int office_scroll,
                      int left_door_frame, int right_door_frame, int title_bg_frame,
-                     int foxy_pos, int freddy_pos);
+                     int foxy_pos, int freddy_pos, int cam_static_alpha,
+                     int death, int music);

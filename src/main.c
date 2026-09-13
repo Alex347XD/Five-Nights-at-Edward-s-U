@@ -177,7 +177,10 @@ int main(int argc, char *argv[]) {
             game.right_door_frame,
             game.title_bg_frame,
             game.foxy.pos,
-            game.freddy.pos
+            game.freddy.pos,
+            game.cam_static_alpha,
+            game.death,
+            game.music_left
         );
 
         SDL_RenderPresent(r);

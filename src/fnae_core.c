@@ -28,11 +28,19 @@ static void difficulty(FnaeGame* g,int h){
  if(n==5 && h==1 && !did(g,h,9)){g->freddy_ai+=rnd(1)+2;g->foxy_ai+=rnd(2)+1;g->springtrap_ai+=3+rnd(2);g->ph_mangle_ai+=1+rnd(3);g->ph_bb_ai+=1+rnd(3);g->golden_ai+=rnd(2);mark(g,h,9);}
  if(n==6 && h==12 && !did(g,h,10)){g->freddy_ai=9+(rnd(4)+1);g->foxy_ai=10+rnd(2);g->springtrap_ai=8;g->ph_mangle_ai=9+rnd(2);g->ph_bb_ai=9+rnd(2);g->golden_ai=7;mark(g,h,10);}
  if(n==6 && h==1 && !did(g,h,11)){g->freddy_ai+=rnd(1)+2;g->foxy_ai+=rnd(2)+1;g->springtrap_ai+=1+rnd(5);g->ph_mangle_ai+=1+rnd(3);g->ph_bb_ai+=1+rnd(3);g->golden_ai+=rnd(2);mark(g,h,11);}
- if(n==7 && h==12 && !did(g,h,12)){g->freddy_ai=20;g->foxy_ai=20;g->springtrap_ai=20;g->ph_mangle_ai=20;g->ph_bb_ai=20;g->golden_ai=20;mark(g,h,12);}
+ if(n==7 && h==12 && !did(g,h,12)){g->freddy_ai=g->custom_freddy;g->foxy_ai=g->custom_foxy;g->springtrap_ai=g->custom_springtrap;g->ph_mangle_ai=g->custom_mangle;g->ph_bb_ai=g->custom_bb;g->golden_ai=g->custom_golden;mark(g,h,12);}
  g->freddy.ai=g->freddy_ai; g->foxy.ai=g->foxy_ai; g->springtrap_alive=g->springtrap_ai>0;
 }
 
-static void enter_death(FnaeGame* g,int who){ if(g->death==0) g->death=who; }
+static void enter_death(FnaeGame* g,int who){
+ if(g->death==0) g->death=who;
+ if(g->death==0) return;
+ /* Fusion forces the cameras down and the mask off on any death. */
+ if(g->cam_anim==CAM_UP){g->cam_anim=CAM_DOWN_ANIM;g->cam_anim_timer=0;}
+ g->view=0; g->camera_up_check=0;
+ if(g->mask_anim==MASK_DOWN){g->mask_anim=MASK_DOWN_ANIM;g->mask_anim_timer=0;}
+ g->flashlight=0;
+}
 
 static void ai_move(FnaeGame* g){
  if(g->death) return;
@@ -80,7 +88,22 @@ static void update_music(FnaeGame* g,float dt){
  if(g->music_left<=0 && g->hidden_power>0 && g->death==0 && ((g->cam_anim==CAM_UP&&rnd(5)==1)||(g->mask_anim==MASK_DOWN&&rnd(5)==1))) enter_death(g,1);
 }
 
-void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_TITLE; g->night=1; g->progress=0; g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2; }
+void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_TITLE; g->night=1; g->progress=0; g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2; g->cam_static_alpha=185; g->power_out_alpha=255;
+ /* Customize-screen defaults straight from Frame 8: everything 0 except Puppet (7). */
+ g->custom_freddy=0; g->custom_foxy=0; g->custom_springtrap=0; g->custom_golden=0;
+ g->custom_mangle=0; g->custom_bb=0; g->custom_puppet=7; }
+
+void fnae_set_custom(FnaeGame* g,int freddy,int foxy,int springtrap,int golden,int mangle,int bb,int puppet){
+ if(freddy<0)freddy=0; if(freddy>20)freddy=20;
+ if(foxy<0)foxy=0; if(foxy>20)foxy=20;
+ if(springtrap<0)springtrap=0; if(springtrap>20)springtrap=20;
+ if(golden<0)golden=0; if(golden>20)golden=20;
+ if(mangle<0)mangle=0; if(mangle>20)mangle=20;
+ if(bb<0)bb=0; if(bb>20)bb=20;
+ if(puppet<1)puppet=1; if(puppet>7)puppet=7;
+ g->custom_freddy=freddy; g->custom_foxy=foxy; g->custom_springtrap=springtrap;
+ g->custom_golden=golden; g->custom_mangle=mangle; g->custom_bb=bb; g->custom_puppet=puppet;
+}
 
 /* TV-static animation state, shared by the title overlay and the cameras.
  * Mirrors Frame 2 Events.txt: on Random(10)=1 the flicker alpha becomes
@@ -100,6 +123,16 @@ void fnae_static_tick(FnaeGame* g){
  }
 }
 
+/* Frame 6 routing: 0 = normal night (g->night), 1 = 6th, 2 = 7th/custom.
+ * Matches Frame 6 Start-of-Frame events; the frame then auto-advances
+ * after 2 seconds (see fnae_update). */
+static void enter_which_night(FnaeGame* g){
+ if(g->six_or_seven==1) g->night=6;
+ else if(g->six_or_seven==2) g->night=7;
+ if(g->night<1)g->night=1; if(g->night>7)g->night=7;
+ g->frame=FRAME_WHICH_NIGHT; g->which_timer=0;
+}
+
 void fnae_start_night(FnaeGame* g,int night){
  memset(g->hour_events,0,sizeof(g->hour_events));
  g->night=night<1?1:(night>7?7:night); g->frame=FRAME_NIGHT; g->time_of_day=12; g->time_to_hour=0;
@@ -108,7 +141,11 @@ void fnae_start_night(FnaeGame* g,int night){
   g->left_door=0; g->right_door=0; g->flashlight=0; g->hidden_power=10000; g->power_left=1; g->power_tick=0;
   g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2;
    g->left_door_frame=0; g->right_door_frame=0; g->title_bg_frame=0; g->title_bg_timer=0;
- g->movement_out=0; g->movement_timer=0; g->camera_up_check=0;
+  g->movement_out=0; g->movement_timer=0; g->movement_half_tick=0; g->movement_force_tick=0;
+  g->camera_up_check=0; g->cam_static_alpha=185; g->cam_static_tick=0;
+  g->warning=0; g->power_out_alpha=255;
+  g->springtrap_pos=1; g->springtrap_stand=0; g->lure_area=0; g->lure_cam=0; g->lure_timer=0;
+  g->foxy_stand=0; g->freddy_door=0;
  g->music_left=2000; g->music_winding=0; g->music_tick=0; g->current_call=0; g->call_muted=0;
  g->cam_anim_timer=g->mask_anim_timer=g->left_door_timer=g->right_door_timer=0;
  g->ai_timer=g->power_out_timer=g->springtrap_timer=g->phantom_timer=0;
@@ -116,6 +153,9 @@ void fnae_start_night(FnaeGame* g,int night){
  g->ph_mangle_a=g->ph_mangle_b=g->ph_mangle_c=0;g->ph_bb_a=g->ph_bb_b=0;
  g->golden_ai=0;g->foxy_ai=g->freddy_ai=g->springtrap_ai=g->ph_mangle_ai=g->ph_bb_ai=0;
  difficulty(g,12);
+ /* All-20 star reads the Customize-screen globals, not the nightly rolls. */
+ g->all20=(g->custom_freddy==20&&g->custom_foxy==20&&g->custom_springtrap==20&&
+  g->custom_golden==20&&g->custom_mangle==20&&g->custom_bb==20&&g->custom_puppet==7)?1:0;
 }
 
 static void hour(FnaeGame* g){
@@ -147,6 +187,12 @@ static void update_office_pan(FnaeGame* g, float dt){
 }
 
 void fnae_update(FnaeGame* g,float dt){
+ /* Frame 6 interstitial: Every 02'' -> Night, no input required. */
+ if(g->frame==FRAME_WHICH_NIGHT){
+  g->which_timer+=dt;
+  if(g->which_timer>=2.0f) fnae_start_night(g,g->night);
+  return;
+ }
  if(g->frame!=FRAME_NIGHT)return;
  if(g->death){g->death_addup++;if(g->death_addup>=60)g->frame=FRAME_DEATH;return;}
  update_office_pan(g,dt);
@@ -196,17 +242,61 @@ void fnae_update(FnaeGame* g,float dt){
  g->power_tick+=dt;
  if(g->power_tick>=intervals[g->power_left]){g->power_tick=0;int sub=10*((g->night/5)+1);g->hidden_power-=sub;if(g->hidden_power<0)g->hidden_power=0;}
 
- if(g->hidden_power<=0){
-  g->force_down=5;g->cam_anim=CAM_DOWN;g->view=0;g->camera_up_check=0;g->mask_anim=MASK_UP;g->flashlight=0;
-  g->power_out_timer+=dt;
-  if(g->death==0 && g->power_out_timer>=5){g->power_out_timer=0;enter_death(g,rnd(4));}
- }
- if(g->force_down>0)g->force_down--;
+  if(g->hidden_power<=0){
+   g->force_down=5;g->cam_anim=CAM_DOWN;g->view=0;g->camera_up_check=0;g->mask_anim=MASK_UP;g->flashlight=0;
+   /* Closed doors swing open on power loss (door A 2 -> 3). */
+   if(g->left_door==2){g->left_door=3;g->left_door_timer=0;}
+   if(g->right_door==2){g->right_door=3;g->right_door_timer=0;}
+   /* Power Out overlay fades 255 -> 0; death rolls start once it is gone. */
+   if(g->power_out_alpha>0){g->power_out_alpha-=3;if(g->power_out_alpha<0)g->power_out_alpha=0;}
+   g->power_out_timer+=dt;
+   if(g->power_out_alpha<=0 && g->death==0 && g->power_out_timer>=5){g->power_out_timer=0;enter_death(g,rnd(4));}
+  }
+  if(g->death) g->flashlight=0;
+  if(g->force_down>0)g->force_down--;
 
- g->ai_timer+=dt;
- if(g->ai_timer>=5){g->ai_timer-=5;ai_move(g);}
+  g->ai_timer+=dt;
+ if(g->ai_timer>=5){g->ai_timer-=5;ai_move(g);
+  /* Springtrap steps between cameras on its move flag, then clears it. */
+  if(g->springtrap_a && g->death==0){
+   g->springtrap_a=0;
+   int p=g->springtrap_pos;
+   if(p==1) g->springtrap_pos=3;
+   else if(p==2) g->springtrap_pos=(g->springtrap_b==0)?4:1;
+   else if(p==4) g->springtrap_pos=(g->springtrap_b==0)?2:1;
+   /* pos 3 is the kill room: Springtrap waits there for the death rolls. */
+   if(g->springtrap_pos==1||g->springtrap_pos==2) g->springtrap_b=rr(0,1);
+  }
+ }
+ /* Audio lure: 2s after placing it, 50% to pull Springtrap to the lured cam. */
+ if(g->lure_area){
+  g->lure_timer+=dt;
+  if(g->lure_timer>=2.0f){g->lure_timer-=2.0f;
+   if(rnd(2)==1){g->springtrap_pos=g->lure_cam;g->movement_out=1;g->movement_half_tick=0;g->movement_force_tick=0;}
+   g->lure_area=0;}
+ }
+ /* Camera Out ("Connection Lost"): 50% re-tune every 0.5s, forced after 2s. */
+ if(g->movement_out>0){
+  g->movement_half_tick+=dt; g->movement_force_tick+=dt;
+  if(g->movement_half_tick>=0.5f){g->movement_half_tick-=0.5f;if(rnd(2)==1)g->movement_out=0;}
+  if(g->movement_force_tick>=2.0f){g->movement_force_tick=0;g->movement_out=0;}
+ } else { g->movement_half_tick=0; g->movement_force_tick=0; }
+ /* Camera static: 150+Random(50) every 0.08s while the feed is live, 0 on signal loss. */
+ g->cam_static_tick+=dt;
+ if(g->cam_static_tick>=0.08f){g->cam_static_tick=0;
+  if(g->view>0 && g->movement_out==0) g->cam_static_alpha=150+rnd(50);
+  else g->cam_static_alpha=0;}
+ /* Music-box warnings: <600 low, <200 critical, <=0 empty. */
+ if(g->music_left<=0) g->warning=3;
+ else if(g->music_left<200) g->warning=2;
+ else if(g->music_left<600) g->warning=1;
+ else g->warning=0;
+ /* Doorway figures: Freddy at the left door, Foxy at the right, Springtrap on its viewed cam. */
+ g->foxy_stand=(g->foxy.pos==5 && g->view==0 && g->hidden_power>0)?1:0;
+ g->freddy_door=(g->freddy.pos==6 && g->view==0 && g->hidden_power>0)?1:0;
+ g->springtrap_stand=(g->view>0 && g->view==g->springtrap_pos && g->hidden_power>0)?1:0;
  update_phantoms(g); update_gf(g); update_music(g,dt);
- if(g->springtrap_a && g->view==3 && g->hidden_power>0 && g->death==0){g->springtrap_timer+=dt;if(g->springtrap_timer>=4){g->springtrap_timer=0;if(rnd(2)==1)enter_death(g,4);}}
+ if(g->springtrap_pos==3 && g->view==3 && g->hidden_power>0 && g->death==0){g->springtrap_timer+=dt;if(g->springtrap_timer>=4){g->springtrap_timer=0;if(rnd(2)==1)enter_death(g,4);}}
  if(g->current_call==0 && g->time_to_hour>=3)g->current_call=g->night;
  if(g->cam_anim==CAM_UP)g->view=g->camera; else if(g->cam_anim==CAM_DOWN)g->view=0;
  g->camera_up_check=(g->view>0);
@@ -217,17 +307,21 @@ void fnae_key(FnaeGame* g,int key){
  if(g->frame==FRAME_TITLE){
   if(key==SDLK_RETURN){
    if(g->arrow==0){g->six_or_seven=0;g->frame=FRAME_NEWSPAPER;}
-   else if(g->arrow==1){g->six_or_seven=0;g->frame=FRAME_WHICH_NIGHT;}
-   else if(g->arrow==2){g->six_or_seven=1;g->frame=FRAME_WHICH_NIGHT;}
-   else if(g->arrow==3){g->six_or_seven=1;g->frame=FRAME_CUSTOMIZE;}
+   else if(g->arrow==1){g->six_or_seven=0;enter_which_night(g);}
+   else if(g->arrow==2){g->six_or_seven=1;enter_which_night(g);}
+   else if(g->arrow==3){g->six_or_seven=2;g->frame=FRAME_CUSTOMIZE;}
   } else if(key==SDLK_UP || key=='w')g->arrow--;
   else if(key==SDLK_DOWN || key=='s')g->arrow++;
   if(g->arrow<0)g->arrow=0;int max=g->progress+1;if(max>3)max=3;if(g->arrow>max)g->arrow=max;return;
  }
- if(g->frame==FRAME_NEWSPAPER){if(key==SDLK_RETURN)g->frame=FRAME_WHICH_NIGHT;return;}
- if(g->frame==FRAME_WHICH_NIGHT){if(key==SDLK_RETURN)fnae_start_night(g,g->six_or_seven?(g->night>=7?7:6):g->night);return;}
- if(g->frame==FRAME_CUSTOMIZE){if(key==SDLK_RETURN)fnae_start_night(g,7);return;}
- if(g->frame==FRAME_6AM){if(key==SDLK_RETURN){if(g->night>=5)g->frame=FRAME_FINAL;else g->frame=FRAME_WHICH_NIGHT;}return;}
+ if(g->frame==FRAME_NEWSPAPER){if(key==SDLK_RETURN)enter_which_night(g);return;}
+ if(g->frame==FRAME_WHICH_NIGHT){if(key==SDLK_RETURN)fnae_start_night(g,g->night);return;}
+ if(g->frame==FRAME_CUSTOMIZE){if(key==SDLK_RETURN){g->six_or_seven=2;enter_which_night(g);}return;}
+ if(g->frame==FRAME_6AM){if(key==SDLK_RETURN){
+  /* Fusion: nights 6/7 or Night Story >= 5 -> Final, else next night -> Which Night. */
+  if(g->six_or_seven>0||g->night>=5)g->frame=FRAME_FINAL;
+  else {g->night++;g->six_or_seven=0;enter_which_night(g);}
+ }return;}
  if(g->frame==FRAME_DEATH){if(key==SDLK_RETURN)g->frame=FRAME_TITLE;return;}
  if(g->frame==FRAME_FINAL){if(key==SDLK_RETURN)g->frame=FRAME_TITLE;return;}
  if(g->frame!=FRAME_NIGHT)return;
@@ -241,7 +335,10 @@ void fnae_key(FnaeGame* g,int key){
  if(key=='m'&&g->hidden_power>0&&g->cam_anim==CAM_DOWN){if(g->mask_anim==MASK_UP){g->mask_anim=MASK_UP_ANIM;g->mask_anim_timer=0;}else if(g->mask_anim==MASK_DOWN){g->mask_anim=MASK_DOWN_ANIM;g->mask_anim_timer=0;}}
  if(key=='z'||key==SDLK_LALT)g->flashlight=1;
  if(g->cam_anim==CAM_UP){if(key>='1'&&key<='4')g->camera=key-'0';}
- if(key=='e'&&g->view==1&&g->hidden_power>0){g->movement_out=1;g->movement_timer=0;}
+ /* Audio lure: E while watching a camera feed (never from the music-box cam)
+  * puts a Lure Area on the viewed camera; Springtrap may follow (see update). */
+ if(key=='e'&&g->view>0&&g->view!=4&&g->hidden_power>0&&g->death==0&&g->lure_area==0){
+  g->lure_area=1; g->lure_cam=g->view; g->lure_timer=0;}
  /* R is a keyboard test/control for winding the music box; mouse uses fnae_click. */
  if(key=='r'&&g->view==4)g->music_winding=1;
 }
@@ -255,11 +352,13 @@ void fnae_click(FnaeGame* g,int x,int y){
  g->mouse_x=x; g->mouse_y=y;
  if(g->frame==FRAME_TITLE){
   if(x>=70&&x<=430&&y>=430&&y<495){g->arrow=0;g->frame=FRAME_NEWSPAPER;return;}
-  if(x>=70&&x<=430&&y>=495&&y<560){g->arrow=1;g->frame=FRAME_WHICH_NIGHT;return;}
-  if(x>=70&&x<=430&&y>=560&&y<625 && g->progress>0){g->arrow=2;g->six_or_seven=1;g->frame=FRAME_WHICH_NIGHT;return;}
-  if(x>=70&&x<=430&&y>=625&&y<700 && g->progress>1){g->arrow=3;g->six_or_seven=1;g->frame=FRAME_CUSTOMIZE;return;}
+  if(x>=70&&x<=430&&y>=495&&y<560){g->arrow=1;g->six_or_seven=0;enter_which_night(g);return;}
+  if(x>=70&&x<=430&&y>=560&&y<625 && g->progress>0){g->arrow=2;g->six_or_seven=1;enter_which_night(g);return;}
+  if(x>=70&&x<=430&&y>=625&&y<700 && g->progress>1){g->arrow=3;g->six_or_seven=2;g->frame=FRAME_CUSTOMIZE;return;}
   return;
  }
+ /* Newspaper advances on any click, like the Fusion event. */
+ if(g->frame==FRAME_NEWSPAPER){enter_which_night(g);return;}
  if(g->frame!=FRAME_NIGHT)return;
  if(g->view==0 && g->hidden_power>0){
   /* Door click zones follow the panning doors: compare in frame space

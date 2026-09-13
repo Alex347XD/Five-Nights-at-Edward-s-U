@@ -9,6 +9,7 @@ typedef struct { int ai, pos, move, at_door; } FnaeAI;
 typedef struct {
  FnaeFrame frame; int running; int night; int six_or_seven; int arrow; int progress; int challenge;
  int time_of_day; float time_to_hour;
+ float which_timer; /* Frame 6 auto-advance: Every 02'' -> Night */
  int death; int death_addup; int gf_random; int gf_death_addup;
  int camera; CamAnim cam_anim; MaskAnim mask_anim; int prevent_flip; int force_down; int view;
  int left_door, right_door; int flashlight; int pc_mobile;
@@ -22,6 +23,15 @@ typedef struct {
   int current_call; int call_muted;
    int static_frame; int static_alpha; /* TV-static anim state (shared title/cameras) */
    int static_div; /* ticks since last static frame advance (slows 60 Hz ticks to ~20 fps) */
+   int cam_static_alpha; float cam_static_tick; /* camera static: 150+Random(50) every 0.08s, 0 while signal lost */
+   int warning; /* music-box warning level: 0 ok, 1 low (<600), 2 critical (<200), 3 empty */
+   int power_out_alpha; /* Power Out overlay fade 255->0 once power is gone */
+   int springtrap_pos; /* Springtrap camera index 1-4 */
+   int springtrap_stand; /* Springtrap visible in office (viewing its cam) */
+   int lure_area; int lure_cam; float lure_timer; /* audio-lure placement + pull delay */
+   float movement_half_tick, movement_force_tick; /* Camera Out re-tune timers */
+   int custom_freddy, custom_foxy, custom_springtrap, custom_golden;
+   int custom_mangle, custom_bb, custom_puppet; /* Customize-frame AI levels for night 7 */
   int mouse_x, mouse_y;   /* last known pointer position (1280x720 space) */
   float office_scroll;    /* office pan in source px, 0 = leftmost.
                            * Mirrors the Fusion Office Center Object X minus
@@ -40,6 +50,7 @@ typedef struct {
 
 void fnae_init(FnaeGame* g);
 void fnae_static_tick(FnaeGame* g);
+void fnae_set_custom(FnaeGame* g,int freddy,int foxy,int springtrap,int golden,int mangle,int bb,int puppet);
 void fnae_start_night(FnaeGame* g, int night);
 void fnae_update(FnaeGame* g, float dt);
 void fnae_key(FnaeGame* g, int key);

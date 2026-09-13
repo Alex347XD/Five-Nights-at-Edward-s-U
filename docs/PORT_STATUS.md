@@ -32,7 +32,7 @@ SDL draws from the top-left, so the native renderer draws it with
 ## Functional controls
 
 - Title: Up/Down or W/S, Enter, mouse menu selection
-- Night: A/D doors, S camera, M mask, Z/Ctrl flashlight, 1–4 camera selection, R/mouse for music-box winding
+- Night: A/D doors, S camera, M mask, Z/Ctrl flashlight, 1–4 camera selection, E audio lure, R/mouse for music-box winding
 - Night: mouse position pans the office view — pointer in the left/right edge
   zones scrolls toward that side at the Fusion 2/4/6 px-per-tick speeds,
   clamped to the 1600px-wide office scene (see `CONVERTED_LOGIC.md`)
@@ -43,6 +43,22 @@ SDL draws from the top-left, so the native renderer draws it with
 - Flashlight and music-box controls release correctly on key-up
 - Title menu responds to physical Up/Down keys (SDL1-era keycodes `273`/`274`/`308` replaced with `SDLK_` constants; `308` was Left Alt for the flashlight)
 
+### Frame 6 Which Night
+
+Fixed: the frame no longer falls through to the title background. It shows
+the night card (`246.png`–`252.png`) centered on black, routes 0 = normal /
+1 = 6th / 2 = 7th-custom (Custom no longer lands on night 6), and
+auto-advances to Night after 2 s like the Fusion `Every 02''` event. 6 AM
+now progresses to the next night instead of replaying the same one.
+
+### Night scene
+
+- Placeholder HUD rectangles (power bar, door boxes, camera label boxes,
+  mask overlay) removed; live state (camera name, doors, mask, music) stays
+  visible in the window title
+- Camera static follows the Fusion cadence (150+Random(50) every 0.08 s,
+  0 on signal loss); the scene shakes during the death wait
+
 ## Known limitations
 
-The project is still a native reconstruction rather than a byte-for-byte Clickteam runtime replacement. Audio, save/INI persistence, several secondary frames, and exact character animation still need further conversion work.
+The project is still a native reconstruction rather than a byte-for-byte Clickteam runtime replacement. Audio, save/INI persistence, the Customize-screen UI, and exact character animation still need further conversion work. Mask/flashlight/button/counter art is identified only where named in `src/fnae_assets.h`; unmapped objects render as nothing (no invented stand-ins).

@@ -52,6 +52,25 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
 - Phantom Mangle forces the camera down after its 60-tick camera state.
 - Golden Freddy uses the exported random/death-addup logic.
 - Nights 1-7 difficulty values and hourly changes are translated from the event text.
+- Night 7 loads AI from the Customize-screen globals (defaults 0, Puppet 7;
+  see `fnae_set_custom`), and the All-20 star reads those globals, not the nightly rolls.
+- Which Night (Frame 6): 0 = normal night, 1 = 6th, 2 = 7th/custom; the frame
+  auto-advances to Night after 2 s (Return skips the wait).
+- 6 AM routes to Final for nights 6/7 or Night Story >= 5, else increments to
+  the next night via Which Night. Newspaper advances on any click.
+- Springtrap steps between cameras on its move flag (Cam 01 -> Cam 03 kill
+  room, Cam 02 <-> Cam 04 with the exported random branch); E places an audio
+  lure on the viewed camera that can pull Springtrap to it after ~2 s.
+- Camera Out ("Connection Lost"): 50% re-tune every 0.5 s, forced clear after
+  2 s; camera static runs 150+Random(50) every 0.08 s while the feed is live,
+  0 on signal loss.
+- Music-box warnings (<600 low, <200 critical, <=0 empty) and the power-out
+  fade (255 -> 0, death rolls start once it is gone) are tracked in core.
+- Closed doors swing open on power loss; any death forces the cameras down,
+  the mask off, and the flashlight off; the night scene shakes +/-5 during
+  the death wait (GF +/-8).
+- Doorway-figure flags (Freddy at left door, Foxy at right, Springtrap on its
+  viewed cam) are exposed for the renderer.
 
 ## Deliberately isolated
 

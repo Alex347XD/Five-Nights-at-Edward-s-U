@@ -1,6 +1,7 @@
 #include "visuals.h"
 #include "fnae_assets.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 static SDL_Texture *load_png(SDL_Renderer *r, const char *path) {
@@ -144,7 +145,7 @@ void visuals_draw_anchored(SDL_Renderer *r, SDL_Texture *t,
     draw_texture(r, t, x, y);
 }
 
-static void fit_center(SDL_Renderer *r, SDL_Texture *t) {
+static void fit_center_off(SDL_Renderer *r, SDL_Texture *t, int ox, int oy) {
     if (!t) return;
     int rw, rh, tw, th;
     SDL_GetRendererOutputSize(r, &rw, &rh);
@@ -156,12 +157,16 @@ static void fit_center(SDL_Renderer *r, SDL_Texture *t) {
 
     int w = (int)(tw * s);
     int h = (int)(th * s);
-    SDL_Rect d = {(rw - w) / 2, (rh - h) / 2, w, h};
+    SDL_Rect d = {(rw - w) / 2 + ox, (rh - h) / 2 + oy, w, h};
     SDL_RenderCopy(r, t, NULL, &d);
 }
 
+static void fit_center(SDL_Renderer *r, SDL_Texture *t) {
+    fit_center_off(r, t, 0, 0);
+}
+
 static void draw_static(SDL_Renderer *r, SDL_Texture *t, int alpha) {
-    if (!t) return;
+    if (!t || alpha <= 0) return;
     int rw, rh;
     SDL_GetRendererOutputSize(r, &rw, &rh);
     SDL_Rect d = {0, 0, rw, rh};
@@ -175,7 +180,7 @@ static void draw_static(SDL_Renderer *r, SDL_Texture *t, int alpha) {
  * cropped to the 1280px-wide view, offset by scroll source px
  * (0 = leftmost). Fusion centers the display on the Office Center Object;
  * scroll is that X minus half the view width. */
-static void draw_office_pan(SDL_Renderer *r, SDL_Texture *t, int scroll) {
+static void draw_office_pan(SDL_Renderer *r, SDL_Texture *t, int scroll, int ox, int oy) {
     if (!t) return;
     int rw, rh, tw, th;
     SDL_GetRendererOutputSize(r, &rw, &rh);
@@ -192,51 +197,29 @@ static void draw_office_pan(SDL_Renderer *r, SDL_Texture *t, int scroll) {
 
     int w = (int)(tw * s);
     int h = (int)(th * s);
-    SDL_Rect d = {-(int)(scroll * s), (rh - h) / 2, w, h};
+    SDL_Rect d = {-(int)(scroll * s) + ox, (rh - h) / 2 + oy, w, h};
     SDL_RenderCopy(r, t, NULL, &d);
 }
 
 /* World-layer object: Fusion frame position minus the pan scroll
  * (the display is centered on the Office Center Object). */
-static void draw_world(SDL_Renderer *r, SDL_Texture *t, int fx, int fy, int scroll) {
+static void draw_world(SDL_Renderer *r, SDL_Texture *t, int fx, int fy, int scroll, int ox, int oy) {
     if (!t) return;
     int w, h;
     SDL_QueryTexture(t, NULL, NULL, &w, &h);
-    SDL_Rect d = {fx - scroll, fy, w, h};
+    SDL_Rect d = {fx - scroll + ox, fy + oy, w, h};
     SDL_RenderCopy(r, t, NULL, &d);
 }
 
-static void draw_power(SDL_Renderer *r, int power) {
-    int w = 250, h = 18;
-    SDL_Rect border = {30, 30, w, h};
-    SDL_RenderDrawRect(r, &border);
-
-    int fill = (w - 4) * power / 10000;
-    if (fill < 0) fill = 0;
-    SDL_Rect bar = {32, 32, fill, h - 4};
-    SDL_RenderFillRect(r, &bar);
-}
-
-static void draw_door_indicators(SDL_Renderer *r, int left, int right) {
+/* Frame 6 interstitial: black screen with the night card centered
+ * (Fusion parks Which Night at (640,360)). Reuses the 246-252 night
+ * cards, which already read "12:00 AM / Nth Night". */
+static void draw_which_night(SDL_Renderer *r, FnaeVisuals *v, int night) {
+    int n = night < 1 ? 1 : night > 7 ? 7 : night;
     int rw, rh;
     SDL_GetRendererOutputSize(r, &rw, &rh);
-    SDL_Rect l = {35, rh - 70, 100, 32};
-    SDL_Rect rr = {rw - 135, rh - 70, 100, 32};
-    SDL_RenderDrawRect(r, &l);
-    SDL_RenderDrawRect(r, &rr);
-    if (left) SDL_RenderFillRect(r, &l);
-    if (right) SDL_RenderFillRect(r, &rr);
-}
-
-static void draw_camera_labels(SDL_Renderer *r, int camera) {
-    int rw, rh;
-    SDL_GetRendererOutputSize(r, &rw, &rh);
-    for (int i = 0; i < 4; ++i) {
-        SDL_Rect b = {rw - 250, 90 + i * 52, 215, 40};
-        if (i == camera) SDL_RenderFillRect(r, &b);
-        else SDL_RenderDrawRect(r, &b);
-    }
-    (void)rh;
+    visuals_draw_anchored(r, v->title_nights[n - 1],
+                          rw / 2, rh / 2, FNAE_ANCHOR_CENTER);
 }
 
 static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, int progress,
@@ -291,9 +274,19 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                     int left_door, int right_door, int mask, int arrow, int progress,
                     int static_frame, int static_alpha, int office_scroll,
                     int left_door_frame, int right_door_frame, int title_bg_frame,
-                    int foxy_pos, int freddy_pos) {
+                    int foxy_pos, int freddy_pos, int cam_static_alpha,
+                    int death, int music) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
+
+    /* Jumpscare shake: the night scene jumps X/Y +/-Random(5) on any death
+     * (GF shakes +/-Random(8)). Applied to the office/cam draws below. */
+    int ox = 0, oy = 0;
+    if (frame == 3 && death > 0) {
+        int j = (death == 5) ? 8 : 5;
+        ox = rand() % (2 * j + 1) - j;
+        oy = rand() % (2 * j + 1) - j;
+    }
 
     if (frame == 2) {
         draw_title(r, v, night, arrow, progress, static_frame, static_alpha,
@@ -311,11 +304,10 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             else if (idx == 1 && foxy_pos == 2) occupied = 1;
             else if (idx == 2 && freddy_pos == 3) occupied = 1;
             else if (idx == 3 && foxy_pos == 4) occupied = 1;
-            fit_center(r, v->cams[idx][occupied]);
-            draw_static(r, v->static_frames[static_frame & 7], 35);
-            draw_camera_labels(r, idx);
+            fit_center_off(r, v->cams[idx][occupied], ox, oy);
+            draw_static(r, v->static_frames[static_frame & 7], cam_static_alpha);
         } else {
-            draw_office_pan(r, v->office, office_scroll);
+            draw_office_pan(r, v->office, office_scroll, ox, oy);
             /* Layer order mirrors Fusion: office (#1), doors (#2), desk (#3).
              * Doors/desk are world objects at verbatim Objects.txt positions,
              * shifted by the pan scroll. */
@@ -323,20 +315,12 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             if (left_door_frame >= IMG_DOOR_FRAMES) left_door_frame = IMG_DOOR_FRAMES - 1;
             if (right_door_frame < 0) right_door_frame = 0;
             if (right_door_frame >= IMG_DOOR_FRAMES) right_door_frame = IMG_DOOR_FRAMES - 1;
-            draw_world(r, v->door_left[left_door_frame], 119, 0, office_scroll);
-            draw_world(r, v->door_right[right_door_frame], 1263, 0, office_scroll);
-            draw_world(r, v->desk, 266, 177, office_scroll);
-            draw_power(r, power);
-            draw_door_indicators(r, left_door, right_door);
-            if (mask) {
-                int rw, rh;
-                SDL_GetRendererOutputSize(r, &rw, &rh);
-                SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_BLEND);
-                SDL_SetRenderDrawColor(r, 0, 0, 0, 180);
-                SDL_Rect m = {0, 0, rw, rh};
-                SDL_RenderFillRect(r, &m);
-            }
+            draw_world(r, v->door_left[left_door_frame], 119, 0, office_scroll, ox, oy);
+            draw_world(r, v->door_right[right_door_frame], 1263, 0, office_scroll, ox, oy);
+            draw_world(r, v->desk, 266, 177, office_scroll, ox, oy);
         }
+    } else if (frame == 6) {
+        draw_which_night(r, v, night);
     } else if (frame == 9) {
         fit_center(r, v->six_am);
     } else if (frame == 4) {
@@ -345,13 +329,18 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
         fit_center(r, v->final_screen);
     } else if (frame == 7) {
         fit_center(r, v->newspaper);
-    } else {
-        fit_center(r, v->title_bg);
     }
+    /* Frames 1 (Warning) and 8 (Customize) stay black: their UI art is
+     * still unmapped, and title_bg was the wrong image there. */
 
+    static const char *cam_names[4] = {"Hell", "Mountain", "Forest", "Dino"};
+    int cam = camera - 1;
+    if (cam < 0 || cam > 3) cam = 0;
     char title[256];
     snprintf(title, sizeof title,
-             "Five Nights at Edward's | Native | Night %d | %d AM | Power %d%%",
-             night, hour, power / 100);
+             "Five Nights at Edward's | Native | Night %d | %d AM | Power %d%% | Cam %s%s | doors L%d R%d%s | music %d",
+             night, hour, power / 100, cam_names[cam], camera_up ? " (up)" : "",
+             left_door > 0, right_door > 0, mask ? " | MASK" : "",
+             music);
     SDL_SetWindowTitle(SDL_GetWindowFromID(1), title);
 }
