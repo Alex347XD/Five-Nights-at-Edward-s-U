@@ -65,8 +65,9 @@ termination notice, not the newspaper.)
 - Camera static follows the Fusion cadence (150+Random(50) every 0.08 s,
   0 on signal loss); the scene shakes during the death wait
 - Camera feeds auto-pan left <-> right on the Camera Center Object drift
-  (+/-1 px per tick, 120 px overscan each end), drawn cover-cropped so the
-  full 1600px feed scrolls through the view instead of letterboxing
+  (+/-1 px per tick, clamped to the feed image ends so no black bars show),
+  drawn cover-cropped so the full 1600px feed scrolls through the view
+  instead of letterboxing
 
 ## Known limitations
 

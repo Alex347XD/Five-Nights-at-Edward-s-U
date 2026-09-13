@@ -37,9 +37,8 @@ typedef struct {
                             * Mirrors the Fusion Office Center Object X minus
                             * Game Width / 2; clamped to [0, FNAE_OFFICE_SCROLL_MAX]. */
    float cam_scroll;       /* camera-feed pan: display left edge in source px.
-                            * Mirrors the Fusion Camera Center Object X minus
-                            * Game Width / 2; drifts in
-                            * [FNAE_CAM_SCROLL_MIN, FNAE_CAM_SCROLL_MAX]. */
+                            * Drifts in [FNAE_CAM_SCROLL_MIN, FNAE_CAM_SCROLL_MAX]
+                            * (clamped to the feed image ends, no overscan). */
    int cam_scroll_dir;     /* 0 = panning right (+1 px/tick), 1 = panning left */
   int left_door_frame, right_door_frame; /* shutter frame 0..15 (open->closed) */
    int title_bg_frame;     /* 0 = Stopped (515.png), 1..3 = flash 516.png+frame-1 */
@@ -53,11 +52,11 @@ typedef struct {
 /* Office pan range: 1600px-wide office scene over a 1280px-wide view. */
 #define FNAE_OFFICE_SCROLL_MAX 320
 
-/* Camera-feed pan range: the Fusion Camera Center Object drifts between
- * Game Width / 2 - 120 (= 520) and Frame Width - Game Width / 2 + 120
- * (= 1080); minus Game Width / 2 this is the display left edge range. */
-#define FNAE_CAM_SCROLL_MIN -120
-#define FNAE_CAM_SCROLL_MAX 440
+/* Camera-feed pan range: the 1600px-wide feed over the 1280px-wide view.
+ * Unlike the raw Fusion Center-Object bounds (which overshoot 120 px each
+ * end), the pan is clamped to the image ends so no black bars show. */
+#define FNAE_CAM_SCROLL_MIN 0
+#define FNAE_CAM_SCROLL_MAX 320
 
 void fnae_init(FnaeGame* g);
 void fnae_static_tick(FnaeGame* g);

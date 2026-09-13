@@ -188,12 +188,13 @@ static void update_office_pan(FnaeGame* g, float dt){
 }
 
 /* Camera-feed auto-pan ("[ Camera Scrolling ]" in Frame 3 Events.txt).
- * The Camera Center Object starts at Game Width / 2 - 120 and drifts
- * +/-1 px per tick, bouncing between Game Width / 2 - 120 and
- * Frame Width - Game Width / 2 + 120; while a camera feed is up the
- * display centers on it, so the feed slowly pans left <-> right.
- * Alterable Value B is set to 1 at Start of Frame and never changes,
- * so the drift runs unconditionally (even with the cameras down).
+ * The Camera Center Object drifts +/-1 px per tick and bounces direction
+ * at each end; while a camera feed is up the display follows it, so the
+ * feed slowly pans left <-> right. The Fusion bounds overshoot 120 px
+ * past each feed edge, but the native pan is clamped to the image ends
+ * so no black bars show. Alterable Value B is set to 1 at Start of Frame
+ * and never changes, so the drift runs unconditionally (even with the
+ * cameras down).
  * Speeds are per 1/60 tick, hence the dt*60 scaling. */
 static void update_cam_scroll(FnaeGame* g, float dt){
  if(g->frame!=FRAME_NIGHT) return;

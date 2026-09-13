@@ -1,5 +1,6 @@
 #include "visuals.h"
 #include "fnae_assets.h"
+#include "fnae_core.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -203,9 +204,8 @@ static void draw_office_pan(SDL_Renderer *r, SDL_Texture *t, int scroll, int ox,
 
 /* Camera-feed pan: the 1600px-wide feed is drawn cover-scaled and
  * cropped to the 1280px-wide view, offset by scroll source px
- * (the display left edge). Unlike the office, the Fusion Camera Center
- * Object overshoots by 120 px on each side (scroll range [-120,440]),
- * so past the feed edges the cleared black background shows through. */
+ * (the display left edge). The scroll is clamped to the image ends
+ * so no black bars show past the feed edges. */
 static void draw_cam_pan(SDL_Renderer *r, SDL_Texture *t, int scroll, int ox, int oy) {
     if (!t) return;
     int rw, rh, tw, th;
@@ -216,8 +216,8 @@ static void draw_cam_pan(SDL_Renderer *r, SDL_Texture *t, int scroll, int ox, in
     float sy = (float)rh / (float)th;
     float s = sx > sy ? sx : sy;
 
-    if (scroll < -120) scroll = -120;
-    if (scroll > 440) scroll = 440;
+    if (scroll < FNAE_CAM_SCROLL_MIN) scroll = FNAE_CAM_SCROLL_MIN;
+    if (scroll > FNAE_CAM_SCROLL_MAX) scroll = FNAE_CAM_SCROLL_MAX;
 
     int w = (int)(tw * s);
     int h = (int)(th * s);
