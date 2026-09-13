@@ -80,9 +80,13 @@ static void ai_move(FnaeGame* g){
 static void update_phantoms(FnaeGame* g){
  if(g->view>0 && g->ph_bb_ai>0 && g->ph_bb_a==0) g->ph_bb_a=rnd(23-g->ph_bb_ai);
  if(g->view==0) { g->ph_bb_a=0; g->ph_bb_b=0; }
- if(g->ph_bb_a==1){g->ph_bb_b++; if(g->ph_bb_b>80){g->ph_bb_a=0;g->ph_bb_b=0;g->force_down=5;}}
+ /* B>80 completion (Fusion plays scream3 on ch #18 here): leaving the
+  * cameras clears A/B silently above, so only this path screams. */
+ if(g->ph_bb_a==1){g->ph_bb_b++; if(g->ph_bb_b>80){g->ph_bb_a=0;g->ph_bb_b=0;g->force_down=5;fnae_push_sound(g,FNAE_SND_PHBB);}}
  if(g->view>0 && g->ph_mangle_ai>0 && g->ph_mangle_c==0) g->ph_mangle_a=rnd(23-g->ph_mangle_ai);
- if(g->view==0) g->ph_mangle_a=0;
+ /* Fusion resets Camera B alongside A while the cameras are down
+  * (A==0 + B<>0 -> B=0), so a stale count never shortens the next haunt. */
+ if(g->view==0) { g->ph_mangle_a=0; g->ph_mangle_b=0; }
  if(g->ph_mangle_a==1){g->ph_mangle_b++; if(g->ph_mangle_b>60){g->ph_mangle_c=1;g->ph_mangle_a=0;g->ph_mangle_b=0;g->force_down=5;}}
 }
 

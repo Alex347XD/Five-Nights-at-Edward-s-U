@@ -73,6 +73,7 @@ int fnae_audio_init(FnaeAudio *a, const char *dir) {
  a->stop = load_one(dir, "stop.wav");
  a->walk = load_one(dir, "walk1.wav");
  a->garble = load_one(dir, "garble1.wav");
+ a->manglebreath = load_one(dir, "breathing.wav");
  a->phbb = load_one(dir, "scream3.wav");
  a->powerdown = load_one(dir, "powerdown.wav");
  a->jack = load_one(dir, "jackinthebox.wav");
@@ -98,13 +99,13 @@ int fnae_audio_init(FnaeAudio *a, const char *dir) {
  a->ok = 1;
  a->init = 1;
  {
-  Mix_Chunk *cs[] = { a->fan, a->depths, a->camau, a->change, a->flip_up,
-   a->flip_down, a->mask_on, a->mask_off, a->breath, a->door, a->melody,
-   a->stare, a->buzz, a->windup, a->thud, a->steps, a->closeamb, a->echo1,
-   a->echo3b, a->echo4b, a->stop, a->walk, a->garble, a->phbb, a->powerdown,
-   a->jack, a->puppet, a->freddy, a->foxy, a->spring, a->gf, a->title_static,
-   a->darkness, a->finalbox, a->chimes, a->goblin, a->call1, a->call2,
-   a->call3, a->call4, a->call5, a->call6 };
+   Mix_Chunk *cs[] = { a->fan, a->depths, a->camau, a->change, a->flip_up,
+    a->flip_down, a->mask_on, a->mask_off, a->breath, a->door, a->melody,
+    a->stare, a->buzz, a->windup, a->thud, a->steps, a->closeamb, a->echo1,
+    a->echo3b, a->echo4b, a->stop, a->walk, a->garble, a->phbb, a->powerdown,
+    a->jack, a->puppet, a->freddy, a->foxy, a->spring, a->gf, a->title_static,
+    a->darkness, a->finalbox, a->chimes, a->goblin, a->call1, a->call2,
+    a->call3, a->call4, a->call5, a->call6, a->manglebreath };
   int n = 0;
   for (size_t i = 0; i < sizeof cs / sizeof cs[0]; ++i)
    if (cs[i])
@@ -117,12 +118,12 @@ int fnae_audio_init(FnaeAudio *a, const char *dir) {
 
 static void free_all(FnaeAudio *a) {
  Mix_Chunk *cs[] = { a->fan, a->depths, a->camau, a->change, a->flip_up,
-  a->flip_down, a->mask_on, a->mask_off, a->breath, a->door, a->melody,
-  a->stare, a->buzz, a->windup, a->thud, a->steps, a->closeamb, a->echo1,
-  a->echo3b, a->echo4b, a->stop, a->walk, a->garble, a->phbb, a->powerdown,
-  a->jack, a->puppet, a->freddy, a->foxy, a->spring, a->gf, a->title_static,
-  a->darkness, a->finalbox, a->chimes, a->goblin, a->call1, a->call2,
-  a->call3, a->call4, a->call5, a->call6 };
+   a->flip_down, a->mask_on, a->mask_off, a->breath, a->door, a->melody,
+   a->stare, a->buzz, a->windup, a->thud, a->steps, a->closeamb, a->echo1,
+   a->echo3b, a->echo4b, a->stop, a->walk, a->garble, a->phbb, a->powerdown,
+   a->jack, a->puppet, a->freddy, a->foxy, a->spring, a->gf, a->title_static,
+   a->darkness, a->finalbox, a->chimes, a->goblin, a->call1, a->call2,
+   a->call3, a->call4, a->call5, a->call6, a->manglebreath };
  for (size_t i = 0; i < sizeof cs / sizeof cs[0]; ++i)
   if (cs[i])
    Mix_FreeChunk(cs[i]);
@@ -158,15 +159,19 @@ static void start_night(FnaeAudio *a) {
  play(a, CH_BUZZ, a->buzz, -1, MIX_MAX_VOLUME);
  play(a, CH_CLOSE, a->closeamb, -1, 0);
  play(a, CH_MELODY, a->melody, -1, 0);
- Mix_Volume(CH_WINDUP, V(75));
- Mix_Volume(CH_FOOT, V(40));
- Mix_Volume(CH_LURE, V(50));
- Mix_Volume(CH_WALK, V(50));
- Mix_Volume(CH_CALL, V(50));
- Mix_Volume(CH_MANGLE, V(50));
- Mix_Volume(CH_PHBB, V(50));
- Mix_Volume(CH_POWER, V(50));
- Mix_Volume(CH_JACK, V(30));
+  Mix_Volume(CH_WINDUP, V(75));
+  Mix_Volume(CH_FOOT, V(40));
+  Mix_Volume(CH_LURE, V(50));
+  Mix_Volume(CH_WALK, V(50));
+  Mix_Volume(CH_CALL, V(50));
+  Mix_Volume(CH_MANGLE, V(50));
+  Mix_Volume(CH_PHBB, V(50));
+  Mix_Volume(CH_POWER, V(50));
+  Mix_Volume(CH_JACK, V(30));
+  /* One-shot channels keep the Fusion Start-of-Frame levels: ch #4/#5
+   * (Change, flips, mask) play at 50, not full volume. */
+  Mix_Volume(CH_CHANGE, V(50));
+  Mix_Volume(CH_FLIP, V(50));
 }
 
 /* Nonzero while a phone call is playing (drives the Mute Call button). */
@@ -184,14 +189,15 @@ static void drain_queue(FnaeAudio *a, FnaeGame *g) {
   case FNAE_SND_LURE2: play(a, CH_LURE, a->echo3b, 0, V(50)); break;
   case FNAE_SND_LURE3: play(a, CH_LURE, a->echo4b, 0, V(50)); break;
   case FNAE_SND_LURE_STOP: play(a, CH_LURE, a->stop, 0, V(50)); break;
-  case FNAE_SND_DOOR: play(a, CH_DOOR, a->door, 0, V(50)); break;
-  case FNAE_SND_CAM_UP: play(a, CH_FLIP, a->flip_up, 0, MIX_MAX_VOLUME); break;
-  case FNAE_SND_CAM_DOWN: play(a, CH_FLIP, a->flip_down, 0, MIX_MAX_VOLUME); break;
-  case FNAE_SND_MASK_ON: play(a, CH_FLIP, a->mask_on, 0, MIX_MAX_VOLUME); break;
-  case FNAE_SND_MASK_OFF: play(a, CH_FLIP, a->mask_off, 0, MIX_MAX_VOLUME); break;
-  case FNAE_SND_WINDUP: play(a, CH_WINDUP, a->windup, 0, V(75)); break;
-  case FNAE_SND_CALL_STOP: Mix_HaltChannel(CH_CALL); break;
-  case FNAE_SND_TITLE_CHANGE: play(a, CH_CHANGE, a->change, 0, MIX_MAX_VOLUME); break;
+   case FNAE_SND_DOOR: play(a, CH_DOOR, a->door, 0, V(50)); break;
+   case FNAE_SND_CAM_UP: play(a, CH_FLIP, a->flip_up, 0, V(50)); break;
+   case FNAE_SND_CAM_DOWN: play(a, CH_FLIP, a->flip_down, 0, V(50)); break;
+   case FNAE_SND_MASK_ON: play(a, CH_FLIP, a->mask_on, 0, V(50)); break;
+   case FNAE_SND_MASK_OFF: play(a, CH_FLIP, a->mask_off, 0, V(50)); break;
+   case FNAE_SND_WINDUP: play(a, CH_WINDUP, a->windup, 0, V(75)); break;
+   case FNAE_SND_CALL_STOP: Mix_HaltChannel(CH_CALL); break;
+   case FNAE_SND_TITLE_CHANGE: play(a, CH_CHANGE, a->change, 0, V(50)); break;
+   case FNAE_SND_PHBB: play(a, CH_PHBB, a->phbb, 0, V(50)); break;
   default: break;
   }
  }
@@ -221,25 +227,25 @@ void fnae_audio_frame(FnaeAudio *a, FnaeGame *g) {
   /* Every frame entry stops everything first (Fusion "Stop any sample"). */
   Mix_HaltChannel(-1);
   switch (frame) {
-  case FRAME_TITLE:
-   play(a, CH_FAN, a->title_static, 0, MIX_MAX_VOLUME);
-   play(a, CH_DEPTHS, a->darkness, -1, MIX_MAX_VOLUME);
-   break;
-  case FRAME_WHICH_NIGHT:
-   play(a, CH_FAN, a->change, 0, MIX_MAX_VOLUME);
-   break;
+   case FRAME_TITLE:
+    play(a, CH_FAN, a->title_static, 0, V(50));
+    play(a, CH_DEPTHS, a->darkness, -1, V(50));
+    break;
+   case FRAME_WHICH_NIGHT:
+    play(a, CH_FAN, a->change, 0, V(50));
+    break;
   case FRAME_NIGHT:
    start_night(a);
    break;
   case FRAME_DEATH:
    play(a, CH_GOBLIN, a->goblin, -1, MIX_MAX_VOLUME);
    break;
-  case FRAME_FINAL:
-   play(a, CH_FAN, a->finalbox, -1, MIX_MAX_VOLUME);
-   break;
-  case FRAME_6AM:
-   play(a, CH_FAN, a->chimes, 0, MIX_MAX_VOLUME);
-   break;
+   case FRAME_FINAL:
+    play(a, CH_FAN, a->finalbox, 0, V(50));
+    break;
+   case FRAME_6AM:
+    play(a, CH_FAN, a->chimes, 0, V(50));
+    break;
   default:
    break;
   }
@@ -255,6 +261,7 @@ void fnae_audio_frame(FnaeAudio *a, FnaeGame *g) {
   a->prev_fdoor = g->freddy_door;
   a->prev_fstand = g->foxy_stand;
   a->prev_mangle = g->ph_mangle_c;
+  a->prev_mangle_act = 0;
   return;
  }
 
@@ -295,16 +302,29 @@ void fnae_audio_frame(FnaeAudio *a, FnaeGame *g) {
    play(a, CH_FOOT, a->steps, 0, V(40));
   if (g->foxy_stand && !a->prev_fstand)
    play(a, CH_FOOT, a->thud, 0, V(40));
-  /* Camera switch blip (Change on ch #4). */
-  if (g->view > 0 && g->camera != a->prev_camera)
-   play(a, CH_CHANGE, a->change, 0, MIX_MAX_VOLUME);
-  /* Phantom Mangle static burst (garble1 on ch #17). */
-  if (g->ph_mangle_c && !a->prev_mangle)
-   play(a, CH_MANGLE, a->garble, 0, V(50));
+   /* Camera switch blip (Change on ch #4, vol 50). */
+   if (g->view > 0 && g->camera != a->prev_camera)
+    play(a, CH_CHANGE, a->change, 0, V(50));
+   /* Phantom Mangle (ch #17): garble1 loops while the annoy runs
+    * (B<7, A>0), breathing plays once it ends (B>=7); both Stop the
+    * channel first, like the Fusion events. */
+   {
+    int mact = (g->ph_mangle_a == 1 || g->ph_mangle_b > 0) && !g->ph_mangle_c;
+    if (g->ph_mangle_c && !a->prev_mangle) {
+     Mix_HaltChannel(CH_MANGLE);
+     play(a, CH_MANGLE, a->manglebreath, 0, V(50));
+    } else if (mact && !a->prev_mangle_act) {
+     Mix_HaltChannel(CH_MANGLE);
+     play(a, CH_MANGLE, a->garble, -1, V(50));
+    } else if (!mact && a->prev_mangle_act && !g->ph_mangle_c) {
+     Mix_HaltChannel(CH_MANGLE);
+    }
+    a->prev_mangle_act = mact;
+   }
 
-  /* Continuous volumes. */
-  Mix_Volume(CH_FAN, g->view > 0 ? V(10) : V(30));
-  Mix_Volume(CH_CAMAU, g->view > 0 ? V(50) : 0);
+   /* Continuous volumes. */
+   Mix_Volume(CH_FAN, g->view > 0 ? V(10) : V(30));
+   Mix_Volume(CH_CAMAU, g->view > 0 ? V(50) : 0);
   {
    int mv = 0;
    if (g->view == 2)
@@ -315,18 +335,23 @@ void fnae_audio_frame(FnaeAudio *a, FnaeGame *g) {
     mv = V(50);
    Mix_Volume(CH_MELODY, mv);
   }
-  Mix_Volume(CH_CLOSE, (g->foxy_stand || g->freddy_door) ? V(50) : 0);
-  Mix_Volume(CH_BREATH, g->mask_anim == MASK_DOWN ? V(50) : 0);
- }
+   Mix_Volume(CH_CLOSE, (g->foxy_stand || g->freddy_door) ? V(50) : 0);
+   Mix_Volume(CH_BREATH, g->mask_anim == MASK_DOWN ? V(50) : 0);
+   /* stare loops under the Connection Lost overlay (ch #9): silent
+    * while the feed is live, 50 on signal loss. */
+   Mix_Volume(CH_STARE, g->movement_out > 0 ? V(50) : 0);
+   /* buzzlight (ch #10): silent until the flashlight is on (70). */
+   Mix_Volume(CH_BUZZ, g->flashlight ? V(70) : 0);
+  }
 
- a->prev_death = g->death;
- a->prev_view = g->view;
- a->prev_camera = g->camera;
- a->prev_call = g->current_call;
- a->prev_power = g->hidden_power;
- a->prev_empty = g->music_left <= 0;
- a->prev_spring = g->springtrap_pos;
- a->prev_fdoor = g->freddy_door;
- a->prev_fstand = g->foxy_stand;
- a->prev_mangle = g->ph_mangle_c;
+  a->prev_death = g->death;
+  a->prev_view = g->view;
+  a->prev_camera = g->camera;
+  a->prev_call = g->current_call;
+  a->prev_power = g->hidden_power;
+  a->prev_empty = g->music_left <= 0;
+  a->prev_spring = g->springtrap_pos;
+  a->prev_fdoor = g->freddy_door;
+  a->prev_fstand = g->foxy_stand;
+  a->prev_mangle = g->ph_mangle_c;
 }

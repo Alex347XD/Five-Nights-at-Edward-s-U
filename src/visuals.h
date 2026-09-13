@@ -48,6 +48,9 @@ typedef struct {
     /* Music-box crank (Cam 04 view only) + low-music warning badges. */
     SDL_Texture *musicbtn_off;
     SDL_Texture *musicbtn_on;
+    SDL_Texture *music_wind; /* "Give $ To Business Edward" overlay text */
+    SDL_Texture *music_hold; /* "click & hold" hint under the box */
+    SDL_Texture *music_pie[IMG_MUSIC_PIE_COUNT]; /* wind gauge, empty->full */
     SDL_Texture *warn_off;
     SDL_Texture *warn_on;
     /* Mute Call button (night calls only, while one plays). */

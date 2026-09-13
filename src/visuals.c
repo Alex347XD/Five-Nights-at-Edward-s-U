@@ -86,6 +86,10 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->springtrap_stand = load_id(r, IMG_SPRINGTRAP_STAND);
     v->musicbtn_off = load_id(r, IMG_MUSICBTN_OFF);
     v->musicbtn_on = load_id(r, IMG_MUSICBTN_ON);
+    v->music_wind = load_id(r, IMG_MUSIC_WIND_TEXT);
+    v->music_hold = load_id(r, IMG_MUSIC_CLICKHOLD);
+    for (int i = 0; i < IMG_MUSIC_PIE_COUNT; ++i)
+        v->music_pie[i] = load_id(r, IMG_MUSIC_PIE_FIRST + i);
     v->warn_off = load_id(r, IMG_WARNBADGE_OFF);
     v->warn_on = load_id(r, IMG_WARNBADGE_ON);
     v->mutecall = load_id(r, IMG_MUTECALL);
@@ -142,6 +146,10 @@ void visuals_free(FnaeVisuals *v) {
     destroy_texture(&v->springtrap_stand);
     destroy_texture(&v->musicbtn_off);
     destroy_texture(&v->musicbtn_on);
+    destroy_texture(&v->music_wind);
+    destroy_texture(&v->music_hold);
+    for (int i = 0; i < IMG_MUSIC_PIE_COUNT; ++i)
+        destroy_texture(&v->music_pie[i]);
     destroy_texture(&v->warn_off);
     destroy_texture(&v->warn_on);
     destroy_texture(&v->mutecall);
@@ -509,19 +517,26 @@ static void draw_warning(SDL_Renderer *r, FnaeVisuals *v,
     visuals_draw_anchored(r, t, x, y, FNAE_ANCHOR_CENTER);
 }
 
-/* Frame 3 "[ Music Box ]" UI (Cam 04 view only): the crank button at
- * [569,497] (Stopped released, Animation 12 held), the Music Left
- * counter at [418,474], and the in-cam warning badge at [1215,506].
- * The lure button stays hidden here (Fusion hides it over Cam 04). */
+/* Frame 3 "[ Music Box ]" UI (Cam 04 view only), Layer #5 order: crank
+ * box at [569,497] (Stopped released, Animation 12 held), Wind Text on
+ * top of it ([497,475] top-left, inside the 156x65 box), Click & Hold
+ * under it ([491,534] top-left), and the wind-gauge pie at the Music
+ * Left counter spot ([418,474] top-left, left of the box). The pie
+ * frame follows Music Left (0-2000 -> empty 181 -> full 202), so it
+ * fills while the crank is held and loses wedges when released. The
+ * lure button stays hidden here (Fusion hides it over Cam 04). */
 static void draw_music_box(SDL_Renderer *r, FnaeVisuals *v,
                            int winding, int music, int warning,
                            int static_frame) {
     visuals_draw_anchored(r, winding ? v->musicbtn_on : v->musicbtn_off,
                           569, 497, FNAE_ANCHOR_CENTER);
-    char ms[24];
     int m = music < 0 ? 0 : music > 2000 ? 2000 : music;
-    snprintf(ms, sizeof ms, "MUSIC: %d", m);
-    draw_text(r, ms, 418, 474, 2);
+    int idx = (m * (IMG_MUSIC_PIE_COUNT - 1) + 1000) / 2000;
+    if (idx < 0) idx = 0;
+    if (idx >= IMG_MUSIC_PIE_COUNT) idx = IMG_MUSIC_PIE_COUNT - 1;
+    draw_texture(r, v->music_pie[idx], 418, 474);
+    draw_texture(r, v->music_wind, 497, 475);
+    draw_texture(r, v->music_hold, 491, 534);
     draw_warning(r, v, warning, static_frame, 1215, 506);
 }
 

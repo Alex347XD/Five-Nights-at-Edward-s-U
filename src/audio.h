@@ -15,13 +15,14 @@ struct FnaeAudio {
  struct Mix_Chunk *mask_on, *mask_off, *breath, *door, *melody, *stare;
  struct Mix_Chunk *buzz, *windup, *thud, *steps, *closeamb, *echo1, *echo3b;
  struct Mix_Chunk *echo4b, *stop, *walk, *garble, *phbb, *powerdown, *jack;
+ struct Mix_Chunk *manglebreath; /* breathing.wav: Phantom Mangle annoy end (ch #17) */
  struct Mix_Chunk *puppet, *freddy, *foxy, *spring, *gf;
  struct Mix_Chunk *title_static, *darkness, *finalbox, *chimes, *goblin;
  struct Mix_Chunk *call1, *call2, *call3, *call4, *call5, *call6;
  /* Previous-frame state for edge detection. */
  int init, prev_frame, prev_night, prev_death, prev_view, prev_camera;
  int prev_call, prev_power, prev_empty, prev_spring, prev_fdoor, prev_fstand;
- int prev_mangle;
+ int prev_mangle, prev_mangle_act; /* C edge + garble-loop activity */
 };
 
 /* Loads every sample under dir (e.g. "assets/audio"). Never fatal:

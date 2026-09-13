@@ -107,21 +107,25 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   the death wait (GF +/-8).
 - Doorway-figure flags (Freddy at left door, Foxy at right, Springtrap on its
   viewed cam) are exposed for the renderer.
-- Audio (`src/audio.c`, mixer channels = Fusion Sound channels): night entry
+ - Audio (`src/audio.c`, mixer channels = Fusion Sound channels): night entry
   stops everything then loops fansound #1, In The Depths #2, Camera Audio #3,
   deepbreaths #6, stare #9, buzzlight #10, With_S2 #13, Music_Box_Melody #8;
   volumes follow the events (fan 30 office / 10 cams, cam-audio 0 / 50,
   melody 0/0/20/10/50 by view 0/1/2/3/4, close-ambience 0 / 50, deepbreaths
-  50 masked / 0 unmasked). One-shots: lure echo1/3b/4b + stop (ch #14),
+  50 masked / 0 unmasked, stare 0 live / 50 on signal loss, buzzlight 0 /
+  70 while the flashlight is on; Change/flip/mask one-shots on ch #4/#5 at
+  50). One-shots: lure echo1/3b/4b + stop (ch #14),
   doors SFXBible_12478 (#7), flip up/down STEREO_CASSETTE 704/701 (#5),
   mask on/off FENCING_43/42 (#5), cam change Change (#4), Freddy deep steps /
-  Foxy metallic thud (#12, panned left), Ph BB scream3 (#18), Mangle garble1
+  Foxy metallic thud (#12, panned left), Ph BB scream3 (#18, on the 80-tick
+  scare), Mangle garble1 loop while the annoy runs + breathing once it ends
   (#17), Springtrap walk1 (#15), windup2 every 0.50 s while winding (#11),
   jackinthebox loop on empty (#20), powerdown after stop-all (#19),
   jumpscares on ch #2 after stop-all (Puppet money-counter, Freddy XSCREAM,
   Foxy dino-roar, Springtrap scream3, GF XScream2), calls on #16 per night,
-  title static + darkness loop, Which-Night Change, Final music box loop,
-  6 AM Clock Chimes, Death goblin loop (#32).
+  title static (one-shot #1) + darkness loop (#2) at 50, Which-Night Change
+  (one-shot #1) at 50, Final music box (one-shot #1) at 50,
+  6 AM Clock Chimes (one-shot #1) at 50, Death goblin loop (#32).
 - Phone calls (`[ Phone Calls ]`): each night's call starts ~3 s in
   (`current_call`, ch #16, MP3 for 1-3 / WAV for 4-6); the Mute Call button
   (`415.png` at [100,55], visible while ch #16 plays) stops the call on

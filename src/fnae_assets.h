@@ -103,17 +103,26 @@
 #define IMG_DEVIL_SHOCKED 460 /* 600x507 devil card, wide eyes */
 
 /* Music-box crank (Frame 3 "[ Music Box ]" group, Cam 04 view only).
- * The button sits at [569,497] in the camera UI (Layer #5), drawn
- * center-anchored like the cam/lure buttons. Alterable A (held crank)
- * swaps Stopped <-> Animation 12; the drain (+100/0.35 s held,
- * -Night*2/0.07 s released) and the warning badges run in core.
- * Wind Text [497,475] / Click & Hold [491,534] art is still unmapped
- * (renders as nothing); Music Left [418,474] is a Counter drawn as
- * bitmap text. PROVISIONAL (owner to confirm): 133 = Stopped (dark
- * slate 156x65), 178 = Animation 12 (olive 156x65) — same-size pair,
- * matching the gray->green convention of the cam buttons. */
-#define IMG_MUSICBTN_OFF  133 /* ? crank released, 156x65 */
-#define IMG_MUSICBTN_ON   178 /* ? crank held, 156x65 */
+ * Layer #5 UI positions from Objects.txt: button box center-anchored at
+ * [569,497], Wind Text top-left at [497,475] (sits inside the box),
+ * Click & Hold top-left at [491,534] (just under the box), wind gauge
+ * top-left at [418,474] (the Music Left counter spot, left of the box).
+ * Alterable A (held crank) swaps the box Stopped <-> Animation 12; the
+ * drain (+100/0.35 s held, -Night*2/0.07 s released) and the warning
+ * badges run in core. The box pair is corroborated by the reference
+ * shot (dark-slate box + "Give $ To Business Edward" + "click & hold"
+ * + pie with a wedge missing): 133 dark-slate Stopped = released,
+ * 178 olive Animation 12 = held. */
+#define IMG_MUSICBTN_OFF  133 /* crank released: dark-slate box, 156x65 */
+#define IMG_MUSICBTN_ON   178 /* crank held: olive box, 156x65 */
+#define IMG_MUSIC_WIND_TEXT 210 /* "Give $ To Business Edward", 142x37 */
+#define IMG_MUSIC_CLICKHOLD 180 /* "click & hold" hint, 154x14 */
+/* Wind gauge: 22 pie frames (181-202), 54x54, empty -> full disc.
+ * Frame index follows Music Left (0-2000): holding the crank winds it
+ * up (pie fills), releasing drains it (pie loses wedges). Replaces the
+ * "MUSIC: n" bitmap readout (the value stays in the window title). */
+#define IMG_MUSIC_PIE_FIRST 181
+#define IMG_MUSIC_PIE_COUNT 22
 /* Low-music badges ("[ Warning Messages ]": <600 steady Stopped,
  * <200 flashing Animation 12, <=0 hidden; out-of-cam [1228,672] on the
  * office screen, in-cam [1215,506] on camera views). PROVISIONAL:

@@ -100,15 +100,20 @@ termination notice, not the newspaper.)
   `236.png`, 299x715 stand at [416,-24]) starts on Cam 02 and steps the
   exported routes (Cam 03 kill room); its stand overlays the feed while
   viewed.
-- Music box (Cam 04 view): crank button (`133.png` released / `178.png`
-  held, 156x65 center-anchored at [569,497], provisional — owner to
-  confirm) with Stopped↔Animation-12 swap on the held crank, `MUSIC: n`
-  counter readout at [418,474], and low-music badges (`37.png` steady
-  below 600, flashing below 200, hidden when empty; [1228,672] office,
-  [1215,506] cameras). Winding is hold-driven — mouse press-and-hold on
-  the button or held R — evaluated every tick, so release/leave/stop
-   ends the wind (the old click latched it on). Wind Text / Click & Hold
-   art still unmapped.
+ - Music box (Cam 04 view): crank box (`133.png` dark-slate released /
+  `178.png` olive held, 156x65 center-anchored at [569,497]) with
+  Stopped↔Animation-12 swap on the held crank, Wind Text (`210.png`
+  "Give $ To Business Edward", 142x37 top-left at [497,475], inside the
+  box), Click & Hold hint (`180.png`, 154x14 top-left at [491,534],
+  under the box), and the wind-gauge pie (22 frames `181.png`–`202.png`,
+  54x54 empty→full, top-left at the Music Left counter spot [418,474],
+  left of the box; frame follows Music Left 0–2000, so it fills while
+  winding and loses wedges when released — verified against the
+  reference shot with headless screenshots), plus low-music badges
+  (`37.png` steady below 600, flashing below 200, hidden when empty;
+  [1228,672] office, [1215,506] cameras). Winding is hold-driven — mouse
+  press-and-hold on the button or held R — evaluated every tick, so
+  release/leave/stop ends the wind (the old click latched it on).
 - Phone calls play per night with a clickable MUTE CALL button (`415.png`
   at [100,55], visible on office and camera screens while the call plays,
   stops it on click).
@@ -122,11 +127,14 @@ termination notice, not the newspaper.)
 
 ### Audio
 
-Sound is wired via SDL_mixer (`src/audio.c/h`, 42 samples from
+Sound is wired via SDL_mixer (`src/audio.c/h`, 43 samples from
 `assets/audio/`): night ambience loops (fan/depths/camera-audio/deepbreaths/
-stare/buzzlight/close-ambience/music-box melody) with the Fusion per-view
-and mask/door volume ducking, one-shots for lure echoes + stop, doors,
-camera/mask flips, cam-change blips, footsteps, phantom scares, windup,
+stare/buzzlight/close-ambience/music-box melody) with the Fusion per-view,
+mask/door/signal-loss/flashlight volume ducking (stare 0 live / 50 on
+Connection Lost, buzzlight 0 / 70 with flashlight; Change/flip/mask
+one-shots at 50), one-shots for lure echoes + stop, doors,
+camera/mask flips, cam-change blips, footsteps, phantom scares (Mangle
+garble loop + breathing, Ph BB scream3), windup,
 jack-in-the-box, power-down, jumpscares, phone calls (MP3 1-3, WAV 4-6),
 and frame jingles (title static + darkness music, Which-Night Change,
 Final music box, 6 AM chimes, Death goblin). Core pushes one-shots into

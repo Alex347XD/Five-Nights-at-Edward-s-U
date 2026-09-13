@@ -43,12 +43,18 @@ These match `visuals_init` in `src/visuals.c`:
 - `236.png` — Springtrap Stand figure (full-body blue Edward with stars,
   299x715, Layer #2 at [416,-24], drawn over the feed while viewing
   Springtrap's camera)
-- `133.png` / `178.png` — music-box crank button (156x65 each,
-  center-anchored at [569,497], Cam 04 view only; PROVISIONAL owner to
-  confirm: 133 dark-slate Stopped = released, 178 olive Animation 12 =
-  held). Music Left [418,474] is a Counter drawn as bitmap text
-  ("MUSIC: n"); Wind Text [497,475] / Click & Hold [491,534] art is
-  still unmapped (renders as nothing)
+- `133.png` / `178.png` — music-box crank box (156x65 each,
+  center-anchored at [569,497], Cam 04 view only; 133 dark-slate
+  Stopped = released, 178 olive Animation 12 = held)
+- `210.png` — Music Box Wind Text ("Give $ To Business Edward",
+  142x37, top-left at [497,475], drawn on the crank box)
+- `180.png` — Click & Hold hint (154x14, top-left at [491,534],
+  under the box)
+- `181.png`–`202.png` — wind-gauge pie (22 frames, 54x54,
+  empty→full disc), top-left at the Music Left counter spot [418,474];
+  frame follows Music Left 0–2000 (fills while held, loses wedges
+  released). Replaces the "MUSIC: n" bitmap readout (value stays in
+  the window title)
 - `37.png` / `38.png` — low-music warning badges (63x55 each,
   center-anchored; PROVISIONAL: 37 triangle = Stopped steady below 600,
   38 black = Animation 12 flash below 200, hidden when empty; out-of-cam

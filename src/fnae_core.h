@@ -20,8 +20,9 @@ typedef enum {
  FNAE_SND_MASK_ON,   /* FENCING_43 on ch #5 */
  FNAE_SND_MASK_OFF,  /* FENCING_42 on ch #5 */
  FNAE_SND_WINDUP,    /* windup2 on ch #11 (every 0.50 s while winding) */
- FNAE_SND_TITLE_CHANGE, /* Change on ch #3 (title menu move) */
- FNAE_SND_CALL_STOP  /* halt the phone call on ch #16 (Mute Call button) */
+ FNAE_SND_TITLE_CHANGE, /* Change blip (title moves = ch #3, cam switch = ch #4) */
+ FNAE_SND_CALL_STOP, /* halt the phone call on ch #16 (Mute Call button) */
+ FNAE_SND_PHBB /* scream3 on ch #18 (Phantom BB 80-tick scare) */
 } FnaeSound;
 
 #define FNAE_SND_QUEUE 32
