@@ -92,10 +92,14 @@ termination notice, not the newspaper.)
   String object) so it renders as bitmap text at [888,272].
 - Audio lure (`381.png` "Lure" button at [744,296], camera-up only,
   hidden on Cam 04): E or click places a lure on the viewed camera,
-  resolved 2 s later with a 50% pull + static burst. Springtrap (blue
-  Edward, `256.png` stand at [416,-24]) starts on Cam 02 and steps the
+  resolved 2 s later with a 50% pull + static burst. While the lure is
+  active the button plays its Animation 12 cooldown (1 → 2 → 3 → 4 white
+  square dots: `313.png`/`338.png`/`334.png`/`341.png`, 128x64) and a
+  dark-green Lure Area marker (`385.png`, 60x40) sits over the lured
+  camera's minimap button. Springtrap (full-body blue Edward with stars,
+  `236.png`, 299x715 stand at [416,-24]) starts on Cam 02 and steps the
   exported routes (Cam 03 kill room); its stand overlays the feed while
-  viewed. Springtrap art is visually identified, owner to confirm.
+  viewed.
 - Night HUD renders on all Frame 3 screens (office and camera views):
   "12 AM"-style clock top-right (time of day [1186,65] + am [1200,37]),
   "NIGHT n" under it (Which Night? [759,85] + The Night [1245,101]),

@@ -183,7 +183,10 @@ int main(int argc, char *argv[]) {
             game.music_left,
             (int)game.cam_scroll,
             game.power_left,
-            game.springtrap_stand
+            game.springtrap_stand,
+            game.lure_area,
+            game.lure_cam,
+            game.lure_timer
         );
 
         SDL_RenderPresent(r);

@@ -33,11 +33,16 @@ These match `visuals_init` in `src/visuals.c`:
 - `31.png`–`34.png` — "CAM 01".."CAM 04" button labels (31x25, top-left,
   CAM 01 label shifted with its box)
 - `381.png` — "Lure" audio-lure button (128x64 Stopped frame, Layer #5 UI
-  at [744,296] center-anchored, camera-up only, hidden on Cam 04; the
-  Animation-12 press frames are unidentified so Stopped shows throughout)
-- `256.png` — Springtrap Stand figure (blue Edward, 150x200, Layer #2 at
-  [416,-24], drawn over the feed while viewing Springtrap's camera;
-  visually identified, owner to confirm)
+  at [744,296] center-anchored, camera-up only, hidden on Cam 04)
+- `313.png` / `338.png` / `334.png` / `341.png` — Lure Button Animation 12
+  cooldown (128x64 each, transparent with 1 → 2 → 3 → 4 white square
+  dots), played over the ~2 s lure window, then back to Stopped
+- `385.png` — Lure Area marker (60x40 dark-green box, Layer #5) drawn
+  center-anchored over the lured camera's minimap button until the lure
+  resolves (Fusion spawns it at (0,0) from the viewed CAM 01 button)
+- `236.png` — Springtrap Stand figure (full-body blue Edward with stars,
+  299x715, Layer #2 at [416,-24], drawn over the feed while viewing
+  Springtrap's camera)
 - White Frame Camera ([-1,0], camera-up only) — no mapped PNG; drawn as a
   2px hollow white feed border inset 8px from the screen edge
 - Night HUD (time of day [1186,65] + am [1200,37], Which Night? [759,85]
@@ -80,9 +85,9 @@ unmapped.
 
 The remaining visual work is to bind the individual Active animation sequences
 to their extracted image-bank entries (Freddy/Foxy/phantoms, camera
- flip animation, mask + flashlight, cam flip/mask flip visuals, White Frame
- Camera, Lure-button press frames, Lure Area marker, music-box UI,
- warnings, Rec, Connection Lost, Power Out,
+  flip animation, mask + flashlight, cam flip/mask flip visuals, White Frame
+  Camera, music-box UI,
+  warnings, Rec, Connection Lost, Power Out,
 mute-call button, time/night/power/usage counters, Cam Labels room-name
 string). The event logic is already separated from this rendering layer, and
 the doorway-figure / warning / signal-loss state it needs is exposed on

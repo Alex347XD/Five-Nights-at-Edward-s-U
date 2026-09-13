@@ -38,9 +38,12 @@ typedef struct {
     SDL_Texture *cam_btn_off;
     SDL_Texture *cam_btn_on;
     SDL_Texture *cam_txt[IMG_CAMBTN_COUNT];
-    /* Audio-lure button (Layer #5 UI) + Springtrap stand figure
-     * (Layer #2 office overlay, drawn over the viewed feed). */
+    /* Audio-lure button (Layer #5 UI) + cooldown dots (Animation 12) +
+     * Lure Area marker (Layer #5, on the lured cam button) + Springtrap
+     * stand figure (Layer #2 office overlay, over the viewed feed). */
     SDL_Texture *lure_button;
+    SDL_Texture *lure_cd[4];
+    SDL_Texture *lure_area;
     SDL_Texture *springtrap_stand;
 } FnaeVisuals;
 
@@ -63,6 +66,7 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                      int left_door, int right_door, int mask, int arrow, int progress,
                      int static_frame, int static_alpha, int office_scroll,
                      int left_door_frame, int right_door_frame, int title_bg_frame,
-                     int foxy_pos, int freddy_pos, int cam_static_alpha,
-                     int death, int music, int cam_scroll, int usage,
-                     int springtrap_stand);
+                      int foxy_pos, int freddy_pos, int cam_static_alpha,
+                      int death, int music, int cam_scroll, int usage,
+                      int springtrap_stand, int lure_area, int lure_cam,
+                      float lure_timer);

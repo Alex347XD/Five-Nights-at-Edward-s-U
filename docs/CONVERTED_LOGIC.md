@@ -55,9 +55,12 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   ends (display left edge 0..320), so no black bars show. Alterable B
   stays 1, so the drift runs unconditionally.
 - Audio lure: E or clicking the Lure button (`381.png` "Lure" at [744,296],
-  camera-up only, hidden on the Cam 04 music-box view) places a lure on
-  the viewed camera; 2 s later it pulls Springtrap there on a 50% roll
-  with a Camera Out static burst.
+  camera-up only, hidden on the Cam 04 music-box view) places a Lure Area
+  (`385.png` marker over the viewed cam's minimap button) on the viewed
+  camera and plays the button's Animation 12 cooldown (1 → 2 → 3 → 4
+  square dots: `313/338/334/341.png` over the ~2 s window); 2 s later it
+  pulls Springtrap there on a 50% roll with a Camera Out static burst,
+  and the Lure Area is destroyed.
 - Music box uses the Dinosaur Exhibit camera (view 4).
 - Music box starts at 2000, loses `Night * 2` every 0.07 s, and winding adds 100 every 0.35 s.
 - Empty music box can trigger Puppet death while camera is up or mask is down.

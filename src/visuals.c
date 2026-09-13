@@ -78,6 +78,11 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     for (int i = 0; i < IMG_CAMBTN_COUNT; ++i)
         v->cam_txt[i] = load_id(r, IMG_CAMTXT_FIRST + i);
     v->lure_button = load_id(r, IMG_LURE_BUTTON);
+    v->lure_cd[0] = load_id(r, IMG_LURE_CD_1);
+    v->lure_cd[1] = load_id(r, IMG_LURE_CD_2);
+    v->lure_cd[2] = load_id(r, IMG_LURE_CD_3);
+    v->lure_cd[3] = load_id(r, IMG_LURE_CD_4);
+    v->lure_area = load_id(r, IMG_LURE_AREA);
     v->springtrap_stand = load_id(r, IMG_SPRINGTRAP_STAND);
     v->title_new = load_id(r, IMG_TITLE_NEW);
     v->title_continue = load_id(r, IMG_TITLE_CONTINUE);
@@ -126,6 +131,9 @@ void visuals_free(FnaeVisuals *v) {
     for (int i = 0; i < IMG_CAMBTN_COUNT; ++i)
         destroy_texture(&v->cam_txt[i]);
     destroy_texture(&v->lure_button);
+    for (int i = 0; i < 4; ++i)
+        destroy_texture(&v->lure_cd[i]);
+    destroy_texture(&v->lure_area);
     destroy_texture(&v->springtrap_stand);
     destroy_texture(&v->title_new);
     destroy_texture(&v->title_continue);
@@ -487,7 +495,8 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                      int left_door_frame, int right_door_frame, int title_bg_frame,
                      int foxy_pos, int freddy_pos, int cam_static_alpha,
                      int death, int music, int cam_scroll, int usage,
-                     int stand) {
+                     int stand, int lure_area, int lure_cam,
+                     float lure_timer) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
@@ -539,13 +548,34 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             /* UI sits above the feed static (Static precedes minimap in Layer #5). */
             int sel = camera < 1 ? 1 : camera > IMG_CAMBTN_COUNT ? IMG_CAMBTN_COUNT : camera;
             draw_minimap(r, v, sel);
+            /* Lure Area marker: spawns at (0,0) from the viewed CAM 01
+             * button, so it draws center-anchored over the lured camera's
+             * minimap button until the lure resolves (~2 s). Hidden with
+             * the rest of the camera UI when the cameras are down. */
+            if (lure_area && lure_cam >= 1 && lure_cam <= IMG_CAMBTN_COUNT) {
+                static const int btn_x[IMG_CAMBTN_COUNT] = {1016, 1179, 953, 1161};
+                static const int btn_y[IMG_CAMBTN_COUNT] = {307, 371, 469, 505};
+                visuals_draw_anchored(r, v->lure_area,
+                                      btn_x[lure_cam - 1], btn_y[lure_cam - 1],
+                                      FNAE_ANCHOR_CENTER);
+            }
             /* Lure Button reappears with the camera UI except on Cam 04
              * (the music-box camera). Center-anchored like the cam
-             * buttons; the Animation-12 press frames are unmapped so the
-             * Stopped frame shows while a lure plays. */
-            if (sel != 4)
-                visuals_draw_anchored(r, v->lure_button, 744, 296,
+             * buttons. While a lure is active the button plays its
+             * Animation 12 cooldown (1 -> 2 -> 3 -> 4 square dots over
+             * the ~2 s lure window, transparent frames so only the dots
+             * show); otherwise the Stopped "Lure" frame shows. */
+            if (sel != 4) {
+                SDL_Texture *lure = v->lure_button;
+                if (lure_area) {
+                    int f = (int)(lure_timer / 2.0f * 4.0f);
+                    if (f < 0) f = 0;
+                    if (f > 3) f = 3;
+                    if (v->lure_cd[f]) lure = v->lure_cd[f];
+                }
+                visuals_draw_anchored(r, lure, 744, 296,
                                       FNAE_ANCHOR_CENTER);
+            }
             /* White Frame Camera reappears with the rest of the camera UI. */
             draw_white_frame(r);
             draw_night_hud(r, sel, 1, night, hour, power, usage);
