@@ -56,7 +56,7 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   stays 1, so the drift runs unconditionally.
 - Audio lure: E or clicking the Lure button (`381.png` "Lure" at [744,296],
   camera-up only, hidden on the Cam 04 music-box view) places a Lure Area
-  (`385.png` marker over the viewed cam's minimap button) on the viewed
+  (gray circle `390.png` over the viewed cam's minimap button) on the viewed
   camera and plays the button's Animation 12 cooldown (1 → 2 → 3 → 4
   square dots: `313/338/334/341.png` over the ~2 s window); 2 s later it
   pulls Springtrap there on a 50% roll with a Camera Out static burst,

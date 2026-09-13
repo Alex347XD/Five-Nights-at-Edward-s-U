@@ -548,10 +548,11 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             /* UI sits above the feed static (Static precedes minimap in Layer #5). */
             int sel = camera < 1 ? 1 : camera > IMG_CAMBTN_COUNT ? IMG_CAMBTN_COUNT : camera;
             draw_minimap(r, v, sel);
-            /* Lure Area marker: spawns at (0,0) from the viewed CAM 01
-             * button, so it draws center-anchored over the lured camera's
-             * minimap button until the lure resolves (~2 s). Hidden with
-             * the rest of the camera UI when the cameras are down. */
+            /* Lure Area marker (gray circle): spawns at (0,0) from the
+             * viewed CAM 01 button, so it draws center-anchored over the
+             * lured camera's minimap button until the lure resolves
+             * (~2 s). Hidden with the rest of the camera UI when the
+             * cameras are down. */
             if (lure_area && lure_cam >= 1 && lure_cam <= IMG_CAMBTN_COUNT) {
                 static const int btn_x[IMG_CAMBTN_COUNT] = {1016, 1179, 953, 1161};
                 static const int btn_y[IMG_CAMBTN_COUNT] = {307, 371, 469, 505};

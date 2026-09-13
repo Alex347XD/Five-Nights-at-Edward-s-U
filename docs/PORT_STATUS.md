@@ -95,7 +95,7 @@ termination notice, not the newspaper.)
   resolved 2 s later with a 50% pull + static burst. While the lure is
   active the button plays its Animation 12 cooldown (1 → 2 → 3 → 4 white
   square dots: `313.png`/`338.png`/`334.png`/`341.png`, 128x64) and a
-  dark-green Lure Area marker (`385.png`, 60x40) sits over the lured
+  gray-circle Lure Area (`390.png`, 256x256) sits over the lured
   camera's minimap button. Springtrap (full-body blue Edward with stars,
   `236.png`, 299x715 stand at [416,-24]) starts on Cam 02 and steps the
   exported routes (Cam 03 kill room); its stand overlays the feed while

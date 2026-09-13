@@ -71,10 +71,11 @@
  * The Lure Button sits at [744,296] in the camera UI (Layer #5): visible
  * while a camera is up except on Cam 04 (music box). Its Stopped frame is
  * the "Lure" card; Animation 12 is the 4-frame cooldown run of white
- * active, then cuts back to Stopped when the Lure Area is destroyed.
- * The Lure Area spawns at (0,0) from the viewed CAM 01 button, so it
- * draws as a dark-green 60x40 marker box over the lured camera's minimap
- * button until it resolves. Springtrap Stand is the full-body blue
+ * square dots (1 dot -> 2 -> 3 -> 4) that plays while a lure is active,
+ * then cuts back to Stopped when the Lure Area is destroyed.
+ * The Lure Area spawns at (0,0) from the viewed CAM 01 button, so the
+ * gray circle draws centered over the lured camera's minimap button
+ * until it resolves. Springtrap Stand is the full-body blue
  * Edward with stars (299x715) at [416,-24] in the office overlay
  * (Layer #2), drawn over the feed while viewing Springtrap's camera. */
 #define IMG_LURE_BUTTON     381 /* "Lure" button, 128x64, Stopped */
@@ -82,7 +83,7 @@
 #define IMG_LURE_CD_2       338 /* cooldown frame 2: 2 white square dots, 128x64 */
 #define IMG_LURE_CD_3       334 /* cooldown frame 3: 3 white square dots, 128x64 */
 #define IMG_LURE_CD_4       341 /* cooldown frame 4: 4 white square dots, 128x64 */
-#define IMG_LURE_AREA       385 /* lure marker box, 60x40 dark green, on the lured cam button */
+#define IMG_LURE_AREA       390 /* lure marker: gray circle, 256x256, centered over the lured cam button */
 #define IMG_SPRINGTRAP_STAND 236 /* blue Edward full body with stars, 299x715 */
 
 /* Frame 2 Background: 515 is Stopped; Random(50)=1 plays one of the

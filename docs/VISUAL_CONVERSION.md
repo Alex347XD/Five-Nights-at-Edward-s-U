@@ -37,7 +37,7 @@ These match `visuals_init` in `src/visuals.c`:
 - `313.png` / `338.png` / `334.png` / `341.png` — Lure Button Animation 12
   cooldown (128x64 each, transparent with 1 → 2 → 3 → 4 white square
   dots), played over the ~2 s lure window, then back to Stopped
-- `385.png` — Lure Area marker (60x40 dark-green box, Layer #5) drawn
+- `390.png` — Lure Area marker (gray circle, 256x256, Layer #5) drawn
   center-anchored over the lured camera's minimap button until the lure
   resolves (Fusion spawns it at (0,0) from the viewed CAM 01 button)
 - `236.png` — Springtrap Stand figure (full-body blue Edward with stars,
