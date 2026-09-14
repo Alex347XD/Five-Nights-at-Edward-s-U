@@ -1,4 +1,6 @@
 build
+# Native save file (Fusion INI group "Base" as Edward.ini, next to assets/).
+Edward.ini
 # Headless screenshots (keep screenshots/.gitkeep tracked).
 screenshots/*.png
 screenshots/*.bmp

@@ -139,6 +139,18 @@ termination notice, not the newspaper.)
   PNG frames, and this port has no font library, so glyphs are a minimal
   built-in 5x7 bitmap (full A-Z, so "DINOSAUR EXHIBIT" renders intact). Live state also stays in the window title.
 
+### Saving
+
+Progress persists across restarts in `Edward.ini` (working directory,
+git-ignored), matching the Fusion INI group/items (`[Base]`
+Night/Progress/Challenge1..3, savestring "Edward"). New Game resets to
+night 1, 6 AM advances the saved night, beating nights 5/6/7 unlocks the
+stars (6th night, custom night, all-20 third star) which gate the title
+menu exactly like the Fusion `Progress` reads. Custom-night AI levels
+still reset each launch (Fusion never wrote those to the INI either),
+and the `ChallengeN` flags round-trip until the Customize UI exists to
+read them.
+
 ### Audio
 
 Sound is wired via SDL_mixer (`src/audio.c/h`, 43 samples from
@@ -158,4 +170,4 @@ state, so core still owns state. Headless-safe (dummy driver = silent).
 
 ## Known limitations
 
-The project is still a native reconstruction rather than a byte-for-byte Clickteam runtime replacement. Save/INI persistence, the Customize-screen UI, and exact character animation still need further conversion work. Mask/flashlight/button/counter art is identified only where named in `src/fnae_assets.h`; unmapped objects render as nothing (no invented stand-ins).
+The project is still a native reconstruction rather than a byte-for-byte Clickteam runtime replacement. The Customize-screen UI and exact character animation still need further conversion work. Mask/flashlight/button/counter art is identified only where named in `src/fnae_assets.h`; unmapped objects render as nothing (no invented stand-ins).

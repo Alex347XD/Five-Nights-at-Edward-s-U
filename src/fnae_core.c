@@ -1,5 +1,6 @@
 #include "fnae_core.h"
 #include "fnae_assets.h"
+#include "save.h"
 #include <SDL_keycode.h>
 #include <stdio.h> /* TMP-DEBUG */
 #include <stdlib.h>
@@ -181,7 +182,7 @@ static void update_music(FnaeGame* g,float dt){
  if(g->music_left<=0 && g->hidden_power>0 && g->death==0 && ((g->cam_anim==CAM_UP&&rnd(5)==1)||(g->mask_anim==MASK_DOWN&&rnd(5)==1))) enter_death(g,1);
 }
 
-void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_WARNING; g->night=1; g->progress=0; g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2; g->cam_scroll=FNAE_CAM_SCROLL_MIN; g->cam_scroll_dir=0; g->cam_static_alpha=185; g->power_out_alpha=255;
+void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_WARNING; { FnaeSave s; fnae_save_load(&s); g->night=s.night; g->progress=s.progress; } g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2; g->cam_scroll=FNAE_CAM_SCROLL_MIN; g->cam_scroll_dir=0; g->cam_static_alpha=185; g->power_out_alpha=255;
  /* Customize-screen defaults straight from Frame 8: everything 0 except Puppet (7). */
  g->custom_freddy=0; g->custom_foxy=0; g->custom_springtrap=0; g->custom_golden=0;
  g->custom_mangle=0; g->custom_bb=0; g->custom_puppet=7; }
@@ -216,12 +217,35 @@ void fnae_static_tick(FnaeGame* g){
  }
 }
 
-/* Frame 6 routing: 0 = normal night (g->night), 1 = 6th, 2 = 7th/custom.
+/* Save helpers (Fusion INI group "Base"): load-modify-store so the
+ * Challenge flags round-trip untouched until Customize uses them.
+ * Store failures are silent by design (see save.h). */
+static void save_night(FnaeGame* g){
+ FnaeSave s; fnae_save_load(&s);
+ s.night=g->night;
+ fnae_save_store(&s);
+}
+static void save_progress(FnaeGame* g,int earned){
+ if(earned<=g->progress) return;
+ FnaeSave s; fnae_save_load(&s);
+ if(earned>s.progress) s.progress=earned;
+ g->progress=s.progress;
+ fnae_save_store(&s);
+}
+
+/* New Game: Newspaper start resets story Night to 1 in the save
+ * (Fusion), so Continue restarts the story but keeps star Progress. */
+static void enter_newspaper(FnaeGame* g){
+ g->six_or_seven=0; g->night=1; save_night(g); g->frame=FRAME_NEWSPAPER;
+}
+/* Frame 6 routing: 0 = normal night (re-read from the save, like the
+ * Fusion Which-Night/Night Start-of-Frame events), 1 = 6th, 2 = 7th/custom.
  * Matches Frame 6 Start-of-Frame events; the frame then auto-advances
  * after 2 seconds (see fnae_update). */
 static void enter_which_night(FnaeGame* g){
  if(g->six_or_seven==1) g->night=6;
  else if(g->six_or_seven==2) g->night=7;
+ else { FnaeSave s; if(fnae_save_load(&s)==0) g->night=s.night; }
  if(g->night<1)g->night=1; if(g->night>7)g->night=7;
  g->frame=FRAME_WHICH_NIGHT; g->which_timer=0;
 }
@@ -506,9 +530,9 @@ void fnae_key(FnaeGame* g,int key){
  /* Frame 1: Upon pressing any key -> Title (Fusion has no click event here). */
  if(g->frame==FRAME_WARNING){g->frame=FRAME_TITLE;return;}
  if(g->frame==FRAME_TITLE){
-  if(key==SDLK_RETURN){
-   if(g->arrow==0){g->six_or_seven=0;g->frame=FRAME_NEWSPAPER;}
-   else if(g->arrow==1){g->six_or_seven=0;enter_which_night(g);}
+   if(key==SDLK_RETURN){
+    if(g->arrow==0)enter_newspaper(g);
+    else if(g->arrow==1){g->six_or_seven=0;enter_which_night(g);}
    else if(g->arrow==2){g->six_or_seven=1;enter_which_night(g);}
    else if(g->arrow==3){g->six_or_seven=2;g->frame=FRAME_CUSTOMIZE;}
   } else if(key==SDLK_UP || key=='w'){if(g->arrow>0){g->arrow--;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);} }
@@ -518,11 +542,18 @@ void fnae_key(FnaeGame* g,int key){
  if(g->frame==FRAME_NEWSPAPER){if(key==SDLK_RETURN)enter_which_night(g);return;}
  if(g->frame==FRAME_WHICH_NIGHT){if(key==SDLK_RETURN)fnae_start_night(g,g->night);return;}
  if(g->frame==FRAME_CUSTOMIZE){if(key==SDLK_RETURN){g->six_or_seven=2;enter_which_night(g);}return;}
- if(g->frame==FRAME_6AM){if(key==SDLK_RETURN){
-  /* Fusion: nights 6/7 or Night Story >= 5 -> Final, else next night -> Which Night. */
-  if(g->six_or_seven>0||g->night>=5)g->frame=FRAME_FINAL;
-  else {g->night++;g->six_or_seven=0;enter_which_night(g);}
- }return;}
+  if(g->frame==FRAME_6AM){if(key==SDLK_RETURN){
+   /* Fusion: nights 6/7 or Night Story >= 5 -> Final, else next night -> Which Night. */
+   if(g->six_or_seven>0||g->night>=5){
+    /* Final-frame Progress writes: story night 5 -> 1, 6th -> 2,
+     * 7th/custom all-20 -> 3 (a plain night-7 clear writes nothing). */
+    if(g->six_or_seven==2){ if(g->all20) save_progress(g,3); }
+    else if(g->six_or_seven==1) save_progress(g,2);
+    else save_progress(g,1);
+    g->frame=FRAME_FINAL;
+   }
+   else {g->night++;g->six_or_seven=0;save_night(g);enter_which_night(g);}
+  }return;}
  if(g->frame==FRAME_DEATH){if(key==SDLK_RETURN)g->frame=FRAME_TITLE;return;}
  if(g->frame==FRAME_FINAL){if(key==SDLK_RETURN)g->frame=FRAME_TITLE;return;}
  if(g->frame!=FRAME_NIGHT)return;
@@ -564,8 +595,8 @@ void fnae_release(FnaeGame* g){
 
 void fnae_click(FnaeGame* g,int x,int y){
  g->mouse_x=x; g->mouse_y=y;
- if(g->frame==FRAME_TITLE){
-  if(x>=70&&x<=430&&y>=430&&y<495){g->arrow=0;g->frame=FRAME_NEWSPAPER;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);return;}
+  if(g->frame==FRAME_TITLE){
+   if(x>=70&&x<=430&&y>=430&&y<495){g->arrow=0;enter_newspaper(g);fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);return;}
   if(x>=70&&x<=430&&y>=495&&y<560){g->arrow=1;g->six_or_seven=0;enter_which_night(g);fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);return;}
   if(x>=70&&x<=430&&y>=560&&y<625 && g->progress>0){g->arrow=2;g->six_or_seven=1;enter_which_night(g);fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);return;}
   if(x>=70&&x<=430&&y>=625&&y<700 && g->progress>1){g->arrow=3;g->six_or_seven=2;g->frame=FRAME_CUSTOMIZE;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);return;}
