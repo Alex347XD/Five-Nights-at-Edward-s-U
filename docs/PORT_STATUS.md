@@ -91,8 +91,8 @@ termination notice, not the newspaper.)
    ~171-tick Death animation (~3.9 s total) run through a tick accumulator,
   so on 144 Hz+ displays the Death screen no longer flies by in ~2 s.
 - Golden Freddy haunts the office: while GF Random == 1 (rolled on each
-  camera close, nights 2+) the GF Sit figure (`310.png`, 150x200 bottle
-  close-up at [440,240], panning with the office) sits in the office view;
+   camera close, nights 2+) the GF Sit figure (`310.png`, 150x200 bottle
+   close-up at [528,305], panning with the office) sits in the office view;
   staring for ~1.5 s kills (death 5, `458.png` still jumpscare + XScream2).
 - Camera feeds auto-pan left <-> right on the Camera Center Object drift
   (+/-1 px per tick, clamped to the feed image ends so no black bars show),
@@ -131,9 +131,12 @@ termination notice, not the newspaper.)
   54x54 empty→full, top-left at the Music Left counter spot [418,474],
   left of the box; frame follows Music Left 0–2000, so it fills while
   winding and loses wedges when released — verified against the
-  reference shot with headless screenshots), plus low-music badges
-  (`37.png` steady below 600, flashing below 200, hidden when empty;
-  [1228,672] office, [1215,506] cameras). Winding is hold-driven — mouse
+   reference shot with headless screenshots), plus low-music badges
+   ("Warning out of cam" `35.png`–`38.png` steady `35` below 600 /
+   blinking `37`/`38` below 200 at [1228,672] on the office screen;
+   "warning in cam" `39.png`–`42.png` steady `39` / blinking `41`/`42`
+   at [1215,506] on any camera view, not just Cam 04; both hidden when
+   empty — verified with headless screenshots at each music level).
   press-and-hold on the button or held R — evaluated every tick, so
   release/leave/stop ends the wind (the old click latched it on).
 - Phone calls play per night with a clickable MUTE CALL button (`415.png`
@@ -162,8 +165,30 @@ night 1, 6 AM advances the saved night, beating nights 5/6/7 unlocks the
 stars (6th night, custom night, all-20 third star) which gate the title
 menu exactly like the Fusion `Progress` reads. Custom-night AI levels
 still reset each launch (Fusion never wrote those to the INI either),
-and the `ChallengeN` flags round-trip until the Customize UI exists to
-read them.
+and the `ChallengeN` flags are now read (Check marks) and written
+(unmodified-preset night-7 clear) by the Customize screen.
+
+### Frame 8 Customize
+
+The custom-night screen is fully wired (logic + rendering + input),
+verified with headless screenshots (`scripts/headless/local.txt`
+scratch script): Cool Background tiles (`409.png`/`410.png`/`414.png`,
+Random(3) on entry), seven 150x200 portraits
+(`344/408/340/310/256/237/285.png` left to right = Freddy / Mangle /
+ Foxy / Golden / Springtrap / BB / Puppet — best-effort visual match,
+ owner to confirm each character), Select Box frames (`422.png`) drawn
+ as the full Objects.txt grid (top portrait row + middle row of 7 +
+ bottom row of 6, the 7th bottom slot holding Set 20), hover
+ arrows (`336.png` @1.3, down arrow flipped), AI counters as bitmap text
+ at the verbatim hotspots, GO! / Set 20 / Add 1 buttons
+ (`459/511/513.png`) targeting the selected column, rotated-triangle
+ challenge arrows, bitmap
+ Challenge Label (`NO CHALLENGE` / `THE CLASSICS` / `BROKEN DOWN` /
+ `SOY SAUCE EDWARD`, visible while B==0), and checkbox outlines
+ (`253.png`) while the selected challenge is beaten. Change blips play
+ on ch #3 like the original. All levels start at 0, Puppet included
+ (disables the music-box drain) per owner request — Fusion ships
+ Puppet at 7 and clamps it 1-7.
 
 ### Audio
 
@@ -184,4 +209,4 @@ state, so core still owns state. Headless-safe (dummy driver = silent).
 
 ## Known limitations
 
-The project is still a native reconstruction rather than a byte-for-byte Clickteam runtime replacement. The Customize-screen UI and exact character animation still need further conversion work. Mask/flashlight/button/counter art is identified only where named in `src/fnae_assets.h`; unmapped objects render as nothing (no invented stand-ins).
+The project is still a native reconstruction rather than a byte-for-byte Clickteam runtime replacement. Exact character animation still needs further conversion work. Mask/flashlight/button/counter art is identified only where named in `src/fnae_assets.h`; unmapped objects render as nothing (no invented stand-ins).

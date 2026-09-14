@@ -90,8 +90,12 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->music_hold = load_id(r, IMG_MUSIC_CLICKHOLD);
     for (int i = 0; i < IMG_MUSIC_PIE_COUNT; ++i)
         v->music_pie[i] = load_id(r, IMG_MUSIC_PIE_FIRST + i);
-    v->warn_off = load_id(r, IMG_WARNBADGE_OFF);
-    v->warn_on = load_id(r, IMG_WARNBADGE_ON);
+    v->warn_out_steady = load_id(r, IMG_WARN_OUT_STEADY);
+    v->warn_out_flash = load_id(r, IMG_WARN_OUT_FLASH);
+    v->warn_out_blank = load_id(r, IMG_WARN_OUT_BLANK);
+    v->warn_in_steady = load_id(r, IMG_WARN_IN_STEADY);
+    v->warn_in_flash = load_id(r, IMG_WARN_IN_FLASH);
+    v->warn_in_blank = load_id(r, IMG_WARN_IN_BLANK);
     v->mutecall = load_id(r, IMG_MUTECALL);
     v->phmangle_cam = load_id(r, IMG_PHMANGLE_CAM);
     v->phmangle_annoy = load_id(r, IMG_PHMANGLE_ANNOY);
@@ -128,6 +132,23 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->title_template = load_id(r, IMG_TITLE_TEXT);
     for (int i = 0; i < IMG_NIGHT_COUNT; ++i)
         v->title_nights[i] = load_id(r, IMG_NIGHT_FIRST + i);
+    /* Frame 8 Customize screen (see src/fnae_assets.h for the mapping). */
+    v->cust_bg[0] = load_id(r, IMG_CUST_BG_FIRST);
+    v->cust_bg[1] = load_id(r, IMG_CUST_BG_2);
+    v->cust_bg[2] = load_id(r, IMG_CUST_BG_3);
+    {
+        static const int ids[7] = {IMG_CUST_FREDDY, IMG_CUST_MANGLE,
+            IMG_CUST_FOXY, IMG_CUST_GOLDEN, IMG_CUST_SPRING,
+            IMG_CUST_BB, IMG_CUST_PUPPET};
+        for (int i = 0; i < 7; ++i)
+            v->cust_portrait[i] = load_id(r, ids[i]);
+    }
+    v->cust_select = load_id(r, IMG_CUST_SELECT);
+    v->cust_arrow = load_id(r, IMG_CUST_ARROW);
+    v->cust_go = load_id(r, IMG_CUST_GO);
+    v->cust_set20 = load_id(r, IMG_CUST_SET20);
+    v->cust_add1 = load_id(r, IMG_CUST_ADD1);
+    v->cust_check = load_id(r, IMG_CUST_CHECK);
 
     return v->title_bg ? 0 : -1;
 }
@@ -173,8 +194,12 @@ void visuals_free(FnaeVisuals *v) {
     destroy_texture(&v->music_hold);
     for (int i = 0; i < IMG_MUSIC_PIE_COUNT; ++i)
         destroy_texture(&v->music_pie[i]);
-    destroy_texture(&v->warn_off);
-    destroy_texture(&v->warn_on);
+    destroy_texture(&v->warn_out_steady);
+    destroy_texture(&v->warn_out_flash);
+    destroy_texture(&v->warn_out_blank);
+    destroy_texture(&v->warn_in_steady);
+    destroy_texture(&v->warn_in_flash);
+    destroy_texture(&v->warn_in_blank);
     destroy_texture(&v->mutecall);
     destroy_texture(&v->phmangle_cam);
     destroy_texture(&v->phmangle_annoy);
@@ -201,6 +226,16 @@ void visuals_free(FnaeVisuals *v) {
     destroy_texture(&v->title_template);
     for (int i = 0; i < 7; ++i)
         destroy_texture(&v->title_nights[i]);
+    for (int i = 0; i < 3; ++i)
+        destroy_texture(&v->cust_bg[i]);
+    for (int i = 0; i < 7; ++i)
+        destroy_texture(&v->cust_portrait[i]);
+    destroy_texture(&v->cust_select);
+    destroy_texture(&v->cust_arrow);
+    destroy_texture(&v->cust_go);
+    destroy_texture(&v->cust_set20);
+    destroy_texture(&v->cust_add1);
+    destroy_texture(&v->cust_check);
     destroy_texture(&v->newspaper);
     destroy_texture(&v->final_screen);
     destroy_texture(&v->warning);
@@ -565,14 +600,19 @@ static void draw_minimap(SDL_Renderer *r, FnaeVisuals *v, int camera) {
     }
 }
 
-/* Low-music badge shared by both warning objects: level 1 (<600) shows
- * the Stopped frame steady, level 2 (<200) flashes the Animation 12
- * frame on the shared static tick; level 0/3 hides the badge. */
-static void draw_warning(SDL_Renderer *r, FnaeVisuals *v,
-                         int warning, int static_frame, int x, int y) {
+/* Low-music badges ("[ Warning Messages ]"): level 1 (<600) holds the
+ * badge's Stopped triangle steady, level 2 (<200) blinks its Animation 12
+ * triangle against the transparent frame on the shared static tick;
+ * level 0/3 hides the badge. Each badge draws from its own bank range:
+ * "Warning out of cam" (35-38) at [1228,672] on the office screen,
+ * "warning in cam" (39-42) at [1215,506] on any camera view. */
+static void draw_warning(SDL_Renderer *r, int warning, int static_frame,
+                         SDL_Texture *steady, SDL_Texture *flash,
+                         SDL_Texture *blank, int x, int y) {
     if (warning < 1 || warning > 2) return;
-    SDL_Texture *t = v->warn_off;
-    if (warning == 2 && (static_frame & 1) && v->warn_on) t = v->warn_on;
+    SDL_Texture *t = steady;
+    if (warning == 2)
+        t = ((static_frame & 1) && blank) ? blank : (flash ? flash : steady);
     visuals_draw_anchored(r, t, x, y, FNAE_ANCHOR_CENTER);
 }
 
@@ -605,8 +645,7 @@ static void draw_phantom_cam(SDL_Renderer *r, SDL_Texture *t, int alpha,
  * fills while the crank is held and loses wedges when released. The
  * lure button stays hidden here (Fusion hides it over Cam 04). */
 static void draw_music_box(SDL_Renderer *r, FnaeVisuals *v,
-                           int winding, int music, int warning,
-                           int static_frame) {
+                           int winding, int music) {
     visuals_draw_anchored(r, winding ? v->musicbtn_on : v->musicbtn_off,
                           569, 497, FNAE_ANCHOR_CENTER);
     int m = music < 0 ? 0 : music > 2000 ? 2000 : music;
@@ -616,7 +655,120 @@ static void draw_music_box(SDL_Renderer *r, FnaeVisuals *v,
     draw_texture(r, v->music_pie[idx], 418, 474);
     draw_texture(r, v->music_wind, 497, 475);
     draw_texture(r, v->music_hold, 491, 534);
-    draw_warning(r, v, warning, static_frame, 1215, 506);
+}
+
+/* Frame 8 Customize screen (Frame 8 Objects.txt). Box/column numbers
+ * mirror the core hit rects in fnae_core.c (cust_box_x/y); counters sit
+ * at the verbatim AI Level hotspots (+~140 x from each column's global).
+ * Portraits/boxes draw top-left (the 150px art tiles the 160px grid);
+ * the 50x25 arrows draw center-anchored @1.3 scale like the title arrow
+ * pattern (see docs/COORDINATES.md). AI order here matches fnae_set_custom
+ * (freddy, foxy, spring, golden, mangle, bb, puppet), NOT column order. */
+static void draw_customize(SDL_Renderer *r, FnaeVisuals *v,
+                           const int *ai, int sel, int ch, int b,
+                           int check, int cool) {
+    static const int box_x[7] = {85, 246, 406, 566, 726, 886, 1046};
+    static const int box_y[7] = {52, 53, 53, 53, 53, 53, 53};
+    /* AI Level counters, verbatim Objects.txt hotspots, paired to columns
+     * left to right (each sits ~+140 x from its column's global). */
+    static const int cnt_x[7] = {225, 389, 544, 705, 864, 1019, 1185};
+    static const int cnt_y[7] = {248, 244, 247, 246, 246, 246, 247};
+    /* Column order: Freddy, Mangle, Foxy, Golden, Springtrap, BB, Puppet;
+     * ai[] order: freddy, foxy, spring, golden, mangle, bb, puppet. */
+    static const int col_ai[7] = {0, 4, 1, 3, 2, 5, 6};
+
+    /* Cool Background tiles 40x40 across the 1280x720 view. */
+    SDL_Texture *bg = NULL;
+    if (cool >= 0 && cool < 3) bg = v->cust_bg[cool];
+    if (bg) {
+        int w = 0, h = 0;
+        SDL_QueryTexture(bg, NULL, NULL, &w, &h);
+        if (w < 1) w = 40;
+        if (h < 1) h = 40;
+        for (int y = 0; y < 720; y += h)
+            for (int x = 0; x < 1280; x += w) {
+                SDL_Rect d = {x, y, w, h};
+                SDL_RenderCopy(r, bg, NULL, &d);
+            }
+    }
+    /* Select frames + portraits, top row. */
+    for (int i = 0; i < 7; ++i) {
+        draw_texture(r, v->cust_select, box_x[i], box_y[i]);
+        draw_texture(r, v->cust_portrait[i], box_x[i], box_y[i]);
+    }
+    /* Empty Select Box rows, verbatim Frame 8 Objects.txt Layer #2:
+     * middle row of 7 at y=261, bottom row of 6 at y=469 (the 7th
+     * bottom slot holds the Set 20 button instead of a box). These
+     * have no portraits/counters — they fill the grid like the
+     * reference shot. */
+    static const int row2_x[7] = {85, 246, 406, 566, 726, 886, 1046};
+    for (int i = 0; i < 7; ++i)
+        draw_texture(r, v->cust_select, row2_x[i], 261);
+    static const int row3_x[6] = {85, 246, 406, 566, 726, 886};
+    for (int i = 0; i < 6; ++i)
+        draw_texture(r, v->cust_select, row3_x[i], 469);
+    /* AI Level counters (Fusion counters -> bitmap text). */
+    if (ai) {
+        for (int i = 0; i < 7; ++i) {
+            char num[8];
+            int val = ai[col_ai[i]];
+            if (val < 0) val = 0;
+            snprintf(num, sizeof num, "%d", val);
+            draw_text(r, num, cnt_x[i], cnt_y[i], 2);
+        }
+    }
+    /* Hover arrows over the selected column: up at select+(36,88),
+     * down (arrow 2) at select+(36,152), @1.3 scale. */
+    if (sel >= 0 && sel < 7) {
+        int upx = box_x[sel] + 36, upy = box_y[sel] + 88;
+        int dnx = box_x[sel] + 36, dny = box_y[sel] + 152;
+        if (v->cust_arrow) {
+            int w = 0, h = 0;
+            SDL_QueryTexture(v->cust_arrow, NULL, NULL, &w, &h);
+            float s = 1.3f;
+            SDL_Rect u = {(int)(upx - w * s / 2), (int)(upy - h * s / 2),
+                          (int)(w * s), (int)(h * s)};
+            SDL_Rect d = {(int)(dnx - w * s / 2), (int)(dny - h * s / 2),
+                          (int)(w * s), (int)(h * s)};
+            SDL_RenderCopy(r, v->cust_arrow, NULL, &u);
+            /* Down arrow (arrow 2): same art flipped vertically. */
+            SDL_RenderCopyEx(r, v->cust_arrow, NULL, &d, 0.0, NULL,
+                             SDL_FLIP_VERTICAL);
+        }
+    }
+    /* Set 20 / Add 1 / GO! buttons, verbatim top-left positions. */
+    draw_texture(r, v->cust_set20, 1039, 469);
+    draw_texture(r, v->cust_add1, 1039, 541);
+    draw_texture(r, v->cust_go, 1032, 616);
+    /* Challenge arrows: same triangle rotated to point left/right,
+     * center-anchored on [88,16] / [456,16]. */
+    if (v->cust_arrow) {
+        int w = 0, h = 0;
+        SDL_QueryTexture(v->cust_arrow, NULL, NULL, &w, &h);
+        float s = 1.3f;
+        SDL_Rect l = {(int)(88 - h * s / 2), (int)(16 - w * s / 2),
+                      (int)(h * s), (int)(w * s)};
+        SDL_Rect rr = {(int)(456 - h * s / 2), (int)(16 - w * s / 2),
+                       (int)(h * s), (int)(w * s)};
+        SDL_RenderCopyEx(r, v->cust_arrow, NULL, &l, -90.0, NULL,
+                         SDL_FLIP_NONE);
+        SDL_RenderCopyEx(r, v->cust_arrow, NULL, &rr, 90.0, NULL,
+                         SDL_FLIP_NONE);
+    }
+    /* Challenge Label ([128,16] string, alpha 200 while B==0, hidden
+     * while the preset holds). Bitmap text has no alpha fade here. */
+    if (b == 0) {
+        static const char *names[4] = {"NO CHALLENGE", "THE CLASSICS",
+            "BROKEN DOWN", "SOY SAUCE EDWARD"};
+        int c = ch < 0 ? 0 : ch > 3 ? 3 : ch;
+        draw_text(r, names[c], 128, 16, 2);
+    }
+    /* Check marks flank the top bar while the selected challenge is
+     * beaten (Fusion: Check visible iff its A = Ini Challenge<N> > 0). */
+    if (check) {
+        draw_texture(r, v->cust_check, 8, 16);
+        draw_texture(r, v->cust_check, 1208, 16);
+    }
 }
 
 void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
@@ -632,7 +784,9 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                       int ph_mangle_cam, int ph_bb_cam,
                       int ph_bb_scare, int ph_bb_scare_on, int ph_annoy_a,
                       int death_addup, int death_red, int death_red_peaked,
-                      int death_rip_a, int death_rip_b, int death_ticks, int gf_sit) {
+                      int death_rip_a, int death_rip_b, int death_ticks, int gf_sit,
+                     const int *cust_ai, int cust_sel, int cust_ch,
+                     int cust_b, int cust_check, int cust_cool) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
@@ -722,7 +876,16 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             /* White Frame Camera reappears with the rest of the camera UI. */
             draw_white_frame(r);
             if (sel == 4)
-                draw_music_box(r, v, winding, music, warning, static_frame);
+                draw_music_box(r, v, winding, music);
+            /* Low-music badge for the camera screens ("warning in cam",
+             * bank 39-42 at [1215,506], center-anchored): reappears on ANY
+             * camera view while 0 < Music Left < 600 (Fusion
+             * "[ Warning Messages ]" gates on View > 0, not on Cam 04),
+             * steady Stopped (39) below 600, blinking Animation 12
+             * (41/42) below 200, hidden when empty. */
+            draw_warning(r, warning, static_frame,
+                         v->warn_in_steady, v->warn_in_flash, v->warn_in_blank,
+                         1215, 506);
             /* Mute Call button shows on every Frame 3 screen while the
              * night's call plays (Fusion reappears it every 3 s). */
             if (mute_visible)
@@ -741,10 +904,15 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             draw_world(r, v->door_left[left_door_frame], 119, 0, office_scroll, ox, oy);
             draw_world(r, v->door_right[right_door_frame], 1263, 0, office_scroll, ox, oy);
             /* GF Sit (Layer #2 office overlay, above the doors): reappears
-             * at [440,240] while GF Random == 1, invisible otherwise. A
-             * world object like the doors, so it pans with the office. */
+             * while GF Random == 1, invisible otherwise. A world object
+             * like the doors, so it pans with the office. Drawn before
+             * the desk, so the desk front/papers overlap its base: the
+             * bottle stands behind the desk, like the reference shot.
+             * Position is owner-matched to the reference (base planted on
+             * the desk surface among the paper balls), not the verbatim
+             * Objects.txt [440,240], which left it floating mid-air. */
             if (gf_sit)
-                draw_world(r, v->gf_sit, 440, 240, office_scroll, ox, oy);
+                draw_world(r, v->gf_sit, 528, 305, office_scroll, ox, oy);
             draw_world(r, v->desk, 266, 177, office_scroll, ox, oy);
             /* Ph Mangle Annoy (Layer #3, above the desk): rises from
              * [508,720] by Annoy A px while C==1, then sinks back once
@@ -752,8 +920,11 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             if (ph_annoy_a > 0)
                 draw_world(r, v->phmangle_annoy, 508, 720 - ph_annoy_a,
                            office_scroll, ox, oy);
-            /* Low-music badge for the office screen (Warning out of cam). */
-            draw_warning(r, v, warning, static_frame, 1228, 672);
+            /* Low-music badge for the office screen ("Warning out of cam",
+             * bank 35-38 at [1228,672], center-anchored). */
+            draw_warning(r, warning, static_frame,
+                         v->warn_out_steady, v->warn_out_flash, v->warn_out_blank,
+                         1228, 672);
             if (mute_visible)
                 visuals_draw_anchored(r, v->mutecall, 100, 55,
                                       FNAE_ANCHOR_CENTER);
@@ -829,8 +1000,10 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
         fit_center(r, v->final_screen);
     } else if (frame == 7) {
         fit_center(r, v->newspaper);
+    } else if (frame == 8) {
+        draw_customize(r, v, cust_ai, cust_sel, cust_ch, cust_b,
+                       cust_check, cust_cool);
     }
-    /* Frame 8 (Customize) stays black: its UI art is still unmapped. */
 
     static const char *cam_names[4] = {"Hell", "Mountain", "Forest", "Dino"};
     int cam = camera - 1;

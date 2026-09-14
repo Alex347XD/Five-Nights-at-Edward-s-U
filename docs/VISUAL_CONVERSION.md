@@ -32,8 +32,11 @@ These match `visuals_init` in `src/visuals.c`:
   is a 35x75 UI dot), Puppet `493.png`–`510.png`, Foxy `536.png`–`539.png`
   + `562.png`–`572.png`, Golden Freddy still `458.png`
 - `310.png` — Golden Freddy Sit office figure (red bottle close-up with
-  yellow highlights, 150x200, Layer #2 at [440,240], panning with the
-  office; drawn only while GF Random == 1, like the Fusion Reappear)
+  yellow highlights, 150x200, Layer #2, panning with the office; drawn
+  only while GF Random == 1, like the Fusion Reappear, and before the
+  desk so its base tucks behind the papers). Stands at [528,305] —
+  owner-matched to the reference shot (base on the desk surface); the
+  verbatim Objects.txt [440,240] left it floating mid-air.
 - `2.png` — GOOD JOB final screen
 - `520.png` — HELP WANTED newspaper screen (Frame 7, shown once on New Game
   before Which Night)
@@ -68,10 +71,17 @@ These match `visuals_init` in `src/visuals.c`:
   frame follows Music Left 0–2000 (fills while held, loses wedges
   released). Replaces the "MUSIC: n" bitmap readout (value stays in
   the window title)
-- `37.png` / `38.png` — low-music warning badges (63x55 each,
-  center-anchored; PROVISIONAL: 37 triangle = Stopped steady below 600,
-  38 black = Animation 12 flash below 200, hidden when empty; out-of-cam
-  at [1228,672] on the office screen, in-cam at [1215,506] on cameras)
+- `35.png`–`38.png` / `39.png`–`42.png` — low-music warning badges
+  (center-anchored; "Warning out of cam" 35-38 at [1228,672] on the
+  office screen, "warning in cam" 39-42 at [1215,506] on any camera
+  view). Per badge the bank holds two triangle sizes, each followed by
+  its transparent blink frame (36 pairs 35, 38 pairs 37, 40 pairs 39,
+  42 pairs 41): Stopped holds the first triangle steady below 600
+  (out 35 57x49, in-cam 39 33x29), Animation 12 blinks the second
+  triangle against its transparent frame below 200 (out 37/38 63x55,
+  in-cam 41/42 37x32), hidden when empty. Verified with headless
+  screenshots (steady on Cam 01, Cam 04, and office; both blink phases
+  in-cam).
 - `415.png` — Mute Call button ("MUTE CALL", 121x31, center-anchored at
   [100,55] on office and camera screens while the night's call plays;
   clicking it stops ch #16)

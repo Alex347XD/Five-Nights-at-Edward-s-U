@@ -144,6 +144,28 @@
  * fullscreen rect (no bank art). */
 #define IMG_DEATH_DEVIL_A      233 /* devil card, sad eyes */
 #define IMG_DEATH_DEVIL_B      460 /* devil card, wide eyes */
+/* Frame 8 Customize screen (Frame 8 Objects.txt). Portrait mapping is a
+ * best-effort visual match (all 150x200 except BB 146x196): columns run
+ * Freddy / Mangle / Foxy / Golden / Springtrap / BB / Puppet left to
+ * right like the Layer #2 globals. Owner to confirm each character. */
+#define IMG_CUST_FREDDY     344 /* red round head, 150x200 */
+#define IMG_CUST_MANGLE     408 /* gray cracked-rock head, 150x200 */
+#define IMG_CUST_FOXY       340 /* blue dino head, 150x200 */
+#define IMG_CUST_GOLDEN     310 /* red bottle close-up, 150x200 (= IMG_GF_SIT) */
+#define IMG_CUST_SPRING     256 /* blue head w/ green antennae, 150x200 */
+#define IMG_CUST_BB         237 /* gray grin + top hat, 146x196 */
+#define IMG_CUST_PUPPET     285 /* red head + top hat, 150x200 */
+#define IMG_CUST_SELECT     422 /* Select Box frame, 150x200 black w/ white border */
+#define IMG_CUST_ARROW      336 /* up triangle, 50x25, drawn @1.3 scale */
+#define IMG_CUST_GO         459 /* GO! (Start Night), 250x55 */
+#define IMG_CUST_SET20      511 /* Set 20, 235x55 */
+#define IMG_CUST_ADD1       513 /* Add 1, 235x55 */
+#define IMG_CUST_CHECK      253 /* checkbox outline, 38x39 */
+#define IMG_CUST_BG_FIRST   409 /* Cool Background tiles, 40x40. 409/410/414
+                                 * are the 3 Random(3) frames (411-413 are
+                                 * other sizes, not used). */
+#define IMG_CUST_BG_2       410
+#define IMG_CUST_BG_3       414
 /* Unidentified (owner to confirm object/sequence): */
 #define IMG_UNKNOWN_179   179 /* 1280x720 gray-face frame; NOT the title Background */
 #define IMG_DEVIL_SAD     233 /* = IMG_DEATH_DEVIL_A (kept alias) */
@@ -170,9 +192,18 @@
  * "MUSIC: n" bitmap readout (the value stays in the window title). */
 #define IMG_MUSIC_PIE_FIRST 181
 #define IMG_MUSIC_PIE_COUNT 22
-/* Low-music badges ("[ Warning Messages ]": <600 steady Stopped,
- * <200 flashing Animation 12, <=0 hidden; out-of-cam [1228,672] on the
- * office screen, in-cam [1215,506] on camera views). PROVISIONAL:
- * 37 = warning triangle 63x55, 38 = black flash frame. */
-#define IMG_WARNBADGE_OFF 37 /* ? */
-#define IMG_WARNBADGE_ON  38 /* ? */
+/* Low-music badges ("[ Warning Messages ]"): <600 steady Stopped,
+ * <200 flashing Animation 12, <=0 hidden. Two badge objects with their
+ * own frame banks (bank IDs 35-42): "Warning out of cam" 35-38 at
+ * [1228,672] on the office screen, "warning in cam" 39-42 at [1215,506]
+ * on any camera view. Per badge the bank holds two triangle sizes, each
+ * followed by its transparent blink frame (36 pairs 35, 38 pairs 37,
+ * 40 pairs 39, 42 pairs 41): Stopped holds the first triangle steady,
+ * Animation 12 blinks the second triangle against its transparent frame
+ * on the shared static tick. */
+#define IMG_WARN_OUT_STEADY 35 /* out-of-cam Stopped: triangle 57x49 */
+#define IMG_WARN_OUT_FLASH  37 /* out-of-cam Animation 12: triangle 63x55 */
+#define IMG_WARN_OUT_BLANK  38 /* out-of-cam Animation 12: transparent 63x55 */
+#define IMG_WARN_IN_STEADY  39 /* in-cam Stopped: triangle 33x29 */
+#define IMG_WARN_IN_FLASH   41 /* in-cam Animation 12: triangle 37x32 */
+#define IMG_WARN_IN_BLANK   42 /* in-cam Animation 12: transparent 37x32 */

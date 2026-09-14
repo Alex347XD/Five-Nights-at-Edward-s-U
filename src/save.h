@@ -16,9 +16,9 @@
  *
  * - Night: story night 1-5 (Continue resumes it; New Game resets it).
  * - Progress: star unlocks 0-3 (1 = 6th night, 2 = custom, 3 = all-20).
- * - Challenge1..3: custom-night challenge completion flags. Nothing
- *   reads them yet (Customize UI is unmapped), but they round-trip so
- *   the file keeps whatever a future pass stores.
+ * - Challenge1..3: custom-night challenge completion flags, read (Check
+ *   marks) and written (unmodified-preset night-7 clear) by the
+ *   Customize screen.
  *
  * The MMFApplications folder is created on first store. When %APPDATA%
  * is unavailable (non-Windows / future ports), the file falls back to

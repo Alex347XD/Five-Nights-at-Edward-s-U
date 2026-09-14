@@ -65,6 +65,8 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   lure requires the cooldown to have fully elapsed.
 - Music box uses the Dinosaur Exhibit camera (view 4).
 - Music box starts at 2000, loses `Night * 2` every 0.07 s on every screen
+  (story nights 1-6; night 7/custom drains `Puppet AI * 2`, so Puppet 0
+  disables the drain — custom-night only, per Frame 3 `[ Music Box ]`),
   (the Fusion drain has no view gate — only the crank press needs View 4),
   and winding adds 100 every 0.35 s. The crank (Alterable A) is held-wound:
   pointer over the [569,497] button with the mouse down, or the R test key,
@@ -102,8 +104,23 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   runs through a tick accumulator, so the roll rate and the 1.5 s stare
   last the same real time at any refresh rate.
 - Nights 1-7 difficulty values and hourly changes are translated from the event text.
-- Night 7 loads AI from the Customize-screen globals (defaults 0, Puppet 7;
-  see `fnae_set_custom`), and the All-20 star reads those globals, not the nightly rolls.
+- Night 7 loads AI from the Customize-screen globals (defaults all 0,
+  range 0-20 / Puppet 0-7; see `fnae_set_custom`), and the All-20 star reads
+  those globals, not the nightly rolls (still requires Puppet == 7).
+- Customize screen (Frame 8): hover a portrait to select its column (arrows
+  appear at select+(36,88)/(36,152) @1.3 scale); hold an arrow to repeat
+  +-1 every 0.10 s (0-20, Puppet 0-7 — owner request, Fusion clamps
+  Puppet 1-7); Set 20 / Add 1 bump the selected column (Set 20 on Puppet
+  clamps to 7); Left/Right Challenge cycle 0-3 with wraparound, reset the
+  board to 0 and apply the preset while B>0 (1 = The Classics: Freddy 20 /
+  Foxy 5 / Golden 20; 2 = Broken Down: Golden 10 / BB 20 / Springtrap 20 /
+  Mangle 20; 3 = Soy Sauce Edward: Mangle 15 / Golden 20 / Foxy 10 /
+  Freddy 15 / BB 20 / Springtrap 8 / Puppet 7); any manual edit clears B
+  (label reappears, preset stops holding). GO! / Return starts night 7 via
+  Which Night; Escape returns to Title. Check marks show while the selected
+  challenge's save flag is set; beating night 7 with an unmodified preset
+  writes Challenge<N>=1 (Frame 5 Final), which also feeds the 6 AM
+  custom-night Progress star path.
 - Which Night (Frame 6): 0 = normal night, 1 = 6th, 2 = 7th/custom; the frame
   auto-advances to Night after 2 s (Return skips the wait).
 - Warning (Frame 1): boots here; `Timer equals 05''` auto-advances to Title
