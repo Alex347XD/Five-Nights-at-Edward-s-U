@@ -59,6 +59,7 @@ typedef struct {
    float ph_bb_scare_timer; /* hold at full opacity before the jumpscare clears */
   int ph_annoy_a, ph_annoy_b; /* office-annoy descent (A 0-224) / linger (B 0-7) once C==1 */
  int golden_ai, foxy_ai, freddy_ai, springtrap_ai, ph_mangle_ai, ph_bb_ai;
+ int puppet_ai; /* Night-7 music-box drain rate (= custom_puppet); story nights use Night*2 */
    int music_left; int music_winding; float music_tick;
    int current_call; int call_muted;
    int mouse_down; int key_wind; /* held inputs for the music-box crank */
@@ -76,6 +77,16 @@ typedef struct {
    float movement_half_tick, movement_force_tick; /* Camera Out re-tune timers */
    int custom_freddy, custom_foxy, custom_springtrap, custom_golden;
    int custom_mangle, custom_bb, custom_puppet; /* Customize-frame AI levels for night 7 */
+   /* Frame 8 Customize screen state (Frame 8 Events.txt). Columns are
+    * x-ordered like the Layer #2 globals: 0 Freddy, 1 Mangle, 2 Foxy,
+    * 3 Golden, 4 Springtrap, 5 BB, 6 Puppet. */
+   int custom_sel; /* last-hovered column (arrows/Set20/Add1 target) */
+   int custom_ch; /* Left Challenge A: 0 none, 1 Classics, 2 Broken, 3 Soy */
+   int custom_b; /* Left Challenge B: 1 = preset holds, 0 = manually edited */
+   int custom_arrow_dir; /* held-arrow repeat: +1 up, -1 down, 0 none */
+   float custom_arrow_tick; /* hold-repeat accumulator (0.10 s steps) */
+   int custom_cool; /* Cool Background frame 0-2 (Random(3) on entry) */
+   int custom_check[4]; /* challenge completion flags [1..3] cached from save */
   int mouse_x, mouse_y;   /* last known pointer position (1280x720 space) */
    float office_scroll;    /* office pan in source px, 0 = leftmost.
                             * Mirrors the Fusion Office Center Object X minus

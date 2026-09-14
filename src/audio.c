@@ -199,9 +199,11 @@ static void drain_queue(FnaeAudio *a, FnaeGame *g) {
    case FNAE_SND_MASK_OFF: play(a, CH_FLIP, a->mask_off, 0, V(50)); break;
    case FNAE_SND_WINDUP: play(a, CH_WINDUP, a->windup, 0, V(75)); break;
    case FNAE_SND_CALL_STOP: Mix_HaltChannel(CH_CALL); break;
-   /* Title menu blips live on ch #3, night camera Change blips on ch #4. */
+   /* Title/customize menu blips live on ch #3, night camera Change blips
+    * on ch #4 (Frame 8 Events.txt plays Change on ch #3). */
    case FNAE_SND_TITLE_CHANGE:
-    play(a, g->frame == FRAME_TITLE ? CH_CAMAU : CH_CHANGE, a->change, 0, V(50));
+    play(a, (g->frame == FRAME_TITLE || g->frame == FRAME_CUSTOMIZE)
+        ? CH_CAMAU : CH_CHANGE, a->change, 0, V(50));
     break;
    case FNAE_SND_PHBB: play(a, CH_PHBB, a->phbb, 0, V(50)); break;
   default: break;

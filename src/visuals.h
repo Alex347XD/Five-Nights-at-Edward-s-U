@@ -73,6 +73,15 @@ typedef struct {
     SDL_Texture *scare_foxy[IMG_SCARE_FOXY_A_COUNT + IMG_SCARE_FOXY_B_COUNT]; /* 4 + 11 */
     SDL_Texture *scare_gf;       /* still (458) */
     SDL_Texture *gf_sit;         /* office figure (310) while GF Random == 1 */
+    /* Frame 8 Customize screen (see src/fnae_assets.h for the mapping). */
+    SDL_Texture *cust_bg[3];      /* Cool Background 40x40 tiles (409/410/414) */
+    SDL_Texture *cust_portrait[7]; /* Freddy/Mangle/Foxy/Golden/Spring/BB/Puppet */
+    SDL_Texture *cust_select;     /* Select Box frame (422) */
+    SDL_Texture *cust_arrow;      /* up triangle (336, @1.3 scale) */
+    SDL_Texture *cust_go;         /* GO! Start Night (459) */
+    SDL_Texture *cust_set20;      /* Set 20 (511) */
+    SDL_Texture *cust_add1;       /* Add 1 (513) */
+    SDL_Texture *cust_check;      /* checkbox outline (253) */
     /* Death frame (Frame 4): devil-card Death Anim backdrop cycle. */
     SDL_Texture *death_devil[2];
     /* RIP Text frames: 404 while RIP B==0 (fading out), GAME OVER (1.png)
@@ -107,4 +116,9 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                       int ph_mangle_cam, int ph_bb_cam,
                       int ph_bb_scare, int ph_bb_scare_on, int ph_annoy_a,
                        int death_addup, int death_red, int death_red_peaked,
-                       int death_rip_a, int death_rip_b, int death_ticks, int gf_sit);
+                       int death_rip_a, int death_rip_b, int death_ticks, int gf_sit,
+                     /* Frame 8 Customize (NULL ai = hide). Order matches
+                      * fnae_set_custom: freddy, foxy, spring, golden,
+                      * mangle, bb, puppet. */
+                     const int *cust_ai, int cust_sel, int cust_ch,
+                     int cust_b, int cust_check, int cust_cool);

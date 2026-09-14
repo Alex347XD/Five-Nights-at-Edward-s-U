@@ -283,7 +283,15 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                         game->death_rip_a,
                         game->death_rip_b,
                         game->death_ticks,
-                        game->gf_random == 1
+                        game->gf_random == 1,
+                        (const int[]){game->custom_freddy, game->custom_foxy,
+                            game->custom_springtrap, game->custom_golden,
+                            game->custom_mangle, game->custom_bb,
+                            game->custom_puppet},
+                        game->custom_sel, game->custom_ch, game->custom_b,
+                        (game->custom_ch > 0 && game->custom_ch <= 3
+                            && game->custom_check[game->custom_ch]) ? 1 : 0,
+                        game->custom_cool
                     );
                     SDL_RenderPresent(r);
                     if (headless_save_screenshot(r, ev->shot) != 0)
@@ -349,7 +357,14 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
             game->death_rip_a,
             game->death_rip_b,
             game->death_ticks,
-            game->gf_random == 1
+            game->gf_random == 1,
+            (const int[]){game->custom_freddy, game->custom_foxy,
+                game->custom_springtrap, game->custom_golden,
+                game->custom_mangle, game->custom_bb, game->custom_puppet},
+            game->custom_sel, game->custom_ch, game->custom_b,
+            (game->custom_ch > 0 && game->custom_ch <= 3
+                && game->custom_check[game->custom_ch]) ? 1 : 0,
+            game->custom_cool
         );
         SDL_RenderPresent(r);
         if ((f + 1) % 60 == 0) {

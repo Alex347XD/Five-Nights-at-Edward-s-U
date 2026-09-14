@@ -144,6 +144,28 @@
  * fullscreen rect (no bank art). */
 #define IMG_DEATH_DEVIL_A      233 /* devil card, sad eyes */
 #define IMG_DEATH_DEVIL_B      460 /* devil card, wide eyes */
+/* Frame 8 Customize screen (Frame 8 Objects.txt). Portrait mapping is a
+ * best-effort visual match (all 150x200 except BB 146x196): columns run
+ * Freddy / Mangle / Foxy / Golden / Springtrap / BB / Puppet left to
+ * right like the Layer #2 globals. Owner to confirm each character. */
+#define IMG_CUST_FREDDY     344 /* red round head, 150x200 */
+#define IMG_CUST_MANGLE     408 /* gray cracked-rock head, 150x200 */
+#define IMG_CUST_FOXY       340 /* blue dino head, 150x200 */
+#define IMG_CUST_GOLDEN     310 /* red bottle close-up, 150x200 (= IMG_GF_SIT) */
+#define IMG_CUST_SPRING     256 /* blue head w/ green antennae, 150x200 */
+#define IMG_CUST_BB         237 /* gray grin + top hat, 146x196 */
+#define IMG_CUST_PUPPET     285 /* red head + top hat, 150x200 */
+#define IMG_CUST_SELECT     422 /* Select Box frame, 150x200 black w/ white border */
+#define IMG_CUST_ARROW      336 /* up triangle, 50x25, drawn @1.3 scale */
+#define IMG_CUST_GO         459 /* GO! (Start Night), 250x55 */
+#define IMG_CUST_SET20      511 /* Set 20, 235x55 */
+#define IMG_CUST_ADD1       513 /* Add 1, 235x55 */
+#define IMG_CUST_CHECK      253 /* checkbox outline, 38x39 */
+#define IMG_CUST_BG_FIRST   409 /* Cool Background tiles, 40x40. 409/410/414
+                                 * are the 3 Random(3) frames (411-413 are
+                                 * other sizes, not used). */
+#define IMG_CUST_BG_2       410
+#define IMG_CUST_BG_3       414
 /* Unidentified (owner to confirm object/sequence): */
 #define IMG_UNKNOWN_179   179 /* 1280x720 gray-face frame; NOT the title Background */
 #define IMG_DEVIL_SAD     233 /* = IMG_DEATH_DEVIL_A (kept alias) */

@@ -165,8 +165,30 @@ night 1, 6 AM advances the saved night, beating nights 5/6/7 unlocks the
 stars (6th night, custom night, all-20 third star) which gate the title
 menu exactly like the Fusion `Progress` reads. Custom-night AI levels
 still reset each launch (Fusion never wrote those to the INI either),
-and the `ChallengeN` flags round-trip until the Customize UI exists to
-read them.
+and the `ChallengeN` flags are now read (Check marks) and written
+(unmodified-preset night-7 clear) by the Customize screen.
+
+### Frame 8 Customize
+
+The custom-night screen is fully wired (logic + rendering + input),
+verified with headless screenshots (`scripts/headless/local.txt`
+scratch script): Cool Background tiles (`409.png`/`410.png`/`414.png`,
+Random(3) on entry), seven 150x200 portraits
+(`344/408/340/310/256/237/285.png` left to right = Freddy / Mangle /
+ Foxy / Golden / Springtrap / BB / Puppet — best-effort visual match,
+ owner to confirm each character), Select Box frames (`422.png`) drawn
+ as the full Objects.txt grid (top portrait row + middle row of 7 +
+ bottom row of 6, the 7th bottom slot holding Set 20), hover
+ arrows (`336.png` @1.3, down arrow flipped), AI counters as bitmap text
+ at the verbatim hotspots, GO! / Set 20 / Add 1 buttons
+ (`459/511/513.png`) targeting the selected column, rotated-triangle
+ challenge arrows, bitmap
+ Challenge Label (`NO CHALLENGE` / `THE CLASSICS` / `BROKEN DOWN` /
+ `SOY SAUCE EDWARD`, visible while B==0), and checkbox outlines
+ (`253.png`) while the selected challenge is beaten. Change blips play
+ on ch #3 like the original. All levels start at 0, Puppet included
+ (disables the music-box drain) per owner request — Fusion ships
+ Puppet at 7 and clamps it 1-7.
 
 ### Audio
 
@@ -187,4 +209,4 @@ state, so core still owns state. Headless-safe (dummy driver = silent).
 
 ## Known limitations
 
-The project is still a native reconstruction rather than a byte-for-byte Clickteam runtime replacement. The Customize-screen UI and exact character animation still need further conversion work. Mask/flashlight/button/counter art is identified only where named in `src/fnae_assets.h`; unmapped objects render as nothing (no invented stand-ins).
+The project is still a native reconstruction rather than a byte-for-byte Clickteam runtime replacement. Exact character animation still needs further conversion work. Mask/flashlight/button/counter art is identified only where named in `src/fnae_assets.h`; unmapped objects render as nothing (no invented stand-ins).

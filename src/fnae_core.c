@@ -44,7 +44,7 @@ static void difficulty(FnaeGame* g,int h){
  if(n==5 && h==1 && !did(g,h,9)){g->freddy_ai+=rnd(1)+2;g->foxy_ai+=rnd(2)+1;g->springtrap_ai+=3+rnd(2);g->ph_mangle_ai+=1+rnd(3);g->ph_bb_ai+=1+rnd(3);g->golden_ai+=rnd(2);mark(g,h,9);}
  if(n==6 && h==12 && !did(g,h,10)){g->freddy_ai=9+(rnd(4)+1);g->foxy_ai=10+rnd(2);g->springtrap_ai=8;g->ph_mangle_ai=9+rnd(2);g->ph_bb_ai=9+rnd(2);g->golden_ai=7;mark(g,h,10);}
  if(n==6 && h==1 && !did(g,h,11)){g->freddy_ai+=rnd(1)+2;g->foxy_ai+=rnd(2)+1;g->springtrap_ai+=1+rnd(5);g->ph_mangle_ai+=1+rnd(3);g->ph_bb_ai+=1+rnd(3);g->golden_ai+=rnd(2);mark(g,h,11);}
- if(n==7 && h==12 && !did(g,h,12)){g->freddy_ai=g->custom_freddy;g->foxy_ai=g->custom_foxy;g->springtrap_ai=g->custom_springtrap;g->ph_mangle_ai=g->custom_mangle;g->ph_bb_ai=g->custom_bb;g->golden_ai=g->custom_golden;mark(g,h,12);}
+  if(n==7 && h==12 && !did(g,h,12)){g->freddy_ai=g->custom_freddy;g->foxy_ai=g->custom_foxy;g->springtrap_ai=g->custom_springtrap;g->ph_mangle_ai=g->custom_mangle;g->ph_bb_ai=g->custom_bb;g->golden_ai=g->custom_golden;g->puppet_ai=g->custom_puppet;mark(g,h,12);}
  g->freddy.ai=g->freddy_ai; g->foxy.ai=g->foxy_ai; g->springtrap_alive=g->springtrap_ai>0;
 }
 
@@ -172,7 +172,7 @@ static void update_music(FnaeGame* g,float dt){
   * needs View 4): A==0 drains every 0.07 s on every screen, A>0 winds
   * every 0.35 s while held. */
  g->music_tick+=dt;
- if(!g->music_winding && g->music_left>0 && g->music_tick>=0.07f){g->music_tick=0;g->music_left-=g->night==7?g->golden_ai*2:g->night*2;if(g->music_left<0)g->music_left=0;}
+  if(!g->music_winding && g->music_left>0 && g->music_tick>=0.07f){g->music_tick=0;g->music_left-=g->night==7?g->puppet_ai*2:g->night*2;if(g->music_left<0)g->music_left=0;}
  if(g->music_winding && g->music_tick>=0.35f){g->music_tick=0;if(g->music_left>0)g->music_left+=100;if(g->music_left>2000)g->music_left=2000;}
  /* Fusion replays windup2 every 00''-50 while the button is held. */
  if(g->music_winding && g->music_left>0){
@@ -183,9 +183,12 @@ static void update_music(FnaeGame* g,float dt){
 }
 
 void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_WARNING; { FnaeSave s; fnae_save_load(&s); g->night=s.night; g->progress=s.progress; } g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2; g->cam_scroll=FNAE_CAM_SCROLL_MIN; g->cam_scroll_dir=0; g->cam_static_alpha=185; g->power_out_alpha=255;
- /* Customize-screen defaults straight from Frame 8: everything 0 except Puppet (7). */
+ /* Customize-screen defaults: everything 0, including Puppet (owner
+  * request — Fusion ships Puppet Global at 7, but starting at 0 means
+  * the Add 1 / Set 20 buttons visibly work on the Puppet column too
+  * instead of clamping 7 -> 7). */
  g->custom_freddy=0; g->custom_foxy=0; g->custom_springtrap=0; g->custom_golden=0;
- g->custom_mangle=0; g->custom_bb=0; g->custom_puppet=7; }
+ g->custom_mangle=0; g->custom_bb=0; g->custom_puppet=0; }
 
 void fnae_set_custom(FnaeGame* g,int freddy,int foxy,int springtrap,int golden,int mangle,int bb,int puppet){
  if(freddy<0)freddy=0; if(freddy>20)freddy=20;
@@ -194,7 +197,7 @@ void fnae_set_custom(FnaeGame* g,int freddy,int foxy,int springtrap,int golden,i
  if(golden<0)golden=0; if(golden>20)golden=20;
  if(mangle<0)mangle=0; if(mangle>20)mangle=20;
  if(bb<0)bb=0; if(bb>20)bb=20;
- if(puppet<1)puppet=1; if(puppet>7)puppet=7;
+  if(puppet<0)puppet=0; if(puppet>7)puppet=7;
  g->custom_freddy=freddy; g->custom_foxy=foxy; g->custom_springtrap=springtrap;
  g->custom_golden=golden; g->custom_mangle=mangle; g->custom_bb=bb; g->custom_puppet=puppet;
 }
@@ -218,7 +221,7 @@ void fnae_static_tick(FnaeGame* g){
 }
 
 /* Save helpers (Fusion INI group "Base"): load-modify-store so the
- * Challenge flags round-trip untouched until Customize uses them.
+ * Challenge flags round-trip alongside Night/Progress.
  * Store failures are silent by design (see save.h). */
 static void save_night(FnaeGame* g){
  FnaeSave s; fnae_save_load(&s);
@@ -231,6 +234,136 @@ static void save_progress(FnaeGame* g,int earned){
  if(earned>s.progress) s.progress=earned;
  g->progress=s.progress;
  fnae_save_store(&s);
+}
+/* Challenge completion (Frame 5 Final: Night 7 + challenge A/B>0 writes
+ * Challenge<A>=1). Persists the Left Challenge selector across the night
+ * like the original (its A/B still read nonzero on the Final frame). */
+static void save_challenge(FnaeGame* g,int ch){
+ if(ch<1||ch>3) return;
+ FnaeSave s; fnae_save_load(&s);
+ s.challenge[ch]=1;
+ fnae_save_store(&s);
+ g->custom_check[ch]=1;
+}
+
+/* Frame 8 Customize (Frame 8 Events.txt): columns x-ordered like the
+ * Layer #2 globals; boxes are the Select Box hotspots (top-left,
+ * 150x200 like the portraits). Keep in sync with draw_customize in
+ * visuals.c, which duplicates these rects for rendering. */
+static const int cust_box_x[7]={85,246,406,566,726,886,1046};
+static const int cust_box_y[7]={52,53,53,53,53,53,53};
+#define CUST_BOX_W 150
+#define CUST_BOX_H 200
+/* up arrow at select+(36,88), down arrow 2 at select+(36,152); the
+ * 50x25 triangle is drawn @1.3 scale (~65x33), center-anchored. */
+#define CUST_ARROW_W 65
+#define CUST_ARROW_H 33
+/* Buttons (top-left art): GO! 250x55, Set 20 / Add 1 235x55. */
+#define CUST_GO_X 1032
+#define CUST_GO_Y 616
+#define CUST_GO_W 250
+#define CUST_GO_H 55
+#define CUST_SET20_X 1039
+#define CUST_SET20_Y 469
+#define CUST_ADD1_X 1039
+#define CUST_ADD1_Y 541
+#define CUST_BTNW 235
+#define CUST_BTNH 55
+/* Challenge arrows flank the top bar (50x25 art, center-anchored). */
+#define CUST_LCH_X 88
+#define CUST_LCH_Y 16
+#define CUST_RCH_X 456
+#define CUST_RCH_Y 16
+#define CUST_CH_W 50
+#define CUST_CH_H 25
+
+static int* custom_ai_ptr(FnaeGame* g,int idx){
+ switch(idx){
+  case 0: return &g->custom_freddy;
+  case 1: return &g->custom_mangle;
+  case 2: return &g->custom_foxy;
+  case 3: return &g->custom_golden;
+  case 4: return &g->custom_springtrap;
+  case 5: return &g->custom_bb;
+  case 6: return &g->custom_puppet;
+  default: return NULL;
+ }
+}
+static void custom_clamp(FnaeGame* g,int idx){
+ int *p=custom_ai_ptr(g,idx); if(!p) return;
+ int max=(idx==6)?7:20;
+ if(*p<0)*p=0; if(*p>max)*p=max;
+}
+/* Challenge presets ([ Challenges ] group): switching challenge resets
+ * the board to 0, then the listed levels apply while B>0. */
+static void custom_preset(FnaeGame* g){
+ int *f=&g->custom_freddy,*x=&g->custom_foxy,*s=&g->custom_springtrap,
+     *o=&g->custom_golden,*m=&g->custom_mangle,*b=&g->custom_bb,*p=&g->custom_puppet;
+ *f=*x=*s=*o=*m=*b=*p=0;
+ if(g->custom_ch==1){*f=20;*x=5;*o=20;} /* The Classics */
+ else if(g->custom_ch==2){*o=10;*b=20;*s=20;*m=20;} /* Broken Down */
+ else if(g->custom_ch==3){*m=15;*o=20;*x=10;*f=15;*b=20;*s=8;*p=7;} /* Soy Sauce Edward */
+}
+static void custom_step(FnaeGame* g,int idx,int d){
+ int *p=custom_ai_ptr(g,idx); if(!p) return;
+ *p+=d; custom_clamp(g,idx);
+ g->custom_b=0; /* any manual edit clears the preset hold */
+ fnae_push_sound(g,FNAE_SND_TITLE_CHANGE); /* Change blip on ch #3 */
+}
+/* Hovered column from the pointer (-1 when over no Select Box). */
+static int custom_hover(FnaeGame* g){
+ for(int i=0;i<7;i++){
+  if(g->mouse_x>=cust_box_x[i]&&g->mouse_x<cust_box_x[i]+CUST_BOX_W&&
+     g->mouse_y>=cust_box_y[i]&&g->mouse_y<cust_box_y[i]+CUST_BOX_H) return i;
+ }
+ return -1;
+}
+static int custom_over_up(FnaeGame* g,int idx){
+ int cx=cust_box_x[idx]+36, cy=cust_box_y[idx]+88;
+ return g->mouse_x>=cx-CUST_ARROW_W/2&&g->mouse_x<cx+CUST_ARROW_W/2&&
+        g->mouse_y>=cy-CUST_ARROW_H/2&&g->mouse_y<cy+CUST_ARROW_H/2;
+}
+static int custom_over_down(FnaeGame* g,int idx){
+ int cx=cust_box_x[idx]+36, cy=cust_box_y[idx]+152;
+ return g->mouse_x>=cx-CUST_ARROW_W/2&&g->mouse_x<cx+CUST_ARROW_W/2&&
+        g->mouse_y>=cy-CUST_ARROW_H/2&&g->mouse_y<cy+CUST_ARROW_H/2;
+}
+static int custom_over_lch(FnaeGame* g){
+ return g->mouse_x>=CUST_LCH_X-CUST_CH_W/2&&g->mouse_x<CUST_LCH_X+CUST_CH_W/2&&
+        g->mouse_y>=CUST_LCH_Y-CUST_CH_H/2&&g->mouse_y<CUST_LCH_Y+CUST_CH_H/2;
+}
+static int custom_over_rch(FnaeGame* g){
+ return g->mouse_x>=CUST_RCH_X-CUST_CH_W/2&&g->mouse_x<CUST_RCH_X+CUST_CH_W/2&&
+        g->mouse_y>=CUST_RCH_Y-CUST_CH_H/2&&g->mouse_y<CUST_RCH_Y+CUST_CH_H/2;
+}
+/* Per-tick Customize update: hover selects, held arrows repeat every
+ * 0.10 s (Every 00''-10), presets hold while B>0. */
+static void update_customize(FnaeGame* g,float dt){
+ int hov=custom_hover(g);
+ if(hov>=0) g->custom_sel=hov;
+ if(g->custom_b>0) custom_preset(g);
+ if(g->mouse_down&&g->custom_arrow_dir!=0){
+  int s=g->custom_sel;
+  int over=(g->custom_arrow_dir>0)?custom_over_up(g,s):custom_over_down(g,s);
+  if(!over){g->custom_arrow_dir=0;g->custom_arrow_tick=0;return;}
+  g->custom_arrow_tick+=dt;
+  while(g->custom_arrow_tick>=0.10f){
+   g->custom_arrow_tick-=0.10f;
+   custom_step(g,s,g->custom_arrow_dir);
+  }
+ } else g->custom_arrow_tick=0;
+}
+/* Frame 8 entry (Start of Frame): AI globals persist across visits (only
+ * the challenge selector, hold state, background frame and the cached
+ * Check flags reset). */
+static void enter_customize(FnaeGame* g){
+ g->frame=FRAME_CUSTOMIZE;
+ g->custom_sel=0; g->custom_ch=0; g->custom_b=0;
+ g->custom_arrow_dir=0; g->custom_arrow_tick=0;
+ g->custom_cool=rnd(3);
+ g->custom_check[1]=g->custom_check[2]=g->custom_check[3]=0;
+ { FnaeSave s; if(fnae_save_load(&s)==0)
+   for(int i=1;i<=3;i++) g->custom_check[i]=s.challenge[i]?1:0; }
 }
 
 /* Frame 2 Title entry: re-read Night/Progress from the save like the
@@ -293,7 +426,7 @@ void fnae_start_night(FnaeGame* g,int night){
     g->ph_mangle_a=g->ph_mangle_b=g->ph_mangle_c=0;g->ph_annoy_a=g->ph_annoy_b=0;g->ph_bb_a=g->ph_bb_b=0;
     g->ph_prev_view=0;g->ph_prev_cam=0;
     g->ph_bb_scare=255;g->ph_bb_scare_on=0;g->ph_bb_scare_timer=0;
- g->golden_ai=0;g->foxy_ai=g->freddy_ai=g->springtrap_ai=g->ph_mangle_ai=g->ph_bb_ai=0;
+ g->golden_ai=0;g->foxy_ai=g->freddy_ai=g->springtrap_ai=g->ph_mangle_ai=g->ph_bb_ai=0;g->puppet_ai=0;
  difficulty(g,12);
  /* All-20 star reads the Customize-screen globals, not the nightly rolls. */
  g->all20=(g->custom_freddy==20&&g->custom_foxy==20&&g->custom_springtrap==20&&
@@ -362,6 +495,8 @@ void fnae_update(FnaeGame* g,float dt){
   if(g->which_timer>=2.0f) fnae_start_night(g,g->night);
   return;
  }
+ /* Frame 8 Customize runs its own tick (hover/arrows/presets). */
+ if(g->frame==FRAME_CUSTOMIZE){ update_customize(g,dt); return; }
   if(g->frame!=FRAME_NIGHT){
    /* Frame 4 Death animation (Frame 4 Events.txt): fullscreen red flashes
     * +7/tick to 255, then drains back to 0 (owner: a brief flash, not a
@@ -561,7 +696,11 @@ void fnae_update(FnaeGame* g,float dt){
 }
 
 void fnae_key(FnaeGame* g,int key){
- if(key==SDLK_ESCAPE){g->running=0;return;}
+ /* Fusion jumps Customize -> Title on Escape; everywhere else Escape quits. */
+ if(key==SDLK_ESCAPE){
+  if(g->frame==FRAME_CUSTOMIZE){enter_title(g);return;}
+  g->running=0;return;
+ }
  /* Frame 1: Upon pressing any key -> Title (Fusion has no click event here). */
  if(g->frame==FRAME_WARNING){enter_title(g);return;}
  if(g->frame==FRAME_TITLE){
@@ -569,24 +708,32 @@ void fnae_key(FnaeGame* g,int key){
     if(g->arrow==0)enter_newspaper(g);
     else if(g->arrow==1){g->six_or_seven=0;enter_which_night(g);}
    else if(g->arrow==2){g->six_or_seven=1;enter_which_night(g);}
-   else if(g->arrow==3){g->six_or_seven=2;g->frame=FRAME_CUSTOMIZE;}
+   else if(g->arrow==3){g->six_or_seven=2;enter_customize(g);}
   } else if(key==SDLK_UP || key=='w'){if(g->arrow>0){g->arrow--;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);} }
   else if(key==SDLK_DOWN || key=='s'){int max=g->progress+1;if(max>3)max=3;if(g->arrow<max){g->arrow++;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);} }
   if(g->arrow<0)g->arrow=0;{int max=g->progress+1;if(max>3)max=3;if(g->arrow>max)g->arrow=max;}return;
  }
  if(g->frame==FRAME_NEWSPAPER){if(key==SDLK_RETURN)enter_which_night(g);return;}
  if(g->frame==FRAME_WHICH_NIGHT){if(key==SDLK_RETURN)fnae_start_night(g,g->night);return;}
- if(g->frame==FRAME_CUSTOMIZE){if(key==SDLK_RETURN){g->six_or_seven=2;enter_which_night(g);}return;}
+ if(g->frame==FRAME_CUSTOMIZE){
+  if(key==SDLK_RETURN){g->custom_arrow_dir=0;g->six_or_seven=2;enter_which_night(g);}
+  return;
+ }
   if(g->frame==FRAME_6AM){if(key==SDLK_RETURN){
    /* Fusion: nights 6/7 or Night Story >= 5 -> Final, else next night -> Which Night. */
-   if(g->six_or_seven>0||g->night>=5){
-    /* Final-frame Progress writes: story night 5 -> 1, 6th -> 2,
-     * 7th/custom all-20 -> 3 (a plain night-7 clear writes nothing). */
-    if(g->six_or_seven==2){ if(g->all20) save_progress(g,3); }
-    else if(g->six_or_seven==1) save_progress(g,2);
-    else save_progress(g,1);
-    g->frame=FRAME_FINAL;
-   }
+    if(g->six_or_seven>0||g->night>=5){
+     /* Final-frame Progress writes: story night 5 -> 1, 6th -> 2,
+      * 7th/custom all-20 -> 3 (a plain night-7 clear writes nothing).
+      * A custom clear with an unmodified challenge preset (A/B>0)
+      * additionally writes Challenge<A>=1 (Frame 5 Final). */
+     if(g->six_or_seven==2){
+      if(g->all20) save_progress(g,3);
+      if(g->custom_ch>0&&g->custom_b>0) save_challenge(g,g->custom_ch);
+     }
+     else if(g->six_or_seven==1) save_progress(g,2);
+     else save_progress(g,1);
+     g->frame=FRAME_FINAL;
+    }
    else {g->night++;g->six_or_seven=0;save_night(g);enter_which_night(g);}
   }return;}
  if(g->frame==FRAME_DEATH){if(key==SDLK_RETURN)enter_title(g);return;}
@@ -621,11 +768,12 @@ void fnae_key_up(FnaeGame* g,int key){
 
 void fnae_press(FnaeGame* g,int x,int y){
  g->mouse_x=x; g->mouse_y=y;
- if(g->frame==FRAME_NIGHT)g->mouse_down=1;
+ if(g->frame==FRAME_NIGHT||g->frame==FRAME_CUSTOMIZE)g->mouse_down=1;
 }
 
 void fnae_release(FnaeGame* g){
  g->mouse_down=0;
+ g->custom_arrow_dir=0; g->custom_arrow_tick=0;
 }
 
 void fnae_click(FnaeGame* g,int x,int y){
@@ -634,11 +782,30 @@ void fnae_click(FnaeGame* g,int x,int y){
    if(x>=70&&x<=430&&y>=430&&y<495){g->arrow=0;enter_newspaper(g);fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);return;}
   if(x>=70&&x<=430&&y>=495&&y<560){g->arrow=1;g->six_or_seven=0;enter_which_night(g);fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);return;}
   if(x>=70&&x<=430&&y>=560&&y<625 && g->progress>0){g->arrow=2;g->six_or_seven=1;enter_which_night(g);fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);return;}
-  if(x>=70&&x<=430&&y>=625&&y<700 && g->progress>1){g->arrow=3;g->six_or_seven=2;g->frame=FRAME_CUSTOMIZE;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);return;}
-  return;
- }
+  if(x>=70&&x<=430&&y>=625&&y<700 && g->progress>1){g->arrow=3;g->six_or_seven=2;enter_customize(g);fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);return;}
+   return;
+  }
  /* Newspaper advances on any click, like the Fusion event. */
  if(g->frame==FRAME_NEWSPAPER){enter_which_night(g);return;}
+ /* Frame 8 Customize clicks (Frame 8 Events.txt): arrows hold-repeat
+  * (first step fires here, repeats in update_customize), Set 20 / Add 1
+  * bump the hovered column, challenge arrows swap presets, GO! starts. */
+ if(g->frame==FRAME_CUSTOMIZE){
+  int hov=custom_hover(g);
+  if(hov>=0) g->custom_sel=hov;
+  int s=g->custom_sel;
+  if(custom_over_up(g,s)){custom_step(g,s,+1);g->custom_arrow_dir=+1;g->custom_arrow_tick=0;return;}
+  if(custom_over_down(g,s)){custom_step(g,s,-1);g->custom_arrow_dir=-1;g->custom_arrow_tick=0;return;}
+  if(x>=CUST_SET20_X&&x<CUST_SET20_X+CUST_BTNW&&y>=CUST_SET20_Y&&y<CUST_SET20_Y+CUST_BTNH){
+   int *p=custom_ai_ptr(g,s); if(p){*p=20;custom_clamp(g,s);g->custom_b=0;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);}return;}
+  if(x>=CUST_ADD1_X&&x<CUST_ADD1_X+CUST_BTNW&&y>=CUST_ADD1_Y&&y<CUST_ADD1_Y+CUST_BTNH){
+   custom_step(g,s,+1);return;}
+  if(custom_over_lch(g)){g->custom_ch--;if(g->custom_ch<0)g->custom_ch=3;g->custom_b=1;custom_preset(g);g->custom_arrow_dir=0;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);return;}
+  if(custom_over_rch(g)){g->custom_ch++;if(g->custom_ch>3)g->custom_ch=0;g->custom_b=1;custom_preset(g);g->custom_arrow_dir=0;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);return;}
+  if(x>=CUST_GO_X&&x<CUST_GO_X+CUST_GO_W&&y>=CUST_GO_Y&&y<CUST_GO_Y+CUST_GO_H){
+   g->custom_arrow_dir=0;g->six_or_seven=2;enter_which_night(g);return;}
+  g->custom_arrow_dir=0;return;
+ }
  if(g->frame!=FRAME_NIGHT)return;
  /* Mute Call button (121x31 center-anchored at [100,55]): stops the
   * night's phone call while it plays. The button only shows then, so a
