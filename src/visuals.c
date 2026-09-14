@@ -741,10 +741,15 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             draw_world(r, v->door_left[left_door_frame], 119, 0, office_scroll, ox, oy);
             draw_world(r, v->door_right[right_door_frame], 1263, 0, office_scroll, ox, oy);
             /* GF Sit (Layer #2 office overlay, above the doors): reappears
-             * at [440,240] while GF Random == 1, invisible otherwise. A
-             * world object like the doors, so it pans with the office. */
+             * while GF Random == 1, invisible otherwise. A world object
+             * like the doors, so it pans with the office. Drawn before
+             * the desk, so the desk front/papers overlap its base: the
+             * bottle stands behind the desk, like the reference shot.
+             * Position is owner-matched to the reference (base planted on
+             * the desk surface among the paper balls), not the verbatim
+             * Objects.txt [440,240], which left it floating mid-air. */
             if (gf_sit)
-                draw_world(r, v->gf_sit, 440, 240, office_scroll, ox, oy);
+                draw_world(r, v->gf_sit, 528, 305, office_scroll, ox, oy);
             draw_world(r, v->desk, 266, 177, office_scroll, ox, oy);
             /* Ph Mangle Annoy (Layer #3, above the desk): rises from
              * [508,720] by Annoy A px while C==1, then sinks back once

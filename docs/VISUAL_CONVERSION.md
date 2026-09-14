@@ -32,8 +32,11 @@ These match `visuals_init` in `src/visuals.c`:
   is a 35x75 UI dot), Puppet `493.png`–`510.png`, Foxy `536.png`–`539.png`
   + `562.png`–`572.png`, Golden Freddy still `458.png`
 - `310.png` — Golden Freddy Sit office figure (red bottle close-up with
-  yellow highlights, 150x200, Layer #2 at [440,240], panning with the
-  office; drawn only while GF Random == 1, like the Fusion Reappear)
+  yellow highlights, 150x200, Layer #2, panning with the office; drawn
+  only while GF Random == 1, like the Fusion Reappear, and before the
+  desk so its base tucks behind the papers). Stands at [528,305] —
+  owner-matched to the reference shot (base on the desk surface); the
+  verbatim Objects.txt [440,240] left it floating mid-air.
 - `2.png` — GOOD JOB final screen
 - `520.png` — HELP WANTED newspaper screen (Frame 7, shown once on New Game
   before Which Night)
