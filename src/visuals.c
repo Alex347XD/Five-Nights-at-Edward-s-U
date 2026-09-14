@@ -93,6 +93,27 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->warn_off = load_id(r, IMG_WARNBADGE_OFF);
     v->warn_on = load_id(r, IMG_WARNBADGE_ON);
     v->mutecall = load_id(r, IMG_MUTECALL);
+    v->phmangle_cam = load_id(r, IMG_PHMANGLE_CAM);
+    v->phmangle_annoy = load_id(r, IMG_PHMANGLE_ANNOY);
+    v->phbb_cam = load_id(r, IMG_PHBB_CAM);
+    v->phbb_scare = load_id(r, IMG_PHBB_SCARE);
+    /* Jumpscare runs (see fnae_assets.h for the verified bank ranges).
+     * Freddy skips the 35x75 UI dot at 364: 353-363 + 365. Foxy is two
+     * runs back to back: 536-539 then 562-572. */
+    for (int i = 0; i < IMG_SCARE_SPRING_COUNT; ++i)
+        v->scare_spring[i] = load_id(r, IMG_SCARE_SPRING_FIRST + i);
+    for (int i = 0; i < 11; ++i)
+        v->scare_freddy[i] = load_id(r, IMG_SCARE_FREDDY_FIRST + i);
+    v->scare_freddy[11] = load_id(r, IMG_SCARE_FREDDY_LAST);
+    for (int i = 0; i < IMG_SCARE_PUPPET_COUNT; ++i)
+        v->scare_puppet[i] = load_id(r, IMG_SCARE_PUPPET_FIRST + i);
+    for (int i = 0; i < IMG_SCARE_FOXY_A_COUNT; ++i)
+        v->scare_foxy[i] = load_id(r, IMG_SCARE_FOXY_A_FIRST + i);
+    for (int i = 0; i < IMG_SCARE_FOXY_B_COUNT; ++i)
+        v->scare_foxy[IMG_SCARE_FOXY_A_COUNT + i] = load_id(r, IMG_SCARE_FOXY_B_FIRST + i);
+    v->scare_gf = load_id(r, IMG_SCARE_GF);
+    v->death_devil[0] = load_id(r, IMG_DEATH_DEVIL_A);
+    v->death_devil[1] = load_id(r, IMG_DEATH_DEVIL_B);
     v->title_new = load_id(r, IMG_TITLE_NEW);
     v->title_continue = load_id(r, IMG_TITLE_CONTINUE);
     v->title_6night = load_id(r, IMG_TITLE_6NIGHT);
@@ -101,8 +122,7 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->title_star = load_id(r, IMG_TITLE_STAR);
     /* Template Title is the "Five Nights at Edward's" text card (464,
      * 266x271) at the Template Title position (64,96). The 600x507 devil
-     *  cards (233/460, sad/wide eyes) are unassigned animation frames —
-     *  owner to confirm which object/sequence they belong to. */
+     *  cards (233/460) are the Frame 4 Death Anim backdrop cycle. */
     v->title_template = load_id(r, IMG_TITLE_TEXT);
     for (int i = 0; i < IMG_NIGHT_COUNT; ++i)
         v->title_nights[i] = load_id(r, IMG_NIGHT_FIRST + i);
@@ -153,6 +173,21 @@ void visuals_free(FnaeVisuals *v) {
     destroy_texture(&v->warn_off);
     destroy_texture(&v->warn_on);
     destroy_texture(&v->mutecall);
+    destroy_texture(&v->phmangle_cam);
+    destroy_texture(&v->phmangle_annoy);
+    destroy_texture(&v->phbb_cam);
+    destroy_texture(&v->phbb_scare);
+    for (int i = 0; i < IMG_SCARE_SPRING_COUNT; ++i)
+        destroy_texture(&v->scare_spring[i]);
+    for (int i = 0; i < 12; ++i)
+        destroy_texture(&v->scare_freddy[i]);
+    for (int i = 0; i < IMG_SCARE_PUPPET_COUNT; ++i)
+        destroy_texture(&v->scare_puppet[i]);
+    for (int i = 0; i < IMG_SCARE_FOXY_A_COUNT + IMG_SCARE_FOXY_B_COUNT; ++i)
+        destroy_texture(&v->scare_foxy[i]);
+    destroy_texture(&v->scare_gf);
+    destroy_texture(&v->death_devil[0]);
+    destroy_texture(&v->death_devil[1]);
     destroy_texture(&v->title_new);
     destroy_texture(&v->title_continue);
     destroy_texture(&v->title_6night);
@@ -523,6 +558,26 @@ static void draw_warning(SDL_Renderer *r, FnaeVisuals *v,
     visuals_draw_anchored(r, t, x, y, FNAE_ANCHOR_CENTER);
 }
 
+/* Fullscreen overlay from 480x270 art at [0,0] with a Fusion scale
+ * (phantoms 2.7 = 1296x729, jumpscares 2.8 = 1344x756, both slightly
+ * overflowing the 1280x720 view right and bottom, like the original).
+ * Baked per-pixel alpha blends the face over the scene; fading overlays
+ * additionally fade via the global alpha 0->255. */
+static void draw_phantom_cam(SDL_Renderer *r, SDL_Texture *t, int alpha,
+                             int ox, int oy, float scale) {
+    if (!t || alpha <= 0) return;
+    int w, h;
+    SDL_QueryTexture(t, NULL, NULL, &w, &h);
+    SDL_Rect d = {ox, oy, (int)(w * scale), (int)(h * scale)};
+    if (alpha < 255) {
+        SDL_SetTextureBlendMode(t, SDL_BLENDMODE_BLEND);
+        SDL_SetTextureAlphaMod(t, (Uint8)alpha);
+    }
+    SDL_RenderCopy(r, t, NULL, &d);
+    if (alpha < 255)
+        SDL_SetTextureAlphaMod(t, 255);
+}
+
 /* Frame 3 "[ Music Box ]" UI (Cam 04 view only), Layer #5 order: crank
  * box at [569,497] (Stopped released, Animation 12 held), Wind Text on
  * top of it ([497,475] top-left, inside the 156x65 box), Click & Hold
@@ -555,7 +610,11 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                      int death, int music, int cam_scroll, int usage,
                      int stand, int lure_area, int lure_cam,
                      int lure_cd, float lure_cd_timer,
-                     int winding, int warning, int mute_visible) {
+                     int winding, int warning, int mute_visible,
+                     int ph_mangle_cam, int ph_bb_cam,
+                     int ph_bb_scare, int ph_bb_scare_on, int ph_annoy_a,
+                     int death_addup, int death_red, int death_rip_a,
+                     int death_ticks) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
@@ -664,6 +723,12 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             draw_world(r, v->door_left[left_door_frame], 119, 0, office_scroll, ox, oy);
             draw_world(r, v->door_right[right_door_frame], 1263, 0, office_scroll, ox, oy);
             draw_world(r, v->desk, 266, 177, office_scroll, ox, oy);
+            /* Ph Mangle Annoy (Layer #3, above the desk): rises from
+             * [508,720] by Annoy A px while C==1, then sinks back once
+             * B>=7. A world object, so it pans with the office scroll. */
+            if (ph_annoy_a > 0)
+                draw_world(r, v->phmangle_annoy, 508, 720 - ph_annoy_a,
+                           office_scroll, ox, oy);
             /* Low-music badge for the office screen (Warning out of cam). */
             draw_warning(r, v, warning, static_frame, 1228, 672);
             if (mute_visible)
@@ -673,12 +738,64 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             int sel = camera < 1 ? 1 : camera > IMG_CAMBTN_COUNT ? IMG_CAMBTN_COUNT : camera;
             draw_night_hud(r, sel, 0, night, hour, power, usage);
         }
+        /* Layer #6 top overlays (Phantom Mangle / Phantom BB camera haunts
+         * + the BB scare fade): above feed, office, and camera UI alike,
+         * in Objects.txt layer order. The camera haunts show while A==1
+         * (cameras-up phase); the scare fades in over the office after
+         * the B>80 force-down (gated on the first trigger in core). */
+        if (ph_mangle_cam) draw_phantom_cam(r, v->phmangle_cam, 255, ox, oy, 2.7f);
+        if (ph_bb_cam) draw_phantom_cam(r, v->phbb_cam, 255, ox, oy, 2.7f);
+        if (ph_bb_scare_on && ph_bb_scare > 0)
+            draw_phantom_cam(r, v->phbb_scare, ph_bb_scare, ox, oy, 2.7f);
+        /* Jumpscare (Frame 3 "[ Jumpscares ]"): created at (0,0) x2.8 on
+         * death, fullscreen over the shaking office for the 60-tick wait.
+         * Frames loop at 20fps (every 3rd death_addup tick); GF is a still.
+         * Sounds (stop-all + ch #2 sample) already fire from audio.c. */
+        if (death > 0) {
+            SDL_Texture **tab = NULL;
+            int n = 0;
+            switch (death) {
+            case 1: tab = v->scare_puppet; n = IMG_SCARE_PUPPET_COUNT; break;
+            case 2: tab = v->scare_freddy; n = 12; break;
+            case 3: tab = v->scare_foxy; n = IMG_SCARE_FOXY_A_COUNT + IMG_SCARE_FOXY_B_COUNT; break;
+            case 4: tab = v->scare_spring; n = IMG_SCARE_SPRING_COUNT; break;
+            case 5: tab = &v->scare_gf; n = 1; break;
+            default: break;
+            }
+            if (tab && n > 0) {
+                int tick = death_addup < 0 ? 0 : death_addup;
+                SDL_Texture *t = tab[(tick / 3) % n];
+                if (t) draw_phantom_cam(r, t, 255, ox, oy, 2.8f);
+            }
+        }
     } else if (frame == 6) {
         draw_which_night(r, v, night);
     } else if (frame == 9) {
         fit_center(r, v->six_am);
     } else if (frame == 4) {
-        fit_center(r, v->death);
+        /* Frame 4 Death: devil-card Death Anim backdrop cycling at 20fps,
+         * center-anchored on its [630,390] hotspot; RIP GAME OVER text
+         * (1.png) center-anchored at [640,650] fading per core; plain red
+         * fullscreen rect on top (Layer #2 Red Fade In above Layer #1). */
+        SDL_Texture *devil = v->death_devil[(death_ticks / 3) & 1];
+        if (devil) visuals_draw_anchored(r, devil, 630, 390, FNAE_ANCHOR_CENTER);
+        if (v->death && death_rip_a > 0) {
+            int ra = death_rip_a > 255 ? 255 : death_rip_a;
+            SDL_SetTextureBlendMode(v->death, SDL_BLENDMODE_BLEND);
+            SDL_SetTextureAlphaMod(v->death, (Uint8)ra);
+            visuals_draw_anchored(r, v->death, 640, 650, FNAE_ANCHOR_CENTER);
+            SDL_SetTextureAlphaMod(v->death, 255);
+        }
+        if (death_red > 0) {
+            int ra = death_red > 255 ? 255 : death_red;
+            int rw, rh;
+            SDL_GetRendererOutputSize(r, &rw, &rh);
+            SDL_Rect d = {0, 0, rw, rh};
+            SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderDrawColor(r, 255, 0, 0, (Uint8)ra);
+            SDL_RenderFillRect(r, &d);
+            SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_NONE);
+        }
     } else if (frame == 5) {
         fit_center(r, v->final_screen);
     } else if (frame == 7) {

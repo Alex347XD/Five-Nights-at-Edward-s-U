@@ -20,7 +20,16 @@ These match `visuals_init` in `src/visuals.c`:
   alpha 100+Random(100), cameras run 150+Random(50) every 0.08 s while the
   feed is live, 0 on signal loss)
 - `4.png` — 6 AM screen
-- `1.png` — death screen
+- `1.png` — RIP Text GAME OVER (479x54, Frame 4 Death, center-anchored at
+  [640,650], fading per the RIP A/B state; the old static death screen is
+  replaced by the animated sequence)
+- `233.png` / `460.png` — Death Anim devil-card backdrop (600x507 each,
+  cycling at 20fps, center-anchored at [630,390])
+- Jumpscare runs (480x270 each, drawn at (0,0) x2.8 fullscreen over the
+  shaking office during the death wait, looping at 20fps): Springtrap
+  `314.png`–`331.png`, Freddy `353.png`–`363.png` + `365.png` (`364.png`
+  is a 35x75 UI dot), Puppet `493.png`–`510.png`, Foxy `536.png`–`539.png`
+  + `562.png`–`572.png`, Golden Freddy still `458.png`
 - `2.png` — GOOD JOB final screen
 - `520.png` — HELP WANTED newspaper screen (Frame 7, shown once on New Game
   before Which Night)
@@ -62,6 +71,17 @@ These match `visuals_init` in `src/visuals.c`:
 - `415.png` — Mute Call button ("MUTE CALL", 121x31, center-anchored at
   [100,55] on office and camera screens while the night's call plays;
   clicking it stops ch #16)
+- `405.png` — Phantom Mangle camera overlay (gray cracked-rock face,
+  480x270 at [0,0] with the Fusion scale 2.7 ≈ fullscreen, Layer #6 top,
+  above feed/office/UI; shown while Ph Mangle Camera A==1)
+- `380.png` — Phantom Mangle Annoy office figure (gray cracked-rock,
+  400x225, Layer #3 above the desk; rises from [508,720] by Annoy A px
+  while C==1, sinks back once B>=7; pans with the office scroll)
+- `352.png` — Phantom BB camera overlay (gray grinning top-hat face,
+  480x270 x2.7, Layer #6 top; shown while Ph BB Camera A==1)
+- `349.png` — Phantom BB Scare fade (same character, 480x270 x2.7,
+  Layer #6 top; alpha 0→255 (+7/tick) after the 80-tick force-down,
+  over the office)
 - White Frame Camera ([-1,0], camera-up only) — no mapped PNG; drawn as a
   2px hollow white feed border inset 8px from the screen edge
 - Night HUD (time of day [1186,65] + am [1200,37], Which Night? [759,85]

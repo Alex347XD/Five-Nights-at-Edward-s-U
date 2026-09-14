@@ -29,7 +29,7 @@ The title screen now uses the correct Frame 2 asset mapping:
 - `232.png` — Star / Star 2 / Star 3
 - `246.png`–`252.png` — The Night counter frames
 
-The previous incorrect mapping of `233.png` has been removed. `233.png` is a death-animation frame.
+The previous incorrect mapping of `233.png` has been removed. `233.png` / `460.png` are the devil-card Death Anim backdrop cycle (Frame 4, [630,390]).
 
 The menu arrow (`245.png`) is placed at the Fusion offsets from Frame 2
 Events.txt ((-10,+16/17/19/19) from each item's top-left), adjusted for the
@@ -71,7 +71,9 @@ termination notice, not the newspaper.)
   mask overlay) removed; live state (camera name, doors, mask, music) stays
   visible in the window title
 - Camera static follows the Fusion cadence (150+Random(50) every 0.08 s,
-  0 on signal loss); the scene shakes during the death wait
+  0 on signal loss); the scene shakes during the death wait, with the
+  killer's jumpscare fullscreen over it (see `CONVERTED_LOGIC.md`), then
+  the animated Death frame (devil cards, red fade, GAME OVER, auto-Title)
 - Camera feeds auto-pan left <-> right on the Camera Center Object drift
   (+/-1 px per tick, clamped to the feed image ends so no black bars show),
   drawn cover-cropped so the full 1600px feed scrolls through the view
@@ -117,6 +119,11 @@ termination notice, not the newspaper.)
 - Phone calls play per night with a clickable MUTE CALL button (`415.png`
   at [100,55], visible on office and camera screens while the call plays,
   stops it on click).
+- Phantoms render: Phantom Mangle's camera face (`405.png` x2.7, Layer #6
+  top) and office Annoy (`380.png` rising from [508,720], Layer #3 above
+  the desk, panning with the office), Phantom BB's camera face (`352.png`
+  x2.7, Layer #6 top, dismissed by clicking a cam button) and post-scare
+  fade (`349.png` x2.7, alpha 0→255 after the 80-tick force-down).
 - Night HUD renders on all Frame 3 screens (office and camera views):
   "12 AM"-style clock top-right (time of day [1186,65] + am [1200,37]),
   "NIGHT n" under it (Which Night? [759,85] + The Night [1245,101]),

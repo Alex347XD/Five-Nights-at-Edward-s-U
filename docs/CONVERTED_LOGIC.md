@@ -82,7 +82,18 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
 - Phantom Mangle forces the camera down after its 60-tick camera state, then
   runs the office annoy (A 0→224 while B==0, B+1 every 1 s at A>=224, A→0
   once B>=7, then C clears); ch17 stays silent through the camera phase so
-  cam open/close keeps its stereo-cassette flip.
+  cam open/close keeps its stereo-cassette flip. Both phantoms roll
+  Alterable A once per camera open/switch (stable overlay while viewing,
+  no per-tick re-roll); leaving the cameras clears A/B silently.
+- Phantom BB camera render state: the camera overlay (`352.png` x2.7,
+  Layer #6 top) shows while A==1 on any Frame 3 screen; clicking any cam
+  button while the view is up dismisses it (A/B = 0, Fusion "User clicks
+  with left button on CAM 01"). The B>80 event additionally resets the
+  Scare overlay alpha to 0, which then fades +7/tick to 255 with no view
+  gate (`349.png` x2.7, Layer #6 top, gated on the first trigger so night
+  start — where the Fusion initial A=255 has unrecoverable visibility —
+  draws nothing). The Mangle Annoy (`380.png`, Layer #3 above the desk)
+  draws at (508 − scroll, 720 − A) while A>0.
 - Golden Freddy uses the exported random/death-addup logic.
 - Nights 1-7 difficulty values and hourly changes are translated from the event text.
 - Night 7 loads AI from the Customize-screen globals (defaults 0, Puppet 7;
@@ -108,6 +119,16 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
 - Closed doors swing open on power loss; any death forces the cameras down,
   the mask off, and the flashlight off; the night scene shakes +/-5 during
   the death wait (GF +/-8).
+- Jumpscares (Frame 3 "[ Jumpscares ]"): `death==N` spawns the character's
+  art at (0,0) x2.8 fullscreen over the shaking office for the 60-tick
+  wait (runs: Springtrap 314-331, Freddy 353-363+365, Puppet 493-510,
+  Foxy 536-539+562-572, GF still 458; frames loop at 20fps). Death Addup
+  >= 60 jumps to the Death frame.
+- Death frame (Frame 4): Red Fade In +7/tick to 255, then RIP Text fades
+  -7/tick out (B==0), waits the 1 s gates (B 0->1->2), fades +7/tick back
+  in (B>1), then jumps to Title; the devil-card Death Anim (233/460)
+  cycles underneath at [630,390] and the goblin loops ch #32 until the
+  Title entry stops it.
 - Doorway-figure flags (Freddy at left door, Foxy at right, Springtrap on its
   viewed cam) are exposed for the renderer.
  - Audio (`src/audio.c`, mixer channels = Fusion Sound channels): night entry

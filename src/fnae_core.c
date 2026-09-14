@@ -1,6 +1,7 @@
 #include "fnae_core.h"
 #include "fnae_assets.h"
 #include <SDL_keycode.h>
+#include <stdio.h> /* TMP-DEBUG */
 #include <stdlib.h>
 #include <string.h>
 
@@ -78,15 +79,44 @@ static void ai_move(FnaeGame* g){
 }
 
 static void update_phantoms(FnaeGame* g,float dt){
- if(g->view>0 && g->ph_bb_ai>0 && g->ph_bb_a==0) g->ph_bb_a=rnd(23-g->ph_bb_ai);
+  /* Phantom rolls are edge-triggered on cam open (view 0 -> >0) or cam
+   * switch (camera index changed while viewing). The overlay then stays
+   * stable while viewing instead of flickering: re-rolling every tick
+   * re-randomized A 60x/sec. */
+  int cam_opened=(g->view>0 && g->ph_prev_view==0);
+  int cam_switched=(g->view>0 && g->ph_prev_view>0 && g->camera!=g->ph_prev_cam);
+  int cam_edge=(cam_opened||cam_switched);
+  if(cam_edge && g->ph_bb_ai>0) g->ph_bb_a=rnd(23-g->ph_bb_ai);
  if(g->view==0) { g->ph_bb_a=0; g->ph_bb_b=0; }
- /* B>80 completion (Fusion plays scream3 on ch #18 here): leaving the
-  * cameras clears A/B silently above, so only this path screams. */
- if(g->ph_bb_a==1){g->ph_bb_b++; if(g->ph_bb_b>80){g->ph_bb_a=0;g->ph_bb_b=0;g->force_down=5;fnae_push_sound(g,FNAE_SND_PHBB);}}
- if(g->view>0 && g->ph_mangle_ai>0 && g->ph_mangle_c==0) g->ph_mangle_a=rnd(23-g->ph_mangle_ai);
+  /* B>80 completion (Fusion plays scream3 on ch #18 here): leaving the
+   * cameras clears A/B silently above, so only this path screams.
+   * The B>80 event also resets the Scare overlay alpha to 0 (it then
+   * fades back in via +7/tick below). */
+   if(g->ph_bb_a==1){g->ph_bb_b++; if(g->ph_bb_b>80){g->ph_bb_a=0;g->ph_bb_b=0;g->ph_bb_scare=0;g->ph_bb_scare_on=1;g->ph_bb_scare_timer=0;g->force_down=5;fnae_push_sound(g,FNAE_SND_PHBB);}}
+   /* Ph BB Scare alpha: +7 per tick while <255, with no view gate (mirrors
+    * the Fusion event). Night start parks it at 255 (the Fusion initial
+    * Alterable A) so the fade only ever runs after a B>80 trigger; the
+    * renderer additionally gates on ph_bb_scare_on so nothing draws before
+    * the first trigger (Fusion visibility at frame start is unrecoverable
+    * from the text dump, and an always-on overlay is clearly wrong). */
+   if(g->ph_bb_scare<255){g->ph_bb_scare+=7;if(g->ph_bb_scare>255)g->ph_bb_scare=255;}
+   /* Jumpscare clears: the Fusion dump never resets the Scare, but the
+    * original jumpscare flashes then goes away, so hold ~1.5 s at full
+    * opacity then clear the gate (alpha stays parked at 255 like night
+    * start, drawing nothing until the next trigger). */
+   if(g->ph_bb_scare_on && g->ph_bb_scare>=255){
+    g->ph_bb_scare_timer+=dt;
+    if(g->ph_bb_scare_timer>=1.5f){g->ph_bb_scare_on=0;g->ph_bb_scare_timer=0;}
+   }
+  /* Phantom Mangle roll shares the same cam-open/switch edge, gated on
+   * C==0 (no haunt while the office annoy runs). Stays stable (A==1)
+   * while viewing; B>60 below then forces the cameras down. */
+  if(cam_edge && g->ph_mangle_ai>0 && g->ph_mangle_c==0)
+   g->ph_mangle_a=rnd(23-g->ph_mangle_ai);
  /* Fusion resets Camera B alongside A while the cameras are down
   * (A==0 + B<>0 -> B=0), so a stale count never shortens the next haunt. */
- if(g->view==0) { g->ph_mangle_a=0; g->ph_mangle_b=0; }
+  if(g->view==0) { g->ph_mangle_a=0; g->ph_mangle_b=0; }
+  g->ph_prev_view=g->view; g->ph_prev_cam=g->camera;
  if(g->ph_mangle_a==1){g->ph_mangle_b++; if(g->ph_mangle_b>60){g->ph_mangle_c=1;g->ph_mangle_a=0;g->ph_mangle_b=0;g->force_down=5;}}
  /* Office annoy ([ Phantom Mangle ] Annoy events): once C==1 the Annoy
   * descends (A 0->224 while B==0), lingers (B+1 every 1s at A>=224),
@@ -97,11 +127,12 @@ static void update_phantoms(FnaeGame* g,float dt){
   if(g->ph_annoy_b>=7){
    if(g->ph_annoy_a>0) g->ph_annoy_a--;
    else { g->ph_annoy_a=0; g->ph_annoy_b=0; g->ph_mangle_c=0; }
-  } else if(g->ph_annoy_a>=224){
-   g->phantom_timer+=dt;
-   if(g->phantom_timer>=1.0f){g->phantom_timer=0;g->ph_annoy_b++;}
-  } else g->ph_annoy_a++;
- }
+   } else if(g->ph_annoy_a>=224){
+    g->phantom_timer+=dt;
+    if(g->phantom_timer>=1.0f){g->phantom_timer=0;g->ph_annoy_b++;}
+   } else g->ph_annoy_a++;
+  }
+ { static long tdbg=0; if(++tdbg%120==0) printf("TMP-PH t=%ld view=%d bbai=%d a=%d b=%d sc=%d on=%d mai=%d ma=%d mb=%d mc=%d anA=%d anB=%d\n",tdbg,g->view,g->ph_bb_ai,g->ph_bb_a,g->ph_bb_b,g->ph_bb_scare,g->ph_bb_scare_on,g->ph_mangle_ai,g->ph_mangle_a,g->ph_mangle_b,g->ph_mangle_c,g->ph_annoy_a,g->ph_annoy_b); }
 }
 
 static void update_gf(FnaeGame* g){
@@ -190,6 +221,7 @@ void fnae_start_night(FnaeGame* g,int night){
  memset(g->hour_events,0,sizeof(g->hour_events));
  g->night=night<1?1:(night>7?7:night); g->frame=FRAME_NIGHT; g->time_of_day=12; g->time_to_hour=0;
  g->death=0; g->death_addup=0; g->gf_random=0; g->gf_death_addup=0;
+ g->death_red=0; g->death_rip_a=255; g->death_rip_b=0; g->death_timer=0; g->death_ticks=0;
  g->cam_anim=CAM_DOWN; g->mask_anim=MASK_UP; g->prevent_flip=0; g->force_down=0; g->view=0; g->camera=1;
   g->left_door=0; g->right_door=0; g->flashlight=0; g->hidden_power=10000; g->power_left=1; g->power_tick=0;
   g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2;
@@ -209,7 +241,9 @@ void fnae_start_night(FnaeGame* g,int night){
  g->cam_anim_timer=g->mask_anim_timer=g->left_door_timer=g->right_door_timer=0;
  g->ai_timer=g->power_out_timer=g->springtrap_timer=g->phantom_timer=0;
  ai_reset(&g->foxy,0,2); ai_reset(&g->freddy,0,1); g->springtrap_a=0;g->springtrap_b=0;
-  g->ph_mangle_a=g->ph_mangle_b=g->ph_mangle_c=0;g->ph_annoy_a=g->ph_annoy_b=0;g->ph_bb_a=g->ph_bb_b=0;
+    g->ph_mangle_a=g->ph_mangle_b=g->ph_mangle_c=0;g->ph_annoy_a=g->ph_annoy_b=0;g->ph_bb_a=g->ph_bb_b=0;
+    g->ph_prev_view=0;g->ph_prev_cam=0;
+    g->ph_bb_scare=255;g->ph_bb_scare_on=0;g->ph_bb_scare_timer=0;
  g->golden_ai=0;g->foxy_ai=g->freddy_ai=g->springtrap_ai=g->ph_mangle_ai=g->ph_bb_ai=0;
  difficulty(g,12);
  /* All-20 star reads the Customize-screen globals, not the nightly rolls. */
@@ -279,9 +313,28 @@ void fnae_update(FnaeGame* g,float dt){
   if(g->which_timer>=2.0f) fnae_start_night(g,g->night);
   return;
  }
- if(g->frame!=FRAME_NIGHT)return;
+ if(g->frame!=FRAME_NIGHT){
+  /* Frame 4 Death animation (Frame 4 Events.txt): Red Fade In +7/tick
+   * to 255; once opaque the RIP Text fades -7/tick out (B==0), waits the
+   * 1 s gates (B 0->1->2), fades +7/tick back in (B>1), then jumps to
+   * Title (which stops the ch #32 goblin loop via frame entry). */
+  if(g->frame==FRAME_DEATH){
+   if(g->death_red<255){g->death_red+=7;if(g->death_red>255)g->death_red=255;}
+   else {
+    if(g->death_rip_a>0 && g->death_rip_b==0){g->death_rip_a-=7;if(g->death_rip_a<0)g->death_rip_a=0;}
+    else if(g->death_rip_a<255 && g->death_rip_b>1){g->death_rip_a+=7;if(g->death_rip_a>255)g->death_rip_a=255;}
+    if(g->death_rip_b>0 && g->death_rip_a>=255){g->frame=FRAME_TITLE;return;}
+    if(g->death_rip_a<=0){
+     g->death_timer+=dt;
+     if(g->death_timer>=1.0f){g->death_timer=0;if(g->death_rip_b==0)g->death_rip_b=1;else if(g->death_rip_b==1)g->death_rip_b=2;}
+    } else g->death_timer=0;
+   }
+   g->death_ticks++;
+  }
+  return;
+ }
  update_cam_scroll(g,dt);
- if(g->death){g->death_addup++;if(g->death_addup>=60)g->frame=FRAME_DEATH;return;}
+ if(g->death){g->death_addup++;if(g->death_addup>=60){g->frame=FRAME_DEATH;g->death_red=0;g->death_rip_a=255;g->death_rip_b=0;g->death_timer=0;g->death_ticks=0;}return;}
  update_office_pan(g,dt);
 
  /* Fusion's transition objects have visible animation phases. */
@@ -339,8 +392,19 @@ void fnae_update(FnaeGame* g,float dt){
    g->power_out_timer+=dt;
    if(g->power_out_alpha<=0 && g->death==0 && g->power_out_timer>=5){g->power_out_timer=0;enter_death(g,rnd(4));}
   }
-  if(g->death) g->flashlight=0;
-  if(g->force_down>0)g->force_down--;
+   if(g->death) g->flashlight=0;
+   /* [ Force Down ] (Fusion: Sub 1, then while >0 force Anim 2 -> 3).
+    * This is what actually drops the cameras on the phantom scares
+    * (BB B>80, Mangle B>60). View clears immediately like the Fusion
+    * Anim==3 event, and the down cassette plays. */
+   if(g->force_down>0){
+    g->force_down--;
+    if(g->force_down>0 && g->cam_anim==CAM_UP){
+     g->cam_anim=CAM_DOWN_ANIM;g->cam_anim_timer=0;
+     g->view=0;g->camera_up_check=0;
+     fnae_push_sound(g,FNAE_SND_CAM_DOWN);
+    }
+   }
 
   g->ai_timer+=dt;
  if(g->ai_timer>=5){g->ai_timer-=5;ai_move(g);
@@ -499,7 +563,12 @@ void fnae_click(FnaeGame* g,int x,int y){
      static const int btn_x[4]={1016,1179,953,1161};
      static const int btn_y[4]={307,371,469,505};
     for(int i=0;i<4;i++){
-     if(x>=btn_x[i]-30&&x<btn_x[i]+30&&y>=btn_y[i]-20&&y<btn_y[i]+20){g->camera=i+1;break;}
+     if(x>=btn_x[i]-30&&x<btn_x[i]+30&&y>=btn_y[i]-20&&y<btn_y[i]+20){
+      g->camera=i+1;
+      /* Clicking a cam button dismisses Phantom BB (Fusion "User clicks
+       * with left button on CAM 01 + View > 0 -> A/B = 0"). */
+      if(g->view>0){g->ph_bb_a=0;g->ph_bb_b=0;}
+      break;}
     }
      /* Audio-lure button ("Lure" 128x64 at [744,296], center-anchored
       * like the cam buttons): clicking it lures like the E key, except

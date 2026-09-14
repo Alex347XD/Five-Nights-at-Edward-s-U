@@ -201,7 +201,16 @@ int main(int argc, char *argv[]) {
             game.lure_cd_timer,
             game.music_winding,
             game.warning,
-            fnae_audio_call_playing(&audio)
+            fnae_audio_call_playing(&audio),
+            game.ph_mangle_a == 1,
+            game.ph_bb_a == 1,
+            game.ph_bb_scare,
+            game.ph_bb_scare_on,
+            game.ph_annoy_a,
+            game.death_addup,
+            game.death_red,
+            game.death_rip_a,
+            game.death_ticks
         );
 
         SDL_RenderPresent(r);

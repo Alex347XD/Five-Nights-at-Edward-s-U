@@ -31,14 +31,22 @@ typedef struct {
  int time_of_day; float time_to_hour;
  float which_timer; /* Frame 6 auto-advance: Every 02'' -> Night */
  float warn_timer; /* Frame 1 auto-advance: Timer equals 05'' -> Title */
- int death; int death_addup; int gf_random; int gf_death_addup;
+  int death; int death_addup; int gf_random; int gf_death_addup;
+  /* Frame 4 Death animation (Frame 4 Events.txt): Red Fade In alpha 0-255
+   * (+7/tick), RIP Text alpha (starts 255, -7/tick out then +7/tick back
+   * once B>1) + B state with 1 s gates, tick counter for the Death Anim
+   * devil-card cycle. Initialized on the Night -> Death transition. */
+  int death_red, death_rip_a, death_rip_b, death_ticks; float death_timer;
  int camera; CamAnim cam_anim; MaskAnim mask_anim; int prevent_flip; int force_down; int view;
  int left_door, right_door; int flashlight; int pc_mobile;
  int hidden_power; int power_left; float power_tick;
  int movement_out; float movement_timer; int camera_up_check;
  int foxy_stand; int freddy_door;
  FnaeAI foxy, freddy; int springtrap_a, springtrap_b; int springtrap_alive;
-  int ph_mangle_a, ph_mangle_b, ph_mangle_c; int ph_bb_a, ph_bb_b;
+    int ph_mangle_a, ph_mangle_b, ph_mangle_c; int ph_bb_a, ph_bb_b;
+    int ph_prev_view, ph_prev_cam; /* edge detect: phantoms roll once on cam open/switch, stable while viewing */
+   int ph_bb_scare, ph_bb_scare_on; /* Scare overlay alpha 0-255 (+7/tick while <255, no gate) + first-trigger gate (see update_phantoms) */
+   float ph_bb_scare_timer; /* hold at full opacity before the jumpscare clears */
   int ph_annoy_a, ph_annoy_b; /* office-annoy descent (A 0-224) / linger (B 0-7) once C==1 */
  int golden_ai, foxy_ai, freddy_ai, springtrap_ai, ph_mangle_ai, ph_bb_ai;
    int music_left; int music_winding; float music_tick;
