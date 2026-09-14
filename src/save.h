@@ -3,9 +3,9 @@
 /* Native replacement for the Fusion INI object + savestring pair.
  *
  * Fusion names the file from the savestring ("Edward") under group
- * "Base" with items Night / Progress / Challenge<N>. The native file
- * is "Edward.ini" in the working directory (same place assets/ resolves
- * from), written in plain INI form:
+ * "Base" with items Night / Progress / Challenge<N>. The native file is
+ * Edward inside %APPDATA%\MMFApplications (the classic MMF save
+ * location), written in plain INI form:
  *
  *   [Base]
  *   Night=1
@@ -20,8 +20,13 @@
  *   reads them yet (Customize UI is unmapped), but they round-trip so
  *   the file keeps whatever a future pass stores.
  *
+ * The MMFApplications folder is created on first store. When %APPDATA%
+ * is unavailable (non-Windows / future ports), the file falls back to
+ * the working directory. A leftover working-directory Edward from
+ * earlier builds is imported once (new location wins when both exist).
+ *
  * All values are clamped on load; a missing/corrupt file yields defaults.
- * Store failures are silent (never block gameplay). C11, no dependencies,
+ * Store failures are silent (never block gameplay). C11 plus mkdir only,
  * so a future port (Wii U) can swap the file backend in one place.
  */
 
@@ -32,10 +37,11 @@ typedef struct {
 } FnaeSave;
 
 void fnae_save_default(FnaeSave *s);
-/* Loads Edward.ini into s (defaults first). Returns 0 on success,
- * nonzero when the file is missing or unparsable (s keeps defaults). */
+/* Loads the save into s (defaults first). Returns 0 on success,
+ * nonzero when no readable file exists (s keeps defaults). */
 int fnae_save_load(FnaeSave *s);
-/* Writes s to Edward.ini. Returns 0 on success, nonzero on IO error. */
+/* Writes s to the save file. Returns 0 on success, nonzero on IO error. */
 int fnae_save_store(const FnaeSave *s);
-/* Save filename ("Edward.ini", working-directory relative). */
+/* Resolved save filename (%APPDATA%\MMFApplications\Edward, or a
+ * working-directory Edward fallback). Pointer stays valid. */
 const char *fnae_save_path(void);

@@ -171,7 +171,7 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   (`415.png` at [100,55], visible while ch #16 plays) stops the call on
   click via `FNAE_SND_CALL_STOP`.
 - Saving (Fusion INI object + `savestring` "Edward", group "Base"):
-  native `Edward.ini` in the working directory (`src/save.c`) with items
+  native `Edward` save in %APPDATA%\MMFApplications (`src/save.c`) with items
   `Night` (story night 1-5), `Progress` (star unlocks 0-3), and
   `Challenge1..3` (custom-night completion flags, round-tripped until
   the Customize UI reads them). Boot loads Night/Progress (missing or

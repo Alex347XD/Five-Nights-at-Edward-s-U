@@ -141,8 +141,9 @@ termination notice, not the newspaper.)
 
 ### Saving
 
-Progress persists across restarts in `Edward.ini` (working directory,
-git-ignored), matching the Fusion INI group/items (`[Base]`
+Progress persists across restarts in `%APPDATA%\MMFApplications\Edward`
+(working-directory `Edward` is imported once as a legacy fallback),
+matching the Fusion INI group/items (`[Base]`
 Night/Progress/Challenge1..3, savestring "Edward"). New Game resets to
 night 1, 6 AM advances the saved night, beating nights 5/6/7 unlocks the
 stars (6th night, custom night, all-20 third star) which gate the title
