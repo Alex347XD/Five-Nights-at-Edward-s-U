@@ -96,6 +96,7 @@ typedef struct {
                             * (clamped to the feed image ends, no overscan). */
    int cam_scroll_dir;     /* 0 = panning right (+1 px/tick), 1 = panning left */
   int left_door_frame, right_door_frame; /* shutter frame 0..15 (open->closed) */
+ int mask_frame; /* mask overlay frame 0..10 (put-on 0-6, worn 7, take-off 8-10), -1 = no mask */
    int title_bg_frame;     /* 0 = Stopped (515.png), 1..3 = flash 516.png+frame-1 */
    int title_bg_timer;     /* ticks the current flash frame has been held (0.2 s = 12 ticks) */
  int all20; int left_challenge, left_challenge_active;

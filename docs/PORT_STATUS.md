@@ -78,9 +78,18 @@ termination notice, not the newspaper.)
 
 ### Night scene
 
-- Placeholder HUD rectangles (power bar, door boxes, camera label boxes,
-  mask overlay) removed; live state (camera name, doors, mask, music) stays
-  visible in the window title
+- Placeholder HUD rectangles (power bar, door boxes, camera label boxes)
+  removed; live state (camera name, doors, mask, music) stays visible in
+  the window title. The mask itself is real art now (see below).
+- Mask (`M` key or clicking the mask flip zone): put-on flip
+  (`134.png`–`140.png` at [0,0]), worn mask (`129.png` at [-100,-66],
+  office visible through the eye holes), take-off flip
+  (`141.png`–`143.png` at [0,0]) — Layer #5 UI above the HUD, frames
+  proportional to the 0.45 s transitions, verified with headless
+  screenshots
+- Win screens (Frame 5 Final): night 5 shows the weekly paycheck
+  (`2.png`), night 6 the overtime paycheck (`4.png`), night 7/custom the
+  termination notice (`7.png`), matching the Fusion Night 5/6/7 objects
 - Camera static follows the Fusion cadence (150+Random(50) every 0.08 s,
   0 on signal loss); the scene shakes during the death wait, with the
   killer's jumpscare fullscreen over it (see `CONVERTED_LOGIC.md`), then

@@ -127,7 +127,17 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   after 5 s, and any key skips (no click event in Fusion, so clicks don't
   advance it).
 - 6 AM routes to Final for nights 6/7 or Night Story >= 5, else increments to
-  the next night via Which Night. Newspaper advances on any click.
+  the next night via Which Night. Final shows the per-night win screen
+  (Frame 5 Events.txt creates one of Night 5/6/7 from the "6th or 7th
+  night" counter): night 5 -> weekly paycheck (`2.png`), night 6 ->
+  overtime paycheck (`4.png`), night 7/custom -> termination notice
+  (`7.png`). Newspaper advances on any click.
+- Mask (Frame 3 "[ Mask ]", office view only, Layer #5 UI above the HUD):
+  putting on plays Flip Mask Down (`134.png`-`140.png` at [0,0]), the worn
+  mask (`129.png`, 1480x870 at [-100,-66]) shows while down, taking off
+  plays Flip Mask Up (`141.png`-`143.png` at [0,0]); frames run
+  proportionally over the 0.45 s transitions with per-pixel alpha
+  (transparent eye holes / fade edges).
 - Springtrap starts on Cam 02's box (Fusion Start-of-Frame placement) and
   steps between cameras on its move flag: Cam 01 -> Cam 03 (B=0) / Cam 02
   (B=1), Cam 02 -> Cam 04 (B=0) / Cam 01 (B=1), Cam 03 -> Cam 01,

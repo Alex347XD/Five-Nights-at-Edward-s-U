@@ -52,6 +52,8 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     for (int i = 0; i < IMG_STATIC_COUNT; ++i)
         v->static_frames[i] = load_id(r, IMG_STATIC_FIRST + i);
     v->six_am = load_id(r, IMG_SIX_AM);
+    v->final_n6 = load_id(r, IMG_FINAL_N6);
+    v->final_n7 = load_id(r, IMG_FINAL_N7);
     v->death = load_id(r, IMG_DEATH);
     v->newspaper = load_id(r, IMG_NEWSPAPER);
     v->final_screen = load_id(r, IMG_GOODJOB);
@@ -97,6 +99,18 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->warn_in_flash = load_id(r, IMG_WARN_IN_FLASH);
     v->warn_in_blank = load_id(r, IMG_WARN_IN_BLANK);
     v->mutecall = load_id(r, IMG_MUTECALL);
+    /* Mask overlay (see fnae_assets.h): put-on 134-140, worn 129,
+     * take-off 141-143. All frames use per-pixel alpha (transparent
+     * eye holes / fade edges), so force BLEND like the lure-area
+     * marker: without it the holes render as stored black on
+     * renderers that honor BLENDMODE_NONE strictly. */
+    for (int i = 0; i < IMG_MASK_FLIPDN_COUNT; ++i)
+        v->mask_anim[i] = load_id(r, IMG_MASK_FLIPDN_FIRST + i);
+    v->mask_anim[IMG_MASK_FLIPDN_COUNT] = load_id(r, IMG_MASK_WORN);
+    for (int i = 0; i < IMG_MASK_FLIPUP_COUNT; ++i)
+        v->mask_anim[IMG_MASK_FLIPDN_COUNT + 1 + i] = load_id(r, IMG_MASK_FLIPUP_FIRST + i);
+    for (int i = 0; i < IMG_MASK_FRAMES; ++i)
+        if (v->mask_anim[i]) SDL_SetTextureBlendMode(v->mask_anim[i], SDL_BLENDMODE_BLEND);
     v->phmangle_cam = load_id(r, IMG_PHMANGLE_CAM);
     v->phmangle_annoy = load_id(r, IMG_PHMANGLE_ANNOY);
     v->phbb_cam = load_id(r, IMG_PHBB_CAM);
@@ -168,6 +182,8 @@ void visuals_free(FnaeVisuals *v) {
     for (int i = 0; i < 8; ++i)
         destroy_texture(&v->static_frames[i]);
     destroy_texture(&v->six_am);
+    destroy_texture(&v->final_n6);
+    destroy_texture(&v->final_n7);
     destroy_texture(&v->death);
     destroy_texture(&v->death_rip);
     destroy_texture(&v->title_bg);
@@ -201,6 +217,8 @@ void visuals_free(FnaeVisuals *v) {
     destroy_texture(&v->warn_in_flash);
     destroy_texture(&v->warn_in_blank);
     destroy_texture(&v->mutecall);
+    for (int i = 0; i < IMG_MASK_FRAMES; ++i)
+        destroy_texture(&v->mask_anim[i]);
     destroy_texture(&v->phmangle_cam);
     destroy_texture(&v->phmangle_annoy);
     destroy_texture(&v->phbb_cam);
@@ -775,7 +793,7 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                      int camera_up, int night, int hour, int power,
                      int left_door, int right_door, int mask, int arrow, int progress,
                      int static_frame, int static_alpha, int office_scroll,
-                     int left_door_frame, int right_door_frame, int title_bg_frame,
+                     int left_door_frame, int right_door_frame, int mask_frame, int title_bg_frame,
                      int foxy_pos, int freddy_pos, int cam_static_alpha,
                      int death, int music, int cam_scroll, int usage,
                       int stand, int lure_area, int lure_cam,
@@ -931,6 +949,19 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             /* Power/time/night HUD stays up on the office screen too. */
             int sel = camera < 1 ? 1 : camera > IMG_CAMBTN_COUNT ? IMG_CAMBTN_COUNT : camera;
             draw_night_hud(r, sel, 0, night, hour, power, usage);
+            /* Mask overlay (Layer #5 UI, above the HUD like the Fusion
+             * order): put-on flip 0-6 at [0,0], worn mask 7
+             * (1480x870 at [-100,-66]), take-off flip 8-10 at [0,0].
+             * Unshaken UI layer, like the HUD. */
+            if (mask_frame >= 0 && mask_frame < IMG_MASK_FRAMES) {
+                SDL_Texture *mt = v->mask_anim[mask_frame];
+                if (mt) {
+                    if (mask_frame == IMG_MASK_FLIPDN_COUNT)
+                        draw_texture(r, mt, -100, -66);
+                    else
+                        draw_texture(r, mt, 0, 0);
+                }
+            }
         }
         /* Layer #6 top overlays (Phantom Mangle / Phantom BB camera haunts
          * + the BB scare fade): above feed, office, and camera UI alike,
@@ -997,7 +1028,15 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_NONE);
         }
     } else if (frame == 5) {
-        fit_center(r, v->final_screen);
+        /* Frame 5 Final win screens (Frame 5 Events.txt creates one of
+         * Night 5/6/7 from the "6th or 7th night" counter): night 5 ->
+         * weekly paycheck (2.png), night 6 -> overtime paycheck (4.png),
+         * night 7/custom -> termination notice (7.png). Final is only
+         * reachable from nights 5-7, so night selects directly. */
+        SDL_Texture *win = v->final_screen;
+        if (night == 6) win = v->final_n6;
+        else if (night == 7) win = v->final_n7;
+        fit_center(r, win);
     } else if (frame == 7) {
         fit_center(r, v->newspaper);
     } else if (frame == 8) {

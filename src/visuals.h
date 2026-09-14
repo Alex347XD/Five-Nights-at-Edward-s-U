@@ -9,6 +9,8 @@ typedef struct {
     SDL_Texture *cams[4][2]; /* per camera: [0] empty base, [1] animatronic present */
     SDL_Texture *static_frames[IMG_STATIC_COUNT]; /* TV-static animation, shared title/cameras */
     SDL_Texture *six_am;
+    SDL_Texture *final_n6; /* night-6 win screen (4.png) */
+    SDL_Texture *final_n7; /* night-7 win screen (7.png) */
     SDL_Texture *death;
 
     /* Title-screen components from the exported Fusion asset bank. */
@@ -59,6 +61,9 @@ typedef struct {
     SDL_Texture *warn_in_blank;   /* in-cam Animation 12 blank (42) */
     /* Mute Call button (night calls only, while one plays). */
     SDL_Texture *mutecall;
+    /* Mask overlay (Frame 3 "[ Mask ]", office view only, Layer #5 UI).
+     * 0-6 put-on flip (134-140), 7 worn (129), 8-10 take-off (141-143). */
+    SDL_Texture *mask_anim[IMG_MASK_FRAMES];
     /* Phantom Mangle + Phantom BB (Layer #6 top overlays + office Annoy). */
     SDL_Texture *phmangle_cam;   /* camera overlay (A==1 while haunting) */
     SDL_Texture *phmangle_annoy; /* office riser (Layer #3, above the desk) */
@@ -107,7 +112,7 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                      int camera_up, int night, int hour, int power,
                      int left_door, int right_door, int mask, int arrow, int progress,
                      int static_frame, int static_alpha, int office_scroll,
-                     int left_door_frame, int right_door_frame, int title_bg_frame,
+                     int left_door_frame, int right_door_frame, int mask_frame, int title_bg_frame,
                       int foxy_pos, int freddy_pos, int cam_static_alpha,
                       int death, int music, int cam_scroll, int usage,
                       int springtrap_stand, int lure_area, int lure_cam,
