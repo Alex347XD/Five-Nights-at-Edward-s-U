@@ -115,6 +115,7 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->gf_sit = load_id(r, IMG_GF_SIT);
     v->death_devil[0] = load_id(r, IMG_DEATH_DEVIL_A);
     v->death_devil[1] = load_id(r, IMG_DEATH_DEVIL_B);
+    v->death_rip = load_id(r, IMG_RIP_TEXT);
     v->title_new = load_id(r, IMG_TITLE_NEW);
     v->title_continue = load_id(r, IMG_TITLE_CONTINUE);
     v->title_6night = load_id(r, IMG_TITLE_6NIGHT);
@@ -147,6 +148,7 @@ void visuals_free(FnaeVisuals *v) {
         destroy_texture(&v->static_frames[i]);
     destroy_texture(&v->six_am);
     destroy_texture(&v->death);
+    destroy_texture(&v->death_rip);
     destroy_texture(&v->title_bg);
     for (int i = 0; i < IMG_TITLE_BG_ANIM_COUNT; ++i)
         destroy_texture(&v->title_bg_anim[i]);
@@ -315,6 +317,10 @@ static void draw_world(SDL_Renderer *r, SDL_Texture *t, int fx, int fy, int scro
     SDL_RenderCopy(r, t, NULL, &d);
 }
 
+/* Bitmap-font text (defined below; counters/strings are rendered text
+ * in Fusion, not PNG frames). */
+static void draw_text(SDL_Renderer *r, const char *s, int x, int y, int scale);
+
 /* Frame 6 interstitial: black screen with the night card centered
  * (Fusion parks Which Night at (640,360)). Reuses the 246-252 night
  * cards, which already read "12:00 AM / Nth Night". */
@@ -366,10 +372,20 @@ static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, in
     if (progress > 1) draw_texture(r, v->title_star, 428, 75);
     if (progress > 2) draw_texture(r, v->title_star, 508, 75);
 
-    /* The Night counter is only shown when Continue is selected. */
+    /* The Night next to Continue is a Counter, not a night card: just
+     * the saved night number (the 246-252 "12:00 AM / Nth Night" cards
+     * belong to the Which Night screen — drawing one here sprawls a
+     * "12:00 AM" header over the menu). Bitmap font like every other
+     * Fusion counter/string. X keeps the verbatim [326] origin; Y centers
+     * the digit on the Continue item (512 + (34-28)/2 = 515) instead of
+     * the verbatim 545, which sat a row low — the counter's hotspot/font
+     * metrics are unrecoverable from the dump, so this follows the same
+     * owner-request pattern as the CAM 01 button offset. */
     if (a == 1) {
         int n = night < 1 ? 1 : night > 7 ? 7 : night;
-        draw_texture(r, v->title_nights[n - 1], 326, 545);
+        char num[4];
+        snprintf(num, sizeof num, "%d", n);
+        draw_text(r, num, 326, 515, 4);
     }
 }
 
@@ -615,8 +631,8 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                       int winding, int warning, int mute_visible,
                       int ph_mangle_cam, int ph_bb_cam,
                       int ph_bb_scare, int ph_bb_scare_on, int ph_annoy_a,
-                      int death_addup, int death_red, int death_rip_a,
-                      int death_ticks, int gf_sit) {
+                      int death_addup, int death_red, int death_red_peaked,
+                      int death_rip_a, int death_rip_b, int death_ticks, int gf_sit) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
@@ -780,18 +796,24 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
     } else if (frame == 9) {
         fit_center(r, v->six_am);
     } else if (frame == 4) {
-        /* Frame 4 Death: devil-card Death Anim backdrop cycling at 20fps,
-         * center-anchored on its [630,390] hotspot; RIP GAME OVER text
-         * (1.png) center-anchored at [640,650] fading per core; plain red
-         * fullscreen rect on top (Layer #2 Red Fade In above Layer #1). */
+        /* Frame 4 Death: fullscreen red flash first (drains back to 0 so
+         * the animation owns the rest of the screen). The devil-card Death
+         * Anim backdrop (cycling at 20fps, center-anchored on its [630,390]
+         * hotspot) and the RIP Text at [640,650] (the 404 frame while B==0
+         * fading out, GAME OVER 1.png once B>1 fading back in) stay hidden
+         * until the flash first peaks, so the red shows alone. Red is
+         * Layer #2 above Layer #1. */
+        if (death_red_peaked) {
         SDL_Texture *devil = v->death_devil[(death_ticks / 3) & 1];
         if (devil) visuals_draw_anchored(r, devil, 630, 390, FNAE_ANCHOR_CENTER);
-        if (v->death && death_rip_a > 0) {
+        SDL_Texture *rip = (death_rip_b == 0) ? v->death_rip : v->death;
+        if (rip && death_rip_a > 0) {
             int ra = death_rip_a > 255 ? 255 : death_rip_a;
-            SDL_SetTextureBlendMode(v->death, SDL_BLENDMODE_BLEND);
-            SDL_SetTextureAlphaMod(v->death, (Uint8)ra);
-            visuals_draw_anchored(r, v->death, 640, 650, FNAE_ANCHOR_CENTER);
-            SDL_SetTextureAlphaMod(v->death, 255);
+            SDL_SetTextureBlendMode(rip, SDL_BLENDMODE_BLEND);
+            SDL_SetTextureAlphaMod(rip, (Uint8)ra);
+            visuals_draw_anchored(r, rip, 640, 650, FNAE_ANCHOR_CENTER);
+            SDL_SetTextureAlphaMod(rip, 255);
+        }
         }
         if (death_red > 0) {
             int ra = death_red > 255 ? 255 : death_red;

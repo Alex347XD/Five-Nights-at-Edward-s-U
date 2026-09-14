@@ -233,6 +233,21 @@ static void save_progress(FnaeGame* g,int earned){
  fnae_save_store(&s);
 }
 
+/* Frame 2 Title entry: re-read Night/Progress from the save like the
+ * Fusion Start-of-Frame events (The Night counter = INI Night, stars =
+ * INI Progress). This keeps the Continue counter on the saved story
+ * night: 6th/custom runs set g->night=6/7 without saving, so returning
+ * to Title must not keep showing 6/7. Also clears the Frame 3 death
+ * state, which is frame-local in Fusion but global here. */
+static void enter_title(FnaeGame* g){
+ FnaeSave s; if(fnae_save_load(&s)==0){ g->night=s.night; g->progress=s.progress; }
+ if(g->night<1)g->night=1; if(g->night>7)g->night=7;
+ if(g->progress<0)g->progress=0; if(g->progress>3)g->progress=3;
+ g->death=0; g->death_addup=0; g->death_tick_acc=0;
+ g->death_red=0; g->death_red_peaked=0; g->death_rip_a=255; g->death_rip_b=0; g->death_timer=0; g->death_ticks=0;
+ g->time_to_hour=0; g->power_out_timer=0;
+ g->frame=FRAME_TITLE;
+}
 /* New Game: Newspaper start resets story Night to 1 in the save
  * (Fusion), so Continue restarts the story but keeps star Progress. */
 static void enter_newspaper(FnaeGame* g){
@@ -255,7 +270,7 @@ void fnae_start_night(FnaeGame* g,int night){
  g->night=night<1?1:(night>7?7:night); g->frame=FRAME_NIGHT; g->time_of_day=12; g->time_to_hour=0;
   g->death=0; g->death_addup=0; g->gf_random=0; g->gf_death_addup=0;
   g->death_tick_acc=0; g->gf_tick_acc=0;
- g->death_red=0; g->death_rip_a=255; g->death_rip_b=0; g->death_timer=0; g->death_ticks=0;
+ g->death_red=0; g->death_red_peaked=0; g->death_rip_a=255; g->death_rip_b=0; g->death_timer=0; g->death_ticks=0;
  g->cam_anim=CAM_DOWN; g->mask_anim=MASK_UP; g->prevent_flip=0; g->force_down=0; g->view=0; g->camera=1;
   g->left_door=0; g->right_door=0; g->flashlight=0; g->hidden_power=10000; g->power_left=1; g->power_tick=0;
   g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2;
@@ -335,10 +350,10 @@ static void update_cam_scroll(FnaeGame* g, float dt){
 }
 
 void fnae_update(FnaeGame* g,float dt){
- /* Frame 1 interstitial: Timer equals 05'' -> Title, no input required. */
+  /* Frame 1 interstitial: Timer equals 05'' -> Title, no input required. */
  if(g->frame==FRAME_WARNING){
   g->warn_timer+=dt;
-  if(g->warn_timer>=5.0f) g->frame=FRAME_TITLE;
+  if(g->warn_timer>=5.0f) enter_title(g);
   return;
  }
  /* Frame 6 interstitial: Every 02'' -> Night, no input required. */
@@ -347,37 +362,57 @@ void fnae_update(FnaeGame* g,float dt){
   if(g->which_timer>=2.0f) fnae_start_night(g,g->night);
   return;
  }
- if(g->frame!=FRAME_NIGHT){
-  /* Frame 4 Death animation (Frame 4 Events.txt): Red Fade In +7/tick
-   * to 255; once opaque the RIP Text fades -7/tick out (B==0), waits the
-   * 1 s gates (B 0->1->2), fades +7/tick back in (B>1), then jumps to
-   * Title (which stops the ch #32 goblin loop via frame entry). */
-   if(g->frame==FRAME_DEATH){
-    /* Red/RIP fades are per-tick (+7) in Fusion: run them through the
-     * tick accumulator so the Death screen lasts ~3.8 s of real time
-     * on any refresh rate (at 144 Hz+ it used to fly by). The 1 s
-     * B-gates below are already dt-based and run once per call. */
-    g->death_tick_acc+=dt*60.0f;
-    int dsteps=(int)g->death_tick_acc; g->death_tick_acc-=dsteps;
-    if(dsteps>4)dsteps=4;
-    for(int i=0;i<dsteps;i++){
-     if(g->death_red<255){g->death_red+=7;if(g->death_red>255)g->death_red=255;}
-     else {
-      if(g->death_rip_a>0 && g->death_rip_b==0){g->death_rip_a-=7;if(g->death_rip_a<0)g->death_rip_a=0;}
-      else if(g->death_rip_a<255 && g->death_rip_b>1){g->death_rip_a+=7;if(g->death_rip_a>255)g->death_rip_a=255;}
-      if(g->death_rip_b>0 && g->death_rip_a>=255){g->frame=FRAME_TITLE;return;}
+  if(g->frame!=FRAME_NIGHT){
+   /* Frame 4 Death animation (Frame 4 Events.txt): fullscreen red flashes
+    * +7/tick to 255, then drains back to 0 (owner: a brief flash, not a
+    * permanent overlay) while the RIP Text fades -7/tick out (B==0),
+    * waits the 0.5 s gates (B 0->1->2, switching RIP frame 404 to the
+    * GAME OVER frame), fades +7/tick back in (B>1), then jumps to Title
+    * (which stops the ch #32 goblin loop via frame entry). The Fusion
+    * gates are 1 s; the native halves them per owner (snappier pause).
+    * The Fusion RIP fade keys off red>=255; the native latches that moment
+    * (death_red_peaked) so the text keeps running as the flash clears.
+    * The devil-card Death Anim cycles underneath the whole time, but the
+    * renderer holds it (and the RIP text) until the flash first peaks, so
+    * the red shows alone first. */
+    if(g->frame==FRAME_DEATH){
+     /* Red/RIP fades are per-tick (+7) in Fusion: run them through the
+      * tick accumulator so the Death screen lasts the same real time
+      * on any refresh rate (at 144 Hz+ it used to fly by). The B-gates
+      * below are already dt-based and run once per call; they are 0.5 s
+      * each (owner-shortened from the Fusion 1 s) so the RIP to GAME
+      * OVER pause is snappier. */
+     g->death_tick_acc+=dt*60.0f;
+     int dsteps=(int)g->death_tick_acc; g->death_tick_acc-=dsteps;
+     if(dsteps>4)dsteps=4;
+     for(int i=0;i<dsteps;i++){
+      if(!g->death_red_peaked){
+       g->death_red+=7;
+       if(g->death_red>=255){g->death_red=255;g->death_red_peaked=1;}
+      }
+      else {
+       if(g->death_red>0){g->death_red-=7;if(g->death_red<0)g->death_red=0;}
+       if(g->death_rip_a>0 && g->death_rip_b==0){g->death_rip_a-=7;if(g->death_rip_a<0)g->death_rip_a=0;}
+       else if(g->death_rip_a<255 && g->death_rip_b>1){g->death_rip_a+=7;if(g->death_rip_a>255)g->death_rip_a=255;}
+       if(g->death_rip_b>0 && g->death_rip_a>=255){enter_title(g);return;}
+      }
+      g->death_ticks++;
      }
-     g->death_ticks++;
-    }
-    if(g->death_red>=255){
-     if(g->death_rip_a<=0){
-      g->death_timer+=dt;
-      if(g->death_timer>=1.0f){g->death_timer=0;if(g->death_rip_b==0)g->death_rip_b=1;else if(g->death_rip_b==1)g->death_rip_b=2;}
+     if(g->death_red_peaked){
+      if(g->death_rip_a<=0){
+       g->death_timer+=dt;
+       if(g->death_timer>=0.5f){g->death_timer=0;if(g->death_rip_b==0)g->death_rip_b=1;else if(g->death_rip_b==1)g->death_rip_b=2;}
+      } else g->death_timer=0;
      } else g->death_timer=0;
-    } else g->death_timer=0;
-    return;
-   }
- }
+     return;
+    }
+   /* Night simulation (power, AI, phantoms, music box, death rolls) is
+    * Frame 3-only in Fusion. Without this gate the title/newspaper/
+    * customize/6AM/final screens kept draining power and rolling deaths
+    * (power_out fades 255->0 then enter_death fires ~6 s after boot),
+    * so idling on the title ended on the death screen. */
+   return;
+  }
   update_cam_scroll(g,dt);
   /* Death wait ([ Jumpscares ]: fullscreen scare over the shaking office
    * for 60 ticks ~= 1.0 s, then the Death frame): tick-accumulated like
@@ -388,7 +423,7 @@ void fnae_update(FnaeGame* g,float dt){
    if(wsteps>4)wsteps=4;
    for(int i=0;i<wsteps;i++){
     g->death_addup++;
-    if(g->death_addup>=60){g->frame=FRAME_DEATH;g->death_red=0;g->death_rip_a=255;g->death_rip_b=0;g->death_timer=0;g->death_ticks=0;g->death_tick_acc=0;break;}
+    if(g->death_addup>=60){g->frame=FRAME_DEATH;g->death_red=0;g->death_red_peaked=0;g->death_rip_a=255;g->death_rip_b=0;g->death_timer=0;g->death_ticks=0;g->death_tick_acc=0;break;}
    }
    return;
   }
@@ -528,7 +563,7 @@ void fnae_update(FnaeGame* g,float dt){
 void fnae_key(FnaeGame* g,int key){
  if(key==SDLK_ESCAPE){g->running=0;return;}
  /* Frame 1: Upon pressing any key -> Title (Fusion has no click event here). */
- if(g->frame==FRAME_WARNING){g->frame=FRAME_TITLE;return;}
+ if(g->frame==FRAME_WARNING){enter_title(g);return;}
  if(g->frame==FRAME_TITLE){
    if(key==SDLK_RETURN){
     if(g->arrow==0)enter_newspaper(g);
@@ -554,8 +589,8 @@ void fnae_key(FnaeGame* g,int key){
    }
    else {g->night++;g->six_or_seven=0;save_night(g);enter_which_night(g);}
   }return;}
- if(g->frame==FRAME_DEATH){if(key==SDLK_RETURN)g->frame=FRAME_TITLE;return;}
- if(g->frame==FRAME_FINAL){if(key==SDLK_RETURN)g->frame=FRAME_TITLE;return;}
+ if(g->frame==FRAME_DEATH){if(key==SDLK_RETURN)enter_title(g);return;}
+ if(g->frame==FRAME_FINAL){if(key==SDLK_RETURN)enter_title(g);return;}
  if(g->frame!=FRAME_NIGHT)return;
 
  if(key=='a'&&g->view==0&&g->hidden_power>0){if(g->left_door==0){g->left_door=1;fnae_push_sound(g,FNAE_SND_DOOR);}else if(g->left_door==2){g->left_door=3;fnae_push_sound(g,FNAE_SND_DOOR);} }

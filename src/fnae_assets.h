@@ -25,6 +25,10 @@
 #define IMG_STATIC_COUNT  8   /* shared by title Static + camera static */
 
 #define IMG_DEATH         1   /* GAME OVER screen */
+/* RIP Text (Frame 4) frame 0: 126x54 red box shown while RIP B==0 (fading
+ * out); B>1 switches to the GAME OVER frame (1.png, fading back in).
+ * Owner-confirmed bank ID. */
+#define IMG_RIP_TEXT      404 /* RIP Text first frame, 126x54 */
 #define IMG_GOODJOB       2   /* GOOD JOB CAPTAIN final screen (Frame 5) */
 #define IMG_SIX_AM        4   /* overtime paycheck (Frame 9) */
 #define IMG_NEWSPAPER     520 /* HELP WANTED newspaper (Frame 7) */
@@ -39,7 +43,9 @@
 #define IMG_TITLE_STAR    232
 #define IMG_TITLE_TEXT    464 /* "Five Nights at Edward's" text card */
 
-#define IMG_NIGHT_FIRST   246 /* The Night counter frames, 7 (246-252) */
+#define IMG_NIGHT_FIRST   246 /* Which Night cards (Frame 6), 7 (246-252):
+ * "12:00 AM / Nth Night" full cards, centered on black. NOT the title's
+ * The Night, which is a Counter showing just the digit (bitmap font). */
 #define IMG_NIGHT_COUNT   7
 
 /* Frame 3 doors: 16-frame open->closed shutter runs. Stopped (open) is

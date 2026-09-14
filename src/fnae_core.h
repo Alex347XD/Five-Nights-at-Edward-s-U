@@ -42,7 +42,11 @@ typedef struct {
    * (+7/tick), RIP Text alpha (starts 255, -7/tick out then +7/tick back
    * once B>1) + B state with 1 s gates, tick counter for the Death Anim
    * devil-card cycle. Initialized on the Night -> Death transition. */
-  int death_red, death_rip_a, death_rip_b, death_ticks; float death_timer;
+   int death_red, death_rip_a, death_rip_b, death_ticks; float death_timer;
+   /* Latched once Red Fade In first hits full opacity: the RIP fade/gates
+    * below key off this rather than red>=255, because the fullscreen red
+    * is a brief flash that drains back to 0 (owner) while the text runs. */
+   int death_red_peaked;
  int camera; CamAnim cam_anim; MaskAnim mask_anim; int prevent_flip; int force_down; int view;
  int left_door, right_door; int flashlight; int pc_mobile;
  int hidden_power; int power_left; float power_tick;

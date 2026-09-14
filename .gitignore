@@ -1,6 +1,7 @@
 build
-# Native save file (Fusion INI group "Base" as Edward.ini, next to assets/).
-Edward.ini
+# Native save file (Fusion INI group "Base" as Edward; lives in
+# %APPDATA%\MMFApplications, working-directory copy is legacy).
+/Edward
 # Headless screenshots (keep screenshots/.gitkeep tracked).
 screenshots/*.png
 screenshots/*.bmp

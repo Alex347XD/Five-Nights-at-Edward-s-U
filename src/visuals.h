@@ -71,6 +71,9 @@ typedef struct {
     SDL_Texture *gf_sit;         /* office figure (310) while GF Random == 1 */
     /* Death frame (Frame 4): devil-card Death Anim backdrop cycle. */
     SDL_Texture *death_devil[2];
+    /* RIP Text frames: 404 while RIP B==0 (fading out), GAME OVER (1.png)
+     * once B>1 (fading back in). */
+    SDL_Texture *death_rip;
 } FnaeVisuals;
 
 int visuals_init(FnaeVisuals *v, SDL_Renderer *r);
@@ -99,5 +102,5 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                       int winding, int warning, int mute_visible,
                       int ph_mangle_cam, int ph_bb_cam,
                       int ph_bb_scare, int ph_bb_scare_on, int ph_annoy_a,
-                      int death_addup, int death_red, int death_rip_a,
-                      int death_ticks, int gf_sit);
+                       int death_addup, int death_red, int death_red_peaked,
+                       int death_rip_a, int death_rip_b, int death_ticks, int gf_sit);

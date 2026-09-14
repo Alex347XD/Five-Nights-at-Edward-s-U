@@ -209,7 +209,9 @@ int main(int argc, char *argv[]) {
             game.ph_annoy_a,
             game.death_addup,
             game.death_red,
+            game.death_red_peaked,
             game.death_rip_a,
+            game.death_rip_b,
             game.death_ticks,
             game.gf_random == 1
         );

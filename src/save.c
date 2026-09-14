@@ -1,12 +1,59 @@
 #include "save.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#define SAVE_FILE "Edward.ini"
-#define SAVE_GROUP "Base"
+#ifdef _WIN32
+#include <direct.h>
+#define FNAE_MKDIR(p) _mkdir(p)
+#else
+#include <sys/stat.h>
+#define FNAE_MKDIR(p) mkdir(p, 0755)
+#endif
 
-const char *fnae_save_path(void) { return SAVE_FILE; }
+#define SAVE_FILE "Edward"
+#define SAVE_DIR "MMFApplications"
+#define SAVE_GROUP "Base"
+/* Working-directory save from earlier builds: imported once when the
+ * new location has no file yet. */
+#define SAVE_LEGACY "Edward"
+
+/* Resolved save path, computed once: %APPDATA%\MMFApplications\Edward
+ * on Windows, plain Edward wherever %APPDATA% is unavailable. */
+static char save_path[512];
+static int save_path_ready = 0;
+
+static const char *resolve_path(void) {
+ if (!save_path_ready) {
+  const char *app = getenv("APPDATA");
+  if (app && *app)
+   snprintf(save_path, sizeof save_path, "%s\\%s\\%s", app, SAVE_DIR, SAVE_FILE);
+  else
+   snprintf(save_path, sizeof save_path, "%s", SAVE_FILE);
+  save_path[sizeof save_path - 1] = '\0';
+  save_path_ready = 1;
+ }
+ return save_path;
+}
+
+const char *fnae_save_path(void) { return resolve_path(); }
+
+/* Creates the save folder (everything before the final \ or /).
+ * Missing folders are normal on first run; errors are ignored and
+ * surface as a store failure instead. */
+static void ensure_parent_dir(const char *path) {
+ char tmp[512];
+ size_t n = strlen(path);
+ if (n == 0 || n >= sizeof tmp) return;
+ strcpy(tmp, path);
+ char *sep = strrchr(tmp, '\\');
+ char *fsep = strrchr(tmp, '/');
+ if (fsep && (!sep || fsep > sep)) sep = fsep;
+ if (!sep) return; /* bare filename: working directory exists */
+ *sep = '\0';
+ FNAE_MKDIR(tmp);
+}
 
 void fnae_save_default(FnaeSave *s) {
  memset(s, 0, sizeof *s);
@@ -21,10 +68,8 @@ static int clamp_flag(int f) { return f ? 1 : 0; }
 /* Minimal INI reader: finds the [Base] group, then exact "Key=number"
  * lines (whitespace around the key tolerated, '#'/' ;' comments and
  * other groups ignored). Unknown keys are skipped. */
-int fnae_save_load(FnaeSave *s) {
- if (!s) return 1;
- fnae_save_default(s);
- FILE *f = fopen(SAVE_FILE, "r");
+static int load_file(FnaeSave *s, const char *path) {
+ FILE *f = fopen(path, "r");
  if (!f) return 1;
  int in_base = 0, ok = 0;
  char line[256];
@@ -56,9 +101,22 @@ int fnae_save_load(FnaeSave *s) {
  return ok ? 0 : 1;
 }
 
+int fnae_save_load(FnaeSave *s) {
+ if (!s) return 1;
+ fnae_save_default(s);
+ const char *path = resolve_path();
+ if (load_file(s, path) == 0) return 0;
+ /* One-time import of a working-directory save left by earlier builds;
+  * the new location wins whenever both exist. */
+ if (strcmp(path, SAVE_LEGACY) != 0 && load_file(s, SAVE_LEGACY) == 0) return 0;
+ return 1;
+}
+
 int fnae_save_store(const FnaeSave *s) {
  if (!s) return 1;
- FILE *f = fopen(SAVE_FILE, "w");
+ const char *path = resolve_path();
+ ensure_parent_dir(path);
+ FILE *f = fopen(path, "w");
  if (!f) return 1;
  fprintf(f, "[%s]\n", SAVE_GROUP);
  fprintf(f, "Night=%d\n", clamp_night(s->night));

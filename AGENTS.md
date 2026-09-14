@@ -11,7 +11,7 @@ Canonical modules (what actually builds — see `CMakeLists.txt`):
 `src/main.c` (entry, interactive loop), `src/fnae_core.c` (game state
 machine), `src/visuals.c` (SDL renderer), `src/headless.c` (scripted
 headless test runs), `src/audio.c` (SDL_mixer wiring), `src/save.c`
-(Edward.ini INI persistence: Night/Progress/Challenge), plus headers
+(Edward save persistence: Night/Progress/Challenge), plus headers
 `src/fnae_assets.h` (named image-bank IDs).
 `src/game.c` / `src/assets.c` / `src/fnae.h` are an
 unbuilt parallel API — do not mix them in; ask before deleting.

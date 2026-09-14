@@ -20,9 +20,10 @@ These match `visuals_init` in `src/visuals.c`:
   alpha 100+Random(100), cameras run 150+Random(50) every 0.08 s while the
   feed is live, 0 on signal loss)
 - `4.png` — 6 AM screen
-- `1.png` — RIP Text GAME OVER (479x54, Frame 4 Death, center-anchored at
-  [640,650], fading per the RIP A/B state; the old static death screen is
-  replaced by the animated sequence)
+- `1.png` — RIP Text GAME OVER frame (479x54, Frame 4 Death,
+  center-anchored at [640,650], shown once RIP B>1 and fading per the RIP
+  A/B state); `404.png` — RIP Text first frame (126x54 red RIP, same
+  anchor, shown while B==0 and fading out)
 - `233.png` / `460.png` — Death Anim devil-card backdrop (600x507 each,
   cycling at 20fps, center-anchored at [630,390])
 - Jumpscare runs (480x270 each, drawn at (0,0) x2.8 fullscreen over the
