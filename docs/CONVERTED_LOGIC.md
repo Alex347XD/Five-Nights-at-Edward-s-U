@@ -94,7 +94,13 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   start — where the Fusion initial A=255 has unrecoverable visibility —
   draws nothing). The Mangle Annoy (`380.png`, Layer #3 above the desk)
   draws at (508 − scroll, 720 − A) while A>0.
-- Golden Freddy uses the exported random/death-addup logic.
+- Golden Freddy uses the exported random/death-addup logic: roll on the
+  camera-down anim while AI > 0, GF Sit (`310.png`, 150x200, Layer #2 at
+  [440,240]) reappears in the office while GF Random == 1, cam-up-anim or
+  mask-down clears it, +1 Death Addup per tick while shown, >90 (~1.5 s
+  of staring) kills (death 5, `458.png` still jumpscare). The whole group
+  runs through a tick accumulator, so the roll rate and the 1.5 s stare
+  last the same real time at any refresh rate.
 - Nights 1-7 difficulty values and hourly changes are translated from the event text.
 - Night 7 loads AI from the Customize-screen globals (defaults 0, Puppet 7;
   see `fnae_set_custom`), and the All-20 star reads those globals, not the nightly rolls.
@@ -123,7 +129,12 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   art at (0,0) x2.8 fullscreen over the shaking office for the 60-tick
   wait (runs: Springtrap 314-331, Freddy 353-363+365, Puppet 493-510,
   Foxy 536-539+562-572, GF still 458; frames loop at 20fps). Death Addup
-  >= 60 jumps to the Death frame.
+  >= 60 jumps to the Death frame. The 60-tick wait, the GF stare addup,
+  and the Death-frame fades below all run through tick accumulators
+  (`death_tick_acc` / `gf_tick_acc`): Fusion logic is per-tick but the
+  native update gets real-time dt, so at 144 Hz+ the death sequence used
+  to fly by in ~2 s; it now lasts the same ~4.9 s (1.0 s wait + ~3.9 s
+  Death frame) at any refresh rate, identical to before at fixed 1/60.
 - Death frame (Frame 4): Red Fade In +7/tick to 255, then RIP Text fades
   -7/tick out (B==0), waits the 1 s gates (B 0->1->2), fades +7/tick back
   in (B>1), then jumps to Title; the devil-card Death Anim (233/460)

@@ -112,6 +112,7 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     for (int i = 0; i < IMG_SCARE_FOXY_B_COUNT; ++i)
         v->scare_foxy[IMG_SCARE_FOXY_A_COUNT + i] = load_id(r, IMG_SCARE_FOXY_B_FIRST + i);
     v->scare_gf = load_id(r, IMG_SCARE_GF);
+    v->gf_sit = load_id(r, IMG_GF_SIT);
     v->death_devil[0] = load_id(r, IMG_DEATH_DEVIL_A);
     v->death_devil[1] = load_id(r, IMG_DEATH_DEVIL_B);
     v->title_new = load_id(r, IMG_TITLE_NEW);
@@ -186,6 +187,7 @@ void visuals_free(FnaeVisuals *v) {
     for (int i = 0; i < IMG_SCARE_FOXY_A_COUNT + IMG_SCARE_FOXY_B_COUNT; ++i)
         destroy_texture(&v->scare_foxy[i]);
     destroy_texture(&v->scare_gf);
+    destroy_texture(&v->gf_sit);
     destroy_texture(&v->death_devil[0]);
     destroy_texture(&v->death_devil[1]);
     destroy_texture(&v->title_new);
@@ -608,13 +610,13 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                      int left_door_frame, int right_door_frame, int title_bg_frame,
                      int foxy_pos, int freddy_pos, int cam_static_alpha,
                      int death, int music, int cam_scroll, int usage,
-                     int stand, int lure_area, int lure_cam,
-                     int lure_cd, float lure_cd_timer,
-                     int winding, int warning, int mute_visible,
-                     int ph_mangle_cam, int ph_bb_cam,
-                     int ph_bb_scare, int ph_bb_scare_on, int ph_annoy_a,
-                     int death_addup, int death_red, int death_rip_a,
-                     int death_ticks) {
+                      int stand, int lure_area, int lure_cam,
+                      int lure_cd, float lure_cd_timer,
+                      int winding, int warning, int mute_visible,
+                      int ph_mangle_cam, int ph_bb_cam,
+                      int ph_bb_scare, int ph_bb_scare_on, int ph_annoy_a,
+                      int death_addup, int death_red, int death_rip_a,
+                      int death_ticks, int gf_sit) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
@@ -722,6 +724,11 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             if (right_door_frame >= IMG_DOOR_FRAMES) right_door_frame = IMG_DOOR_FRAMES - 1;
             draw_world(r, v->door_left[left_door_frame], 119, 0, office_scroll, ox, oy);
             draw_world(r, v->door_right[right_door_frame], 1263, 0, office_scroll, ox, oy);
+            /* GF Sit (Layer #2 office overlay, above the doors): reappears
+             * at [440,240] while GF Random == 1, invisible otherwise. A
+             * world object like the doors, so it pans with the office. */
+            if (gf_sit)
+                draw_world(r, v->gf_sit, 440, 240, office_scroll, ox, oy);
             draw_world(r, v->desk, 266, 177, office_scroll, ox, oy);
             /* Ph Mangle Annoy (Layer #3, above the desk): rises from
              * [508,720] by Annoy A px while C==1, then sinks back once

@@ -73,7 +73,14 @@ termination notice, not the newspaper.)
 - Camera static follows the Fusion cadence (150+Random(50) every 0.08 s,
   0 on signal loss); the scene shakes during the death wait, with the
   killer's jumpscare fullscreen over it (see `CONVERTED_LOGIC.md`), then
-  the animated Death frame (devil cards, red fade, GAME OVER, auto-Title)
+  the animated Death frame (devil cards, red fade, GAME OVER, auto-Title).
+  Death pacing is real-time now: the 60-tick jumpscare hold plus the
+  ~232-tick Death animation (~4.9 s total) run through a tick accumulator,
+  so on 144 Hz+ displays the Death screen no longer flies by in ~2 s.
+- Golden Freddy haunts the office: while GF Random == 1 (rolled on each
+  camera close, nights 2+) the GF Sit figure (`310.png`, 150x200 bottle
+  close-up at [440,240], panning with the office) sits in the office view;
+  staring for ~1.5 s kills (death 5, `458.png` still jumpscare + XScream2).
 - Camera feeds auto-pan left <-> right on the Camera Center Object drift
   (+/-1 px per tick, clamped to the feed image ends so no black bars show),
   drawn cover-cropped so the full 1600px feed scrolls through the view

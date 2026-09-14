@@ -127,6 +127,11 @@
 #define IMG_SCARE_FOXY_B_FIRST 562
 #define IMG_SCARE_FOXY_B_COUNT 11
 #define IMG_SCARE_GF           458 /* still */
+/* Golden Freddy's office figure (Frame 3 "[ Golden Freddy ]" group):
+ * GF Sit sits on Layer #2 (overlay office) at [440,240] and reappears
+ * while GF Random == 1 (hidden otherwise). 150x200 close-up of the
+ * red bottle with yellow highlights (same character as the 458 still). */
+#define IMG_GF_SIT             310 /* GF Sit office figure, 150x200 */
 /* Death frame (Frame 4): devil-card Death Anim backdrop cycling at
  * [630,390] (600x507, owner-confirmed 233/460). RIP Text is IMG_DEATH
  * (1.png GAME OVER, 479x54) at [640,650]; Red Fade In is a plain red

@@ -210,7 +210,8 @@ int main(int argc, char *argv[]) {
             game.death_addup,
             game.death_red,
             game.death_rip_a,
-            game.death_ticks
+            game.death_ticks,
+            game.gf_random == 1
         );
 
         SDL_RenderPresent(r);
