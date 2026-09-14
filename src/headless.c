@@ -280,7 +280,8 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                         game->death_addup,
                         game->death_red,
                         game->death_rip_a,
-                        game->death_ticks
+                        game->death_ticks,
+                        game->gf_random == 1
                     );
                     SDL_RenderPresent(r);
                     if (headless_save_screenshot(r, ev->shot) != 0)
@@ -343,7 +344,8 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
             game->death_addup,
             game->death_red,
             game->death_rip_a,
-            game->death_ticks
+            game->death_ticks,
+            game->gf_random == 1
         );
         SDL_RenderPresent(r);
         if ((f + 1) % 60 == 0) {

@@ -135,12 +135,21 @@ static void update_phantoms(FnaeGame* g,float dt){
  { static long tdbg=0; if(++tdbg%120==0) printf("TMP-PH t=%ld view=%d bbai=%d a=%d b=%d sc=%d on=%d mai=%d ma=%d mb=%d mc=%d anA=%d anB=%d\n",tdbg,g->view,g->ph_bb_ai,g->ph_bb_a,g->ph_bb_b,g->ph_bb_scare,g->ph_bb_scare_on,g->ph_mangle_ai,g->ph_mangle_a,g->ph_mangle_b,g->ph_mangle_c,g->ph_annoy_a,g->ph_annoy_b); }
 }
 
-static void update_gf(FnaeGame* g){
- if(g->cam_anim==CAM_DOWN_ANIM && g->golden_ai>0 && g->gf_random!=1) g->gf_random=rnd(22-g->golden_ai);
- if(g->cam_anim==CAM_UP_ANIM && g->gf_random==1)g->gf_random=0;
- if(g->mask_anim==MASK_DOWN && g->gf_random==1)g->gf_random=0;
- if(g->gf_random==1) g->gf_death_addup++; else g->gf_death_addup=0;
- if(g->gf_death_addup>90) enter_death(g,5);
+static void update_gf(FnaeGame* g,float dt){
+ /* The whole group runs per game tick in Fusion (GF Random roll on the
+  * camera-down anim, GF Sit show/hide, +1 Death Addup while shown), so
+  * consume whole 1/60 ticks from the accumulator: at fixed 1/60 dt this
+  * is exactly one pass per call, like before. */
+ g->gf_tick_acc+=dt*60.0f;
+ int steps=(int)g->gf_tick_acc; g->gf_tick_acc-=steps;
+ if(steps>4)steps=4;
+ for(int i=0;i<steps;i++){
+  if(g->cam_anim==CAM_DOWN_ANIM && g->golden_ai>0 && g->gf_random!=1) g->gf_random=rnd(22-g->golden_ai);
+  if(g->cam_anim==CAM_UP_ANIM && g->gf_random==1)g->gf_random=0;
+  if(g->mask_anim==MASK_DOWN && g->gf_random==1)g->gf_random=0;
+  if(g->gf_random==1) g->gf_death_addup++; else g->gf_death_addup=0;
+  if(g->gf_death_addup>90) enter_death(g,5);
+ }
 }
 
 /* Music-box crank hover: the button is center-anchored (156x65) at
@@ -220,7 +229,8 @@ static void enter_which_night(FnaeGame* g){
 void fnae_start_night(FnaeGame* g,int night){
  memset(g->hour_events,0,sizeof(g->hour_events));
  g->night=night<1?1:(night>7?7:night); g->frame=FRAME_NIGHT; g->time_of_day=12; g->time_to_hour=0;
- g->death=0; g->death_addup=0; g->gf_random=0; g->gf_death_addup=0;
+  g->death=0; g->death_addup=0; g->gf_random=0; g->gf_death_addup=0;
+  g->death_tick_acc=0; g->gf_tick_acc=0;
  g->death_red=0; g->death_rip_a=255; g->death_rip_b=0; g->death_timer=0; g->death_ticks=0;
  g->cam_anim=CAM_DOWN; g->mask_anim=MASK_UP; g->prevent_flip=0; g->force_down=0; g->view=0; g->camera=1;
   g->left_door=0; g->right_door=0; g->flashlight=0; g->hidden_power=10000; g->power_left=1; g->power_tick=0;
@@ -318,23 +328,46 @@ void fnae_update(FnaeGame* g,float dt){
    * to 255; once opaque the RIP Text fades -7/tick out (B==0), waits the
    * 1 s gates (B 0->1->2), fades +7/tick back in (B>1), then jumps to
    * Title (which stops the ch #32 goblin loop via frame entry). */
-  if(g->frame==FRAME_DEATH){
-   if(g->death_red<255){g->death_red+=7;if(g->death_red>255)g->death_red=255;}
-   else {
-    if(g->death_rip_a>0 && g->death_rip_b==0){g->death_rip_a-=7;if(g->death_rip_a<0)g->death_rip_a=0;}
-    else if(g->death_rip_a<255 && g->death_rip_b>1){g->death_rip_a+=7;if(g->death_rip_a>255)g->death_rip_a=255;}
-    if(g->death_rip_b>0 && g->death_rip_a>=255){g->frame=FRAME_TITLE;return;}
-    if(g->death_rip_a<=0){
-     g->death_timer+=dt;
-     if(g->death_timer>=1.0f){g->death_timer=0;if(g->death_rip_b==0)g->death_rip_b=1;else if(g->death_rip_b==1)g->death_rip_b=2;}
+   if(g->frame==FRAME_DEATH){
+    /* Red/RIP fades are per-tick (+7) in Fusion: run them through the
+     * tick accumulator so the Death screen lasts ~3.8 s of real time
+     * on any refresh rate (at 144 Hz+ it used to fly by). The 1 s
+     * B-gates below are already dt-based and run once per call. */
+    g->death_tick_acc+=dt*60.0f;
+    int dsteps=(int)g->death_tick_acc; g->death_tick_acc-=dsteps;
+    if(dsteps>4)dsteps=4;
+    for(int i=0;i<dsteps;i++){
+     if(g->death_red<255){g->death_red+=7;if(g->death_red>255)g->death_red=255;}
+     else {
+      if(g->death_rip_a>0 && g->death_rip_b==0){g->death_rip_a-=7;if(g->death_rip_a<0)g->death_rip_a=0;}
+      else if(g->death_rip_a<255 && g->death_rip_b>1){g->death_rip_a+=7;if(g->death_rip_a>255)g->death_rip_a=255;}
+      if(g->death_rip_b>0 && g->death_rip_a>=255){g->frame=FRAME_TITLE;return;}
+     }
+     g->death_ticks++;
+    }
+    if(g->death_red>=255){
+     if(g->death_rip_a<=0){
+      g->death_timer+=dt;
+      if(g->death_timer>=1.0f){g->death_timer=0;if(g->death_rip_b==0)g->death_rip_b=1;else if(g->death_rip_b==1)g->death_rip_b=2;}
+     } else g->death_timer=0;
     } else g->death_timer=0;
+    return;
    }
-   g->death_ticks++;
-  }
-  return;
  }
- update_cam_scroll(g,dt);
- if(g->death){g->death_addup++;if(g->death_addup>=60){g->frame=FRAME_DEATH;g->death_red=0;g->death_rip_a=255;g->death_rip_b=0;g->death_timer=0;g->death_ticks=0;}return;}
+  update_cam_scroll(g,dt);
+  /* Death wait ([ Jumpscares ]: fullscreen scare over the shaking office
+   * for 60 ticks ~= 1.0 s, then the Death frame): tick-accumulated like
+   * the Death-frame fades so the hold lasts a real second at any Hz. */
+  if(g->death){
+   g->death_tick_acc+=dt*60.0f;
+   int wsteps=(int)g->death_tick_acc; g->death_tick_acc-=wsteps;
+   if(wsteps>4)wsteps=4;
+   for(int i=0;i<wsteps;i++){
+    g->death_addup++;
+    if(g->death_addup>=60){g->frame=FRAME_DEATH;g->death_red=0;g->death_rip_a=255;g->death_rip_b=0;g->death_timer=0;g->death_ticks=0;g->death_tick_acc=0;break;}
+   }
+   return;
+  }
  update_office_pan(g,dt);
 
  /* Fusion's transition objects have visible animation phases. */
@@ -461,7 +494,7 @@ void fnae_update(FnaeGame* g,float dt){
  g->foxy_stand=(g->foxy.pos==5 && g->view==0 && g->hidden_power>0)?1:0;
  g->freddy_door=(g->freddy.pos==6 && g->view==0 && g->hidden_power>0)?1:0;
  g->springtrap_stand=(g->view>0 && g->view==g->springtrap_pos && g->hidden_power>0)?1:0;
-  update_phantoms(g,dt); update_gf(g); update_music(g,dt);
+   update_phantoms(g,dt); update_gf(g,dt); update_music(g,dt);
  if(g->springtrap_pos==3 && g->view==3 && g->hidden_power>0 && g->death==0){g->springtrap_timer+=dt;if(g->springtrap_timer>=4){g->springtrap_timer=0;if(rnd(2)==1)enter_death(g,4);}}
  if(g->current_call==0 && g->time_to_hour>=3)g->current_call=g->night;
  if(g->cam_anim==CAM_UP)g->view=g->camera; else if(g->cam_anim==CAM_DOWN)g->view=0;

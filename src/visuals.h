@@ -68,6 +68,7 @@ typedef struct {
     SDL_Texture *scare_puppet[IMG_SCARE_PUPPET_COUNT];
     SDL_Texture *scare_foxy[IMG_SCARE_FOXY_A_COUNT + IMG_SCARE_FOXY_B_COUNT]; /* 4 + 11 */
     SDL_Texture *scare_gf;       /* still (458) */
+    SDL_Texture *gf_sit;         /* office figure (310) while GF Random == 1 */
     /* Death frame (Frame 4): devil-card Death Anim backdrop cycle. */
     SDL_Texture *death_devil[2];
 } FnaeVisuals;
@@ -99,4 +100,4 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                       int ph_mangle_cam, int ph_bb_cam,
                       int ph_bb_scare, int ph_bb_scare_on, int ph_annoy_a,
                       int death_addup, int death_red, int death_rip_a,
-                      int death_ticks);
+                      int death_ticks, int gf_sit);

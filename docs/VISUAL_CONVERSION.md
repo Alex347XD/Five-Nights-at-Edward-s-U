@@ -30,6 +30,9 @@ These match `visuals_init` in `src/visuals.c`:
   `314.png`–`331.png`, Freddy `353.png`–`363.png` + `365.png` (`364.png`
   is a 35x75 UI dot), Puppet `493.png`–`510.png`, Foxy `536.png`–`539.png`
   + `562.png`–`572.png`, Golden Freddy still `458.png`
+- `310.png` — Golden Freddy Sit office figure (red bottle close-up with
+  yellow highlights, 150x200, Layer #2 at [440,240], panning with the
+  office; drawn only while GF Random == 1, like the Fusion Reappear)
 - `2.png` — GOOD JOB final screen
 - `520.png` — HELP WANTED newspaper screen (Frame 7, shown once on New Game
   before Which Night)

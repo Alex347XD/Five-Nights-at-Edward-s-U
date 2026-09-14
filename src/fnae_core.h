@@ -32,6 +32,12 @@ typedef struct {
  float which_timer; /* Frame 6 auto-advance: Every 02'' -> Night */
  float warn_timer; /* Frame 1 auto-advance: Timer equals 05'' -> Title */
   int death; int death_addup; int gf_random; int gf_death_addup;
+  /* Fractional-tick accumulators: Fusion event logic runs per game tick
+   * (1/60 s), but fnae_update receives real-time dt, so at >60 Hz displays
+   * per-call counters (+7 fades, Death Addup, GF Addup) would run fast.
+   * Accumulating dt*60 and applying whole ticks keeps the pacing at
+   * real-time speed on any refresh rate (identical to before at 1/60). */
+  float death_tick_acc; float gf_tick_acc;
   /* Frame 4 Death animation (Frame 4 Events.txt): Red Fade In alpha 0-255
    * (+7/tick), RIP Text alpha (starts 255, -7/tick out then +7/tick back
    * once B>1) + B state with 1 s gates, tick counter for the Death Anim
