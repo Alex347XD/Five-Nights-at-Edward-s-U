@@ -90,8 +90,12 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->music_hold = load_id(r, IMG_MUSIC_CLICKHOLD);
     for (int i = 0; i < IMG_MUSIC_PIE_COUNT; ++i)
         v->music_pie[i] = load_id(r, IMG_MUSIC_PIE_FIRST + i);
-    v->warn_off = load_id(r, IMG_WARNBADGE_OFF);
-    v->warn_on = load_id(r, IMG_WARNBADGE_ON);
+    v->warn_out_steady = load_id(r, IMG_WARN_OUT_STEADY);
+    v->warn_out_flash = load_id(r, IMG_WARN_OUT_FLASH);
+    v->warn_out_blank = load_id(r, IMG_WARN_OUT_BLANK);
+    v->warn_in_steady = load_id(r, IMG_WARN_IN_STEADY);
+    v->warn_in_flash = load_id(r, IMG_WARN_IN_FLASH);
+    v->warn_in_blank = load_id(r, IMG_WARN_IN_BLANK);
     v->mutecall = load_id(r, IMG_MUTECALL);
     v->phmangle_cam = load_id(r, IMG_PHMANGLE_CAM);
     v->phmangle_annoy = load_id(r, IMG_PHMANGLE_ANNOY);
@@ -173,8 +177,12 @@ void visuals_free(FnaeVisuals *v) {
     destroy_texture(&v->music_hold);
     for (int i = 0; i < IMG_MUSIC_PIE_COUNT; ++i)
         destroy_texture(&v->music_pie[i]);
-    destroy_texture(&v->warn_off);
-    destroy_texture(&v->warn_on);
+    destroy_texture(&v->warn_out_steady);
+    destroy_texture(&v->warn_out_flash);
+    destroy_texture(&v->warn_out_blank);
+    destroy_texture(&v->warn_in_steady);
+    destroy_texture(&v->warn_in_flash);
+    destroy_texture(&v->warn_in_blank);
     destroy_texture(&v->mutecall);
     destroy_texture(&v->phmangle_cam);
     destroy_texture(&v->phmangle_annoy);
@@ -565,14 +573,19 @@ static void draw_minimap(SDL_Renderer *r, FnaeVisuals *v, int camera) {
     }
 }
 
-/* Low-music badge shared by both warning objects: level 1 (<600) shows
- * the Stopped frame steady, level 2 (<200) flashes the Animation 12
- * frame on the shared static tick; level 0/3 hides the badge. */
-static void draw_warning(SDL_Renderer *r, FnaeVisuals *v,
-                         int warning, int static_frame, int x, int y) {
+/* Low-music badges ("[ Warning Messages ]"): level 1 (<600) holds the
+ * badge's Stopped triangle steady, level 2 (<200) blinks its Animation 12
+ * triangle against the transparent frame on the shared static tick;
+ * level 0/3 hides the badge. Each badge draws from its own bank range:
+ * "Warning out of cam" (35-38) at [1228,672] on the office screen,
+ * "warning in cam" (39-42) at [1215,506] on any camera view. */
+static void draw_warning(SDL_Renderer *r, int warning, int static_frame,
+                         SDL_Texture *steady, SDL_Texture *flash,
+                         SDL_Texture *blank, int x, int y) {
     if (warning < 1 || warning > 2) return;
-    SDL_Texture *t = v->warn_off;
-    if (warning == 2 && (static_frame & 1) && v->warn_on) t = v->warn_on;
+    SDL_Texture *t = steady;
+    if (warning == 2)
+        t = ((static_frame & 1) && blank) ? blank : (flash ? flash : steady);
     visuals_draw_anchored(r, t, x, y, FNAE_ANCHOR_CENTER);
 }
 
@@ -605,8 +618,7 @@ static void draw_phantom_cam(SDL_Renderer *r, SDL_Texture *t, int alpha,
  * fills while the crank is held and loses wedges when released. The
  * lure button stays hidden here (Fusion hides it over Cam 04). */
 static void draw_music_box(SDL_Renderer *r, FnaeVisuals *v,
-                           int winding, int music, int warning,
-                           int static_frame) {
+                           int winding, int music) {
     visuals_draw_anchored(r, winding ? v->musicbtn_on : v->musicbtn_off,
                           569, 497, FNAE_ANCHOR_CENTER);
     int m = music < 0 ? 0 : music > 2000 ? 2000 : music;
@@ -616,7 +628,6 @@ static void draw_music_box(SDL_Renderer *r, FnaeVisuals *v,
     draw_texture(r, v->music_pie[idx], 418, 474);
     draw_texture(r, v->music_wind, 497, 475);
     draw_texture(r, v->music_hold, 491, 534);
-    draw_warning(r, v, warning, static_frame, 1215, 506);
 }
 
 void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
@@ -722,7 +733,16 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             /* White Frame Camera reappears with the rest of the camera UI. */
             draw_white_frame(r);
             if (sel == 4)
-                draw_music_box(r, v, winding, music, warning, static_frame);
+                draw_music_box(r, v, winding, music);
+            /* Low-music badge for the camera screens ("warning in cam",
+             * bank 39-42 at [1215,506], center-anchored): reappears on ANY
+             * camera view while 0 < Music Left < 600 (Fusion
+             * "[ Warning Messages ]" gates on View > 0, not on Cam 04),
+             * steady Stopped (39) below 600, blinking Animation 12
+             * (41/42) below 200, hidden when empty. */
+            draw_warning(r, warning, static_frame,
+                         v->warn_in_steady, v->warn_in_flash, v->warn_in_blank,
+                         1215, 506);
             /* Mute Call button shows on every Frame 3 screen while the
              * night's call plays (Fusion reappears it every 3 s). */
             if (mute_visible)
@@ -757,8 +777,11 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             if (ph_annoy_a > 0)
                 draw_world(r, v->phmangle_annoy, 508, 720 - ph_annoy_a,
                            office_scroll, ox, oy);
-            /* Low-music badge for the office screen (Warning out of cam). */
-            draw_warning(r, v, warning, static_frame, 1228, 672);
+            /* Low-music badge for the office screen ("Warning out of cam",
+             * bank 35-38 at [1228,672], center-anchored). */
+            draw_warning(r, warning, static_frame,
+                         v->warn_out_steady, v->warn_out_flash, v->warn_out_blank,
+                         1228, 672);
             if (mute_visible)
                 visuals_draw_anchored(r, v->mutecall, 100, 55,
                                       FNAE_ANCHOR_CENTER);

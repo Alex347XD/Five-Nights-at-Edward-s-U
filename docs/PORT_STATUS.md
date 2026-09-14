@@ -131,9 +131,12 @@ termination notice, not the newspaper.)
   54x54 empty→full, top-left at the Music Left counter spot [418,474],
   left of the box; frame follows Music Left 0–2000, so it fills while
   winding and loses wedges when released — verified against the
-  reference shot with headless screenshots), plus low-music badges
-  (`37.png` steady below 600, flashing below 200, hidden when empty;
-  [1228,672] office, [1215,506] cameras). Winding is hold-driven — mouse
+   reference shot with headless screenshots), plus low-music badges
+   ("Warning out of cam" `35.png`–`38.png` steady `35` below 600 /
+   blinking `37`/`38` below 200 at [1228,672] on the office screen;
+   "warning in cam" `39.png`–`42.png` steady `39` / blinking `41`/`42`
+   at [1215,506] on any camera view, not just Cam 04; both hidden when
+   empty — verified with headless screenshots at each music level).
   press-and-hold on the button or held R — evaluated every tick, so
   release/leave/stop ends the wind (the old click latched it on).
 - Phone calls play per night with a clickable MUTE CALL button (`415.png`

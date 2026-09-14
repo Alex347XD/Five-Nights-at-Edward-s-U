@@ -51,8 +51,12 @@ typedef struct {
     SDL_Texture *music_wind; /* "Give $ To Business Edward" overlay text */
     SDL_Texture *music_hold; /* "click & hold" hint under the box */
     SDL_Texture *music_pie[IMG_MUSIC_PIE_COUNT]; /* wind gauge, empty->full */
-    SDL_Texture *warn_off;
-    SDL_Texture *warn_on;
+    SDL_Texture *warn_out_steady; /* out-of-cam Stopped triangle (35) */
+    SDL_Texture *warn_out_flash;  /* out-of-cam Animation 12 triangle (37) */
+    SDL_Texture *warn_out_blank;  /* out-of-cam Animation 12 blank (38) */
+    SDL_Texture *warn_in_steady;  /* in-cam Stopped triangle (39) */
+    SDL_Texture *warn_in_flash;   /* in-cam Animation 12 triangle (41) */
+    SDL_Texture *warn_in_blank;   /* in-cam Animation 12 blank (42) */
     /* Mute Call button (night calls only, while one plays). */
     SDL_Texture *mutecall;
     /* Phantom Mangle + Phantom BB (Layer #6 top overlays + office Annoy). */
