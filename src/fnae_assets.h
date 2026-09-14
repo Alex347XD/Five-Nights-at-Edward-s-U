@@ -31,6 +31,13 @@
 #define IMG_RIP_TEXT      404 /* RIP Text first frame, 126x54 */
 #define IMG_GOODJOB       2   /* GOOD JOB CAPTAIN final screen (Frame 5) */
 #define IMG_SIX_AM        4   /* overtime paycheck (Frame 9) */
+/* Frame 5 Final win screens (Frame 5 Events.txt creates one of Night 5/6/7
+ * at (0,0) from the "6th or 7th night" counter): night 5 -> 2.png
+ * (weekly paycheck), night 6 -> 4.png (overtime paycheck), night 7 ->
+ * 7.png (termination notice). */
+#define IMG_FINAL_N5      2   /* = IMG_GOODJOB (kept alias) */
+#define IMG_FINAL_N6      4   /* night-6 win (overtime paycheck) */
+#define IMG_FINAL_N7      7   /* night-7 win (termination notice) */
 #define IMG_NEWSPAPER     520 /* HELP WANTED newspaper (Frame 7) */
 #define IMG_WARNING       351 /* Frame 1 warning screen (1280x720) at [0,0] */
 
@@ -103,6 +110,18 @@
 /* Mute Call button ("MUTE CALL", 121x31 at [100,55]): reappears while a
  * night's phone call plays (ch #16) and stops it when clicked. */
 #define IMG_MUTECALL      415 /* Mute Call button art */
+/* Mask (Frame 3 "[ Mask ]" group, office view only, Layer #5 UI).
+ * Owner-confirmed frame order: Flip Mask Down 134-140 (1280x720,
+ * drawn at [0,0]) plays while putting the mask on, worn mask 129
+ * (1480x870, drawn at [-100,-66] per the Start-of-Frame event) shows
+ * while it is down, Flip Mask Up 141-143 (1280x720, at [0,0]) plays
+ * while taking it off. */
+#define IMG_MASK_FLIPDN_FIRST 134 /* put-on run, 7 frames (134-140) */
+#define IMG_MASK_FLIPDN_COUNT 7
+#define IMG_MASK_WORN         129 /* worn mask still */
+#define IMG_MASK_FLIPUP_FIRST 141 /* take-off run, 3 frames (141-143) */
+#define IMG_MASK_FLIPUP_COUNT 3
+#define IMG_MASK_FRAMES       11  /* put-on 0-6, worn 7, take-off 8-10 */
 /* Phantom Mangle + Phantom BB (Frame 3 "[ Phantom Mangle ]" / "[ Phantom BB ]"
  * groups, Layer #6 top overlays at [0,0] with scale 2.7, plus the office
  * Annoy riser on Layer #3). Owner-confirmed IDs: 405 = Ph Mangle Camera

@@ -186,6 +186,7 @@ int main(int argc, char *argv[]) {
             (int)game.office_scroll,
             game.left_door_frame,
             game.right_door_frame,
+            game.mask_frame,
             game.title_bg_frame,
             game.foxy.pos,
             game.freddy.pos,
