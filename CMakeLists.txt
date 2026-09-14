@@ -14,6 +14,7 @@ add_executable(FNaE_Native
     src/headless.c
     src/visuals.c
     src/audio.c
+    src/save.c
 )
 
 target_include_directories(FNaE_Native PRIVATE src)

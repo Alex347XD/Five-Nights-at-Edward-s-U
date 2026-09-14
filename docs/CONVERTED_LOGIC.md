@@ -170,6 +170,16 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   (`current_call`, ch #16, MP3 for 1-3 / WAV for 4-6); the Mute Call button
   (`415.png` at [100,55], visible while ch #16 plays) stops the call on
   click via `FNAE_SND_CALL_STOP`.
+- Saving (Fusion INI object + `savestring` "Edward", group "Base"):
+  native `Edward.ini` in the working directory (`src/save.c`) with items
+  `Night` (story night 1-5), `Progress` (star unlocks 0-3), and
+  `Challenge1..3` (custom-night completion flags, round-tripped until
+  the Customize UI reads them). Boot loads Night/Progress (missing or
+  corrupt file = night 1, no stars); New Game (Newspaper start) resets
+  Night to 1; 6 AM story advance writes Night+1; Final writes Progress 1
+  (night 5), 2 (6th), or 3 (7th/custom all-20, never downgraded); Which
+  Night / Night start re-read Night in normal mode (6/7 forced by the
+  `six_or_seven` mode, like the Fusion Start-of-Frame events).
 
 ## Deliberately isolated
 
