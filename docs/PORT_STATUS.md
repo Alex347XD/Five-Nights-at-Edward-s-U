@@ -27,7 +27,11 @@ The title screen now uses the correct Frame 2 asset mapping:
 - `242.png` — Custom
 - `245.png` — Arrow
 - `232.png` — Star / Star 2 / Star 3
-- `246.png`–`252.png` — The Night counter frames
+- The Night — a Counter (no PNG): just the saved night number at
+  (326,545), shown while Continue is selected, drawn with the bitmap
+  font. (`246.png`–`252.png` are the "12:00 AM / Nth Night" cards for
+  the Which Night screen, not the title — drawing one here sprawled a
+  "12:00 AM" header over the menu.)
 
 The previous incorrect mapping of `233.png` has been removed. `233.png` / `460.png` are the devil-card Death Anim backdrop cycle (Frame 4, [630,390]).
 
@@ -36,6 +40,13 @@ Events.txt ((-10,+16/17/19/19) from each item's top-left), adjusted for the
 hotspot: Fusion positions the arrow by its pointing tip (right-center) while
 SDL draws from the top-left, so the native renderer draws it with
 `FNAE_ANCHOR_RIGHT_CENTER` (see `COORDINATES.md`).
+
+Title entry re-reads Night/Progress from the save (Fusion Start-of-Frame),
+so the Continue counter always shows the saved story night — 6th/custom
+runs no longer leave a stale 6/7 on the menu — and clears the Frame 3
+death state. Night simulation (power, AI, phantoms, music box, death
+rolls) runs on Frame 3 only; idling on the title no longer drains the
+power-out fade into a death screen.
 
 ## Functional controls
 
@@ -73,9 +84,11 @@ termination notice, not the newspaper.)
 - Camera static follows the Fusion cadence (150+Random(50) every 0.08 s,
   0 on signal loss); the scene shakes during the death wait, with the
   killer's jumpscare fullscreen over it (see `CONVERTED_LOGIC.md`), then
-  the animated Death frame (devil cards, red fade, GAME OVER, auto-Title).
-  Death pacing is real-time now: the 60-tick jumpscare hold plus the
-  ~232-tick Death animation (~4.9 s total) run through a tick accumulator,
+   the animated Death frame (red flash alone first, then devil cards
+   cycling throughout, RIP (404) fading out then GAME OVER fading in
+   with a shortened 0.5 s-gate pause, auto-Title).
+   Death pacing is real-time now: the 60-tick jumpscare hold plus the
+   ~171-tick Death animation (~3.9 s total) run through a tick accumulator,
   so on 144 Hz+ displays the Death screen no longer flies by in ~2 s.
 - Golden Freddy haunts the office: while GF Random == 1 (rolled on each
   camera close, nights 2+) the GF Sit figure (`310.png`, 150x200 bottle

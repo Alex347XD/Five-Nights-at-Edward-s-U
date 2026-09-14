@@ -13,7 +13,7 @@ Mapped from the exported Frame 2 object layout and the extracted image bank.
 | Custom | `242.png` | 306x44 | Menu item at (96,640) |
 | Arrow | `245.png` | 43x26 | Selected-item arrow; hotspot-anchored, see `COORDINATES.md` |
 | Star / Star 2 / Star 3 | `232.png` | 57x55 | Same source image, unlocked by progress |
-| The Night | `246.png`–`252.png` | ~231x97 | 1st–7th Night counter frames at (326,545) |
+| The Night | (Counter, no PNG) | — | Saved night number at (326,545), shown while Continue is selected; rendered with the bitmap font like all other Fusion counters/strings |
 
 ## Important correction
 

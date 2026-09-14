@@ -133,13 +133,20 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   and the Death-frame fades below all run through tick accumulators
   (`death_tick_acc` / `gf_tick_acc`): Fusion logic is per-tick but the
   native update gets real-time dt, so at 144 Hz+ the death sequence used
-  to fly by in ~2 s; it now lasts the same ~4.9 s (1.0 s wait + ~3.9 s
-  Death frame) at any refresh rate, identical to before at fixed 1/60.
-- Death frame (Frame 4): Red Fade In +7/tick to 255, then RIP Text fades
-  -7/tick out (B==0), waits the 1 s gates (B 0->1->2), fades +7/tick back
-  in (B>1), then jumps to Title; the devil-card Death Anim (233/460)
-  cycles underneath at [630,390] and the goblin loops ch #32 until the
-  Title entry stops it.
+   to fly by in ~2 s; it now lasts the same ~3.9 s (1.0 s wait + ~2.9 s
+   Death frame) at any refresh rate, identical to before at fixed 1/60.
+- Death frame (Frame 4): fullscreen Red Fade In flashes +7/tick to 255
+ then drains back to 0 (owner: a brief flash, not a permanent overlay —
+ the native latches the first full-opacity moment so the text below keeps
+ running as the flash clears); the devil-card Death Anim and the RIP Text
+ stay hidden until that moment, so the red shows alone first. RIP Text
+ fades -7/tick out (B==0, showing the 404 RIP frame), waits the 0.5 s
+ gates (B 0->1->2, switching to the GAME OVER frame; Fusion uses 1 s,
+ halved per owner for a snappier pause), fades +7/tick back in (B>1),
+ then jumps to Title;
+ the devil-card Death Anim (233/460) cycles underneath at [630,390] for
+ the whole screen and the goblin loops ch #32 until the Title entry
+ stops it.
 - Doorway-figure flags (Freddy at left door, Foxy at right, Springtrap on its
   viewed cam) are exposed for the renderer.
  - Audio (`src/audio.c`, mixer channels = Fusion Sound channels): night entry
