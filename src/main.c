@@ -206,7 +206,11 @@ int main(int argc, char *argv[]) {
             game.ph_bb_a == 1,
             game.ph_bb_scare,
             game.ph_bb_scare_on,
-            game.ph_annoy_a
+            game.ph_annoy_a,
+            game.death_addup,
+            game.death_red,
+            game.death_rip_a,
+            game.death_ticks
         );
 
         SDL_RenderPresent(r);

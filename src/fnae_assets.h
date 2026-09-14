@@ -110,10 +110,33 @@
 #define IMG_PHMANGLE_ANNOY 380 /* gray cracked-rock figure, 400x225 */
 #define IMG_PHBB_CAM       352 /* gray grin + top hat, 480x270 */
 #define IMG_PHBB_SCARE     349 /* gray grin + top hat, 480x270, alpha-faded */
+/* Jumpscares (Frame 3 "[ Jumpscares ]" group): 480x270 art created at
+ * (0,0) with the Fusion scale 2.8 (1344x756, overflowing the 1280x720
+ * view right/bottom) and shown fullscreen over the shaking office during
+ * the 60-tick death wait. Owner-confirmed runs: Springtrap 314-331 (18),
+ * Freddy 353-363 + 365 (12; 364 is a 35x75 UI dot), Puppet 493-510 (18),
+ * Foxy 536-539 + 562-572 (15; 4 + 11), Golden Freddy still 458. */
+#define IMG_SCARE_SPRING_FIRST 314
+#define IMG_SCARE_SPRING_COUNT 18
+#define IMG_SCARE_FREDDY_FIRST 353 /* +365 (see IMG_SCARE_FREDDY_LAST) */
+#define IMG_SCARE_FREDDY_LAST  365 /* 364 missing: 12 loaded frames */
+#define IMG_SCARE_PUPPET_FIRST 493
+#define IMG_SCARE_PUPPET_COUNT 18
+#define IMG_SCARE_FOXY_A_FIRST 536
+#define IMG_SCARE_FOXY_A_COUNT 4
+#define IMG_SCARE_FOXY_B_FIRST 562
+#define IMG_SCARE_FOXY_B_COUNT 11
+#define IMG_SCARE_GF           458 /* still */
+/* Death frame (Frame 4): devil-card Death Anim backdrop cycling at
+ * [630,390] (600x507, owner-confirmed 233/460). RIP Text is IMG_DEATH
+ * (1.png GAME OVER, 479x54) at [640,650]; Red Fade In is a plain red
+ * fullscreen rect (no bank art). */
+#define IMG_DEATH_DEVIL_A      233 /* devil card, sad eyes */
+#define IMG_DEATH_DEVIL_B      460 /* devil card, wide eyes */
 /* Unidentified (owner to confirm object/sequence): */
 #define IMG_UNKNOWN_179   179 /* 1280x720 gray-face frame; NOT the title Background */
-#define IMG_DEVIL_SAD     233 /* 600x507 devil card, sad eyes */
-#define IMG_DEVIL_SHOCKED 460 /* 600x507 devil card, wide eyes */
+#define IMG_DEVIL_SAD     233 /* = IMG_DEATH_DEVIL_A (kept alias) */
+#define IMG_DEVIL_SHOCKED 460 /* = IMG_DEATH_DEVIL_B (kept alias) */
 
 /* Music-box crank (Frame 3 "[ Music Box ]" group, Cam 04 view only).
  * Layer #5 UI positions from Objects.txt: button box center-anchored at

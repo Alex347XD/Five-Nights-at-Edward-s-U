@@ -31,7 +31,12 @@ typedef struct {
  int time_of_day; float time_to_hour;
  float which_timer; /* Frame 6 auto-advance: Every 02'' -> Night */
  float warn_timer; /* Frame 1 auto-advance: Timer equals 05'' -> Title */
- int death; int death_addup; int gf_random; int gf_death_addup;
+  int death; int death_addup; int gf_random; int gf_death_addup;
+  /* Frame 4 Death animation (Frame 4 Events.txt): Red Fade In alpha 0-255
+   * (+7/tick), RIP Text alpha (starts 255, -7/tick out then +7/tick back
+   * once B>1) + B state with 1 s gates, tick counter for the Death Anim
+   * devil-card cycle. Initialized on the Night -> Death transition. */
+  int death_red, death_rip_a, death_rip_b, death_ticks; float death_timer;
  int camera; CamAnim cam_anim; MaskAnim mask_anim; int prevent_flip; int force_down; int view;
  int left_door, right_door; int flashlight; int pc_mobile;
  int hidden_power; int power_left; float power_tick;

@@ -60,6 +60,16 @@ typedef struct {
     SDL_Texture *phmangle_annoy; /* office riser (Layer #3, above the desk) */
     SDL_Texture *phbb_cam;       /* camera overlay (A==1 while haunting) */
     SDL_Texture *phbb_scare;     /* post-scare fade (alpha 0->255) */
+    /* Jumpscares (Frame 3 "[ Jumpscares ]"): 480x270 art at (0,0) x2.8,
+     * fullscreen over the shaking office during the death wait. Counts
+     * mirror the verified bank runs (see fnae_assets.h). */
+    SDL_Texture *scare_spring[IMG_SCARE_SPRING_COUNT];
+    SDL_Texture *scare_freddy[12]; /* 353-363 + 365 (364 is a UI dot) */
+    SDL_Texture *scare_puppet[IMG_SCARE_PUPPET_COUNT];
+    SDL_Texture *scare_foxy[IMG_SCARE_FOXY_A_COUNT + IMG_SCARE_FOXY_B_COUNT]; /* 4 + 11 */
+    SDL_Texture *scare_gf;       /* still (458) */
+    /* Death frame (Frame 4): devil-card Death Anim backdrop cycle. */
+    SDL_Texture *death_devil[2];
 } FnaeVisuals;
 
 int visuals_init(FnaeVisuals *v, SDL_Renderer *r);
@@ -87,4 +97,6 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                       int lure_cd, float lure_cd_timer,
                       int winding, int warning, int mute_visible,
                       int ph_mangle_cam, int ph_bb_cam,
-                      int ph_bb_scare, int ph_bb_scare_on, int ph_annoy_a);
+                      int ph_bb_scare, int ph_bb_scare_on, int ph_annoy_a,
+                      int death_addup, int death_red, int death_rip_a,
+                      int death_ticks);

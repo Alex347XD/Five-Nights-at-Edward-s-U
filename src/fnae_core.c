@@ -221,6 +221,7 @@ void fnae_start_night(FnaeGame* g,int night){
  memset(g->hour_events,0,sizeof(g->hour_events));
  g->night=night<1?1:(night>7?7:night); g->frame=FRAME_NIGHT; g->time_of_day=12; g->time_to_hour=0;
  g->death=0; g->death_addup=0; g->gf_random=0; g->gf_death_addup=0;
+ g->death_red=0; g->death_rip_a=255; g->death_rip_b=0; g->death_timer=0; g->death_ticks=0;
  g->cam_anim=CAM_DOWN; g->mask_anim=MASK_UP; g->prevent_flip=0; g->force_down=0; g->view=0; g->camera=1;
   g->left_door=0; g->right_door=0; g->flashlight=0; g->hidden_power=10000; g->power_left=1; g->power_tick=0;
   g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2;
@@ -312,9 +313,28 @@ void fnae_update(FnaeGame* g,float dt){
   if(g->which_timer>=2.0f) fnae_start_night(g,g->night);
   return;
  }
- if(g->frame!=FRAME_NIGHT)return;
+ if(g->frame!=FRAME_NIGHT){
+  /* Frame 4 Death animation (Frame 4 Events.txt): Red Fade In +7/tick
+   * to 255; once opaque the RIP Text fades -7/tick out (B==0), waits the
+   * 1 s gates (B 0->1->2), fades +7/tick back in (B>1), then jumps to
+   * Title (which stops the ch #32 goblin loop via frame entry). */
+  if(g->frame==FRAME_DEATH){
+   if(g->death_red<255){g->death_red+=7;if(g->death_red>255)g->death_red=255;}
+   else {
+    if(g->death_rip_a>0 && g->death_rip_b==0){g->death_rip_a-=7;if(g->death_rip_a<0)g->death_rip_a=0;}
+    else if(g->death_rip_a<255 && g->death_rip_b>1){g->death_rip_a+=7;if(g->death_rip_a>255)g->death_rip_a=255;}
+    if(g->death_rip_b>0 && g->death_rip_a>=255){g->frame=FRAME_TITLE;return;}
+    if(g->death_rip_a<=0){
+     g->death_timer+=dt;
+     if(g->death_timer>=1.0f){g->death_timer=0;if(g->death_rip_b==0)g->death_rip_b=1;else if(g->death_rip_b==1)g->death_rip_b=2;}
+    } else g->death_timer=0;
+   }
+   g->death_ticks++;
+  }
+  return;
+ }
  update_cam_scroll(g,dt);
- if(g->death){g->death_addup++;if(g->death_addup>=60)g->frame=FRAME_DEATH;return;}
+ if(g->death){g->death_addup++;if(g->death_addup>=60){g->frame=FRAME_DEATH;g->death_red=0;g->death_rip_a=255;g->death_rip_b=0;g->death_timer=0;g->death_ticks=0;}return;}
  update_office_pan(g,dt);
 
  /* Fusion's transition objects have visible animation phases. */

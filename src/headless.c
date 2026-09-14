@@ -276,7 +276,11 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                         game->ph_bb_a == 1,
                         game->ph_bb_scare,
                         game->ph_bb_scare_on,
-                        game->ph_annoy_a
+                        game->ph_annoy_a,
+                        game->death_addup,
+                        game->death_red,
+                        game->death_rip_a,
+                        game->death_ticks
                     );
                     SDL_RenderPresent(r);
                     if (headless_save_screenshot(r, ev->shot) != 0)
@@ -335,13 +339,17 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
             game->ph_bb_a == 1,
             game->ph_bb_scare,
             game->ph_bb_scare_on,
-            game->ph_annoy_a
+            game->ph_annoy_a,
+            game->death_addup,
+            game->death_red,
+            game->death_rip_a,
+            game->death_ticks
         );
         SDL_RenderPresent(r);
         if ((f + 1) % 60 == 0) {
-            printf("HEADLESS frame=%d game_frame=%s night=%d tod=%d power=%d\n",
+            printf("HEADLESS frame=%d game_frame=%s night=%d tod=%d power=%d death=%d music=%d\n",
                 f + 1, fnae_frame_name(game->frame),
-                game->night, game->time_of_day, game->hidden_power);
+                game->night, game->time_of_day, game->hidden_power, game->death, game->music_left);
             fflush(stdout);
         }
     }

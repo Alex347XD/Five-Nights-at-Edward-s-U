@@ -119,6 +119,16 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
 - Closed doors swing open on power loss; any death forces the cameras down,
   the mask off, and the flashlight off; the night scene shakes +/-5 during
   the death wait (GF +/-8).
+- Jumpscares (Frame 3 "[ Jumpscares ]"): `death==N` spawns the character's
+  art at (0,0) x2.8 fullscreen over the shaking office for the 60-tick
+  wait (runs: Springtrap 314-331, Freddy 353-363+365, Puppet 493-510,
+  Foxy 536-539+562-572, GF still 458; frames loop at 20fps). Death Addup
+  >= 60 jumps to the Death frame.
+- Death frame (Frame 4): Red Fade In +7/tick to 255, then RIP Text fades
+  -7/tick out (B==0), waits the 1 s gates (B 0->1->2), fades +7/tick back
+  in (B>1), then jumps to Title; the devil-card Death Anim (233/460)
+  cycles underneath at [630,390] and the goblin loops ch #32 until the
+  Title entry stops it.
 - Doorway-figure flags (Freddy at left door, Foxy at right, Springtrap on its
   viewed cam) are exposed for the renderer.
  - Audio (`src/audio.c`, mixer channels = Fusion Sound channels): night entry

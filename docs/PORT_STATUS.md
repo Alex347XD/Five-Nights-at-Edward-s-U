@@ -29,7 +29,7 @@ The title screen now uses the correct Frame 2 asset mapping:
 - `232.png` — Star / Star 2 / Star 3
 - `246.png`–`252.png` — The Night counter frames
 
-The previous incorrect mapping of `233.png` has been removed. `233.png` is a death-animation frame.
+The previous incorrect mapping of `233.png` has been removed. `233.png` / `460.png` are the devil-card Death Anim backdrop cycle (Frame 4, [630,390]).
 
 The menu arrow (`245.png`) is placed at the Fusion offsets from Frame 2
 Events.txt ((-10,+16/17/19/19) from each item's top-left), adjusted for the
@@ -71,7 +71,9 @@ termination notice, not the newspaper.)
   mask overlay) removed; live state (camera name, doors, mask, music) stays
   visible in the window title
 - Camera static follows the Fusion cadence (150+Random(50) every 0.08 s,
-  0 on signal loss); the scene shakes during the death wait
+  0 on signal loss); the scene shakes during the death wait, with the
+  killer's jumpscare fullscreen over it (see `CONVERTED_LOGIC.md`), then
+  the animated Death frame (devil cards, red fade, GAME OVER, auto-Title)
 - Camera feeds auto-pan left <-> right on the Camera Center Object drift
   (+/-1 px per tick, clamped to the feed image ends so no black bars show),
   drawn cover-cropped so the full 1600px feed scrolls through the view
