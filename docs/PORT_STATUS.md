@@ -86,9 +86,10 @@ power-out fade into a death screen.
   left stick office pan, touchscreen taps for the camera UI. Desktop and
   headless builds are unchanged (single window, keyboard+mouse).
 - Wii U caveat: each screen needs its own renderer + texture set (SDL
-  textures can't cross renderers), so VRAM use roughly doubles; unverified
-  on hardware (no Wii U compile in this environment — the `__WIIU__` branch
-  is compile-checked with host gcc `-D__WIIU__` only).
+  textures can't cross renderers), so VRAM use roughly doubles. RPX + WUHB
+  build verified with devkitPPC/wut (`powerpc-eabi-cmake -S . -B build-wiiu`
+  then `--build build-wiiu`; needs the wiiu SDL2 portlibs); not yet run on
+  hardware.
 
 ### Frame 6 Which Night
 

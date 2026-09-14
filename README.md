@@ -134,6 +134,23 @@ containing `FNaE_Native.exe` plus `assets/` and the required SDL DLLs.
 
 ---
 
+# Building for Wii U (RPX + WUHB)
+
+With devkitPPC + wut + the wiiu SDL2 portlibs installed (devkitPro pacman,
+`wiiu-dev` group), configure with the Wii U toolchain wrapper and build:
+
+```bash
+powerpc-eabi-cmake -S . -B build-wiiu
+powerpc-eabi-cmake --build build-wiiu
+```
+
+This produces `build-wiiu/FNaE_Native.rpx` and the Aroma bundle
+`build-wiiu/FNaE_Native.wuhb` (game + `assets/` in one file, installed to
+`sd:/wiiu/apps/`). On hardware the office runs on the TV while the camera
+feeds run on the GamePad screen — see `KEYS.txt` for the GamePad controls.
+
+---
+
 # Running the Game
 
 From the project root, run:

@@ -18,11 +18,32 @@ add_executable(FNaE_Native
 )
 
 target_include_directories(FNaE_Native PRIVATE src)
+# Wii U portlibs ship static libraries only: the shared SDL2_image /
+# SDL2_mixer imported targets either don't exist (mixer) or disagree with
+# the static SDL2 (COMPATIBLE_INTERFACE_BOOL SDL2_SHARED), so link the
+# -static targets there. Desktop keeps the shared targets.
+if(WIIU)
+    set(FNAE_SDL_IMAGE_LIB SDL2_image::SDL2_image-static)
+    set(FNAE_SDL_MIXER_LIB SDL2_mixer::SDL2_mixer-static)
+    # The wiiu sdl2_mixer config mangles -lstdc++ into -lstdc (its -l regex
+    # drops the "++"), which the linker can't find. Swap in the real lib.
+    get_target_property(_fnae_mixer_libs SDL2_mixer::SDL2_mixer-static INTERFACE_LINK_LIBRARIES)
+    if(_fnae_mixer_libs)
+        list(REMOVE_ITEM _fnae_mixer_libs stdc)
+        list(APPEND _fnae_mixer_libs stdc++)
+        set_target_properties(SDL2_mixer::SDL2_mixer-static PROPERTIES INTERFACE_LINK_LIBRARIES "${_fnae_mixer_libs}")
+    endif()
+else()
+    set(FNAE_SDL_IMAGE_LIB SDL2_image::SDL2_image)
+    set(FNAE_SDL_MIXER_LIB SDL2_mixer::SDL2_mixer)
+endif()
 target_link_libraries(FNaE_Native PRIVATE
+    ${FNAE_SDL_IMAGE_LIB}
+    ${FNAE_SDL_MIXER_LIB}
     SDL2::SDL2
-    SDL2_image::SDL2_image
-    SDL2_mixer::SDL2_mixer
 )
+# NOTE: static-link order matters (dependents first, SDL2 last); shared
+# desktop builds don't care, so one order serves both.
 
 # Wii U (WUT/CafeOS toolchain): ELF -> .rpx plus an Aroma .wuhb with the
 # assets/ tree bundled as content, so a single file carries the game.
