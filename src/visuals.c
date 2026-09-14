@@ -73,6 +73,11 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
         v->door_left[i] = load_id(r, IMG_DOOR_LEFT_FIRST + i);
         v->door_right[i] = load_id(r, IMG_DOOR_RIGHT_FIRST + i);
     }
+    /* Door buttons (off = Stopped, on = Animation 12) + doorway figures. */
+    v->door_btn[0] = load_id(r, IMG_DOORBTN_OFF);
+    v->door_btn[1] = load_id(r, IMG_DOORBTN_ON);
+    v->freddy_door = load_id(r, IMG_FREDDY_DOOR);
+    v->foxy_stand = load_id(r, IMG_FOXY_STAND);
     /* Camera minimap + buttons (see src/fnae_assets.h for layout). */
     v->minimap = load_id(r, IMG_MINIMAP);
     v->cam_btn_off = load_id(r, IMG_CAMBTN_OFF);
@@ -193,6 +198,10 @@ void visuals_free(FnaeVisuals *v) {
         destroy_texture(&v->door_left[i]);
         destroy_texture(&v->door_right[i]);
     }
+    destroy_texture(&v->door_btn[0]);
+    destroy_texture(&v->door_btn[1]);
+    destroy_texture(&v->freddy_door);
+    destroy_texture(&v->foxy_stand);
     destroy_texture(&v->desk);
     destroy_texture(&v->minimap);
     destroy_texture(&v->cam_btn_off);
@@ -367,6 +376,25 @@ static void draw_world(SDL_Renderer *r, SDL_Texture *t, int fx, int fy, int scro
     int w, h;
     SDL_QueryTexture(t, NULL, NULL, &w, &h);
     SDL_Rect d = {fx - scroll + ox, fy + oy, w, h};
+    SDL_RenderCopy(r, t, NULL, &d);
+}
+
+/* Scaled world-layer object with an explicit Fusion-hotspot anchor
+ * (doorway figures render at 1.1 scale, center-anchored). */
+static void draw_world_scaled(SDL_Renderer *r, SDL_Texture *t, int fx, int fy,
+                              int scroll, int ox, int oy, float scale, FnaeAnchor anchor) {
+    if (!t) return;
+    int w, h;
+    SDL_QueryTexture(t, NULL, NULL, &w, &h);
+    int sw = (int)(w * scale);
+    int sh = (int)(h * scale);
+    int x = fx - scroll + ox, y = fy + oy;
+    switch (anchor) {
+    case FNAE_ANCHOR_CENTER: x -= sw / 2; y -= sh / 2; break;
+    case FNAE_ANCHOR_RIGHT_CENTER: x -= sw; y -= sh / 2; break;
+    case FNAE_ANCHOR_TOP_LEFT: default: break;
+    }
+    SDL_Rect d = {x, y, sw, sh};
     SDL_RenderCopy(r, t, NULL, &d);
 }
 
@@ -801,10 +829,11 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                       int winding, int warning, int mute_visible,
                       int ph_mangle_cam, int ph_bb_cam,
                       int ph_bb_scare, int ph_bb_scare_on, int ph_annoy_a,
-                      int death_addup, int death_red, int death_red_peaked,
-                      int death_rip_a, int death_rip_b, int death_ticks, int gf_sit,
-                     const int *cust_ai, int cust_sel, int cust_ch,
-                     int cust_b, int cust_check, int cust_cool) {
+                       int death_addup, int death_red, int death_red_peaked,
+                       int death_rip_a, int death_rip_b, int death_ticks, int gf_sit,
+                      int freddy_door, int foxy_stand,
+                      const int *cust_ai, int cust_sel, int cust_ch,
+                      int cust_b, int cust_check, int cust_cool) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
@@ -921,6 +950,29 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             if (right_door_frame >= IMG_DOOR_FRAMES) right_door_frame = IMG_DOOR_FRAMES - 1;
             draw_world(r, v->door_left[left_door_frame], 119, 0, office_scroll, ox, oy);
             draw_world(r, v->door_right[right_door_frame], 1263, 0, office_scroll, ox, oy);
+            /* Door buttons (Layer #2 world objects, center-anchored at
+             * their Objects.txt spots): Stopped while the door is
+             * open/opening (A 0/3), Animation 12 while closing/closed
+             * (A 1/2). The left_door/right_door params carry A. */
+            visuals_draw_anchored(r, v->door_btn[(left_door == 1 || left_door == 2) ? 1 : 0],
+                                  105 - office_scroll + ox, 500 + oy,
+                                  FNAE_ANCHOR_CENTER);
+            visuals_draw_anchored(r, v->door_btn[(right_door == 1 || right_door == 2) ? 1 : 0],
+                                  1489 - office_scroll + ox, 500 + oy,
+                                  FNAE_ANCHOR_CENTER);
+            /* Doorway figures (Layer #2, above the doors): Freddy at the
+             * left door (213 @1.1, center-anchored) and Foxy at the right
+             * (228 @1.1 at the verbatim [1287,331]), each while its
+             * collision overlaps that door's (office view only). Freddy is
+             * drawn raised to [260,600]: his verbatim Objects.txt spot
+             * [260,788] sits below the 720 screen and showed antennae only
+             * (owner request, like the CAM 01 / GF Sit offsets). */
+            if (freddy_door)
+                draw_world_scaled(r, v->freddy_door, 260, 600, office_scroll, ox, oy,
+                                  1.1f, FNAE_ANCHOR_CENTER);
+            if (foxy_stand)
+                draw_world_scaled(r, v->foxy_stand, 1287, 331, office_scroll, ox, oy,
+                                  1.1f, FNAE_ANCHOR_CENTER);
             /* GF Sit (Layer #2 office overlay, above the doors): reappears
              * while GF Random == 1, invisible otherwise. A world object
              * like the doors, so it pans with the office. Drawn before

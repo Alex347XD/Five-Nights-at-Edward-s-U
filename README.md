@@ -192,7 +192,8 @@ SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
 ```
 
 Scripts live in `scripts/headless/` (`example.txt` shows the format:
-`<frame> <key|keyup|click|shot> <args>`). Screenshots land in
+`<frame> <key|keyup|click|mouse|shot|ai|pad> <args>`; `doors.txt` covers
+the office door controls). Screenshots land in
 `screenshots/`; remove them with:
 
 ```bash

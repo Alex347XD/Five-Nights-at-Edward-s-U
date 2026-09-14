@@ -64,6 +64,23 @@
 #define IMG_DOOR_RIGHT_FIRST  160 /* Right Door frames, 16 (160-175), 248x720 */
 #define IMG_DOOR_FRAMES       16
 
+/* Door buttons (Frame 3 "[ Doors ]" group, Layer #2 world objects that pan
+ * with the office scroll). Owner-confirmed pair, both 51x56,
+ * center-anchored: Stopped (dark red) while the door Alterable A is 0
+ * (open) or 3 (opening), Animation 12 (olive) while A is 1 (closing) or
+ * 2 (closed). Button Left sits at [105,500], Button Right at [1489,500]. */
+#define IMG_DOORBTN_OFF       176 /* button released (Stopped) */
+#define IMG_DOORBTN_ON        177 /* button pressed (Animation 12) */
+
+/* Doorway figures (Layer #2 office overlay, world objects at 1.1 scale,
+ * center-anchored). Owner-confirmed, both 182x358: Freddy (red Edward
+ * figure, matches the 344 portrait / 312 cam feed) at [260,788] while
+ * Freddy Collision overlaps Left Door Collision (office view only);
+ * Foxy (blue dino, matches the 340 portrait / 348 cam feed) at
+ * [1287,331] while Foxy Collision overlaps Right Door Collision. */
+#define IMG_FREDDY_DOOR       213 /* Freddy at your door */
+#define IMG_FOXY_STAND        228 /* Foxy Stand */
+
 #define IMG_DESK_SCENE    238 /* 1066x511 office desk scene, at [266,177] */
 
 /* Frame 3 camera minimap (Layer #5 UI, visible only while a camera is up).

@@ -9,11 +9,11 @@
 #include "headless.h"
 #include "visuals.h"
 #include "audio.h"
+#include "wiiu.h"
 
 #include <string.h>
 
-static void print_usage(const char *prog) {
-    printf("Usage: %s [--headless] [--frames N] [--screenshot PATH] [--script PATH]\n", prog);
+static void print_usage(const char *prog) {    printf("Usage: %s [--headless] [--frames N] [--screenshot PATH] [--script PATH]\n", prog);
     printf("  --headless          run without a visible window (hidden window,\n");
     printf("                      software renderer fallback, fixed 1/60 dt)\n");
     printf("  --frames N          headless frame count (default 600)\n");
@@ -24,6 +24,229 @@ static void print_usage(const char *prog) {
     printf("Screenshots land under screenshots/; clean them with:\n");
     printf("  cmake --build build --target clean-screenshots\n");
 }
+
+#ifdef __WIIU__
+/* Wii U dual-screen loop: office/everything-else on the TV window, camera
+ * feeds on the GamePad (DRC) window. The sdl-wiiu port routes each window
+ * to its screen via SDL_WINDOW_WIIU_TV_ONLY / GAMEPAD_ONLY (see src/wiiu.h
+ * for the values); each window needs its own renderer + texture set. */
+static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
+    SDL_Window *wtv = SDL_CreateWindow(
+        "Five Nights at Edward's",
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        1280, 720, SDL_WINDOW_SHOWN | SDL_WINDOW_WIIU_TV_ONLY);
+    SDL_Window *wdrc = SDL_CreateWindow(
+        "Five Nights at Edward's - Cameras",
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        1280, 720, SDL_WINDOW_SHOWN | SDL_WINDOW_WIIU_GAMEPAD_ONLY);
+    if (!wtv || !wdrc) {
+        fprintf(stderr, "WiiU CreateWindow failed: %s\n", SDL_GetError());
+        if (wtv) SDL_DestroyWindow(wtv);
+        if (wdrc) SDL_DestroyWindow(wdrc);
+        return 1;
+    }
+    SDL_Renderer *rtv = SDL_CreateRenderer(
+        wtv, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_Renderer *rdrc = SDL_CreateRenderer(
+        wdrc, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (!rtv || !rdrc) {
+        if (!rtv) rtv = SDL_CreateRenderer(wtv, -1, SDL_RENDERER_SOFTWARE);
+        if (!rdrc) rdrc = SDL_CreateRenderer(wdrc, -1, SDL_RENDERER_SOFTWARE);
+    }
+    if (!rtv || !rdrc) {
+        fprintf(stderr, "WiiU CreateRenderer failed: %s\n", SDL_GetError());
+        if (rtv) SDL_DestroyRenderer(rtv);
+        if (rdrc) SDL_DestroyRenderer(rdrc);
+        SDL_DestroyWindow(wtv);
+        SDL_DestroyWindow(wdrc);
+        return 1;
+    }
+
+    FnaeVisuals vtv, vdrc;
+    if (visuals_init(&vtv, rtv) != 0 || visuals_init(&vdrc, rdrc) != 0) {
+        visuals_free(&vtv);
+        visuals_free(&vdrc);
+        SDL_DestroyRenderer(rtv);
+        SDL_DestroyRenderer(rdrc);
+        SDL_DestroyWindow(wtv);
+        SDL_DestroyWindow(wdrc);
+        return 1;
+    }
+
+    /* GamePad is joystick 0 in the sdl-wiiu port (VPAD). Touchscreen taps
+     * arrive as finger events; the left stick pans the office. */
+    SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+    SDL_Joystick *pad = NULL;
+    if (SDL_NumJoysticks() > 0)
+        pad = SDL_JoystickOpen(0);
+
+    Uint64 last = SDL_GetPerformanceCounter();
+    while (game->running) {
+        Uint64 now = SDL_GetPerformanceCounter();
+        float dt = (float)((double)(now - last) /
+                           (double)SDL_GetPerformanceFrequency());
+        last = now;
+        if (dt > 0.1f) dt = 0.1f;
+
+        SDL_Event e;
+        while (SDL_PollEvent(&e)) {
+            if (e.type == SDL_QUIT) {
+                game->running = 0;
+            } else if (e.type == SDL_JOYBUTTONDOWN) {
+                fnae_pad_button(game, (int)e.jbutton.button, 1);
+            } else if (e.type == SDL_JOYBUTTONUP) {
+                fnae_pad_button(game, (int)e.jbutton.button, 0);
+            } else if (e.type == SDL_JOYAXISMOTION && e.jaxis.axis == 0) {
+                fnae_pad_stick(game, (int)e.jaxis.value);
+            } else if (e.type == SDL_FINGERDOWN) {
+                fnae_pad_touch(game, 0,
+                    (int)(e.tfinger.x * 1280.0f), (int)(e.tfinger.y * 720.0f));
+            } else if (e.type == SDL_FINGERMOTION) {
+                fnae_pad_touch(game, 1,
+                    (int)(e.tfinger.x * 1280.0f), (int)(e.tfinger.y * 720.0f));
+            } else if (e.type == SDL_FINGERUP) {
+                fnae_pad_touch(game, 2, 0, 0);
+            }
+        }
+
+        fnae_update(game, dt);
+        fnae_static_tick(game);
+        fnae_audio_frame(audio, game);
+
+        int cam_up = game->frame == FRAME_NIGHT && game->cam_anim == CAM_UP;
+        /* TV shows everything with the cameras forced down (office view). */
+        visuals_render(
+            &vtv, rtv,
+            (int)game->frame,
+            game->camera,
+            0,
+            game->night,
+            game->time_of_day,
+            game->hidden_power,
+            game->left_door,
+            game->right_door,
+            game->mask_anim == MASK_DOWN,
+            game->arrow,
+            game->progress,
+            game->static_frame,
+            game->static_alpha,
+            (int)game->office_scroll,
+            game->left_door_frame,
+            game->right_door_frame,
+            game->mask_frame,
+            game->title_bg_frame,
+            game->foxy.pos,
+            game->freddy.pos,
+            game->cam_static_alpha,
+            game->death,
+            game->music_left,
+            (int)game->cam_scroll,
+            game->power_left,
+            game->springtrap_stand,
+            game->lure_area,
+            game->lure_cam,
+            game->lure_cd,
+            game->lure_cd_timer,
+            game->music_winding,
+            game->warning,
+            fnae_audio_call_playing(audio),
+            game->ph_mangle_a == 1,
+            game->ph_bb_a == 1,
+            game->ph_bb_scare,
+            game->ph_bb_scare_on,
+            game->ph_annoy_a,
+            game->death_addup,
+            game->death_red,
+            game->death_red_peaked,
+            game->death_rip_a,
+            game->death_rip_b,
+            game->death_ticks,
+            game->gf_random == 1,
+            game->freddy_door,
+            game->foxy_stand,
+            (const int[]){game->custom_freddy, game->custom_foxy,
+                game->custom_springtrap, game->custom_golden,
+                game->custom_mangle, game->custom_bb, game->custom_puppet},
+            game->custom_sel, game->custom_ch, game->custom_b,
+            (game->custom_ch > 0 && game->custom_ch <= 3
+                && game->custom_check[game->custom_ch]) ? 1 : 0,
+            game->custom_cool
+        );
+        SDL_RenderPresent(rtv);
+
+        if (cam_up) {
+            /* GamePad shows the live camera UI (feed + minimap + lure +
+             * music box), exactly like the single-screen camera view. */
+            visuals_render(
+                &vdrc, rdrc,
+                (int)game->frame,
+                game->camera,
+                1,
+                game->night,
+                game->time_of_day,
+                game->hidden_power,
+                game->left_door,
+                game->right_door,
+                0,
+                game->arrow,
+                game->progress,
+                game->static_frame,
+                game->static_alpha,
+                (int)game->office_scroll,
+                game->left_door_frame,
+                game->right_door_frame,
+                game->mask_frame,
+                game->title_bg_frame,
+                game->foxy.pos,
+                game->freddy.pos,
+                game->cam_static_alpha,
+                game->death,
+                game->music_left,
+                (int)game->cam_scroll,
+                game->power_left,
+                game->springtrap_stand,
+                game->lure_area,
+                game->lure_cam,
+                game->lure_cd,
+                game->lure_cd_timer,
+                game->music_winding,
+                game->warning,
+                fnae_audio_call_playing(audio),
+                game->ph_mangle_a == 1,
+                game->ph_bb_a == 1,
+                game->ph_bb_scare,
+                game->ph_bb_scare_on,
+                game->ph_annoy_a,
+                game->death_addup,
+                game->death_red,
+                game->death_red_peaked,
+                game->death_rip_a,
+                game->death_rip_b,
+                game->death_ticks,
+                game->gf_random == 1,
+                game->freddy_door,
+                game->foxy_stand,
+                NULL,
+                0, 0, 0, 0, 0
+            );
+        } else {
+            /* Cameras closed: just a black screen on the GamePad. */
+            SDL_SetRenderDrawColor(rdrc, 0, 0, 0, 255);
+            SDL_RenderClear(rdrc);
+        }
+        SDL_RenderPresent(rdrc);
+    }
+
+    if (pad) SDL_JoystickClose(pad);
+    visuals_free(&vtv);
+    visuals_free(&vdrc);
+    SDL_DestroyRenderer(rtv);
+    SDL_DestroyRenderer(rdrc);
+    SDL_DestroyWindow(wtv);
+    SDL_DestroyWindow(wdrc);
+    return 0;
+}
+#endif /* __WIIU__ */
 
 int main(int argc, char *argv[]) {
     int headless = 0;
@@ -124,6 +347,20 @@ int main(int argc, char *argv[]) {
     FnaeAudio audio;
     fnae_audio_init(&audio, "assets/audio");
 
+#ifdef __WIIU__
+    /* On hardware the game runs dual-screen (TV + GamePad) through its own
+     * windows/renderers instead of the single desktop window below.
+     * Headless keeps the single-window path. */
+    if (!headless) {
+        int rc = run_wiiu_dualscreen(&game, &audio);
+        headless_free_script(&script);
+        fnae_audio_free(&audio);
+        IMG_Quit();
+        SDL_Quit();
+        return rc;
+    }
+#endif
+
     if (headless) {
         int rc = headless_run(r, &visuals, &game, &hopt,
                               script_path ? &script : NULL, &audio);
@@ -215,6 +452,8 @@ int main(int argc, char *argv[]) {
             game.death_rip_b,
             game.death_ticks,
             game.gf_random == 1,
+            game.freddy_door,
+            game.foxy_stand,
             (const int[]){game.custom_freddy, game.custom_foxy,
                 game.custom_springtrap, game.custom_golden,
                 game.custom_mangle, game.custom_bb, game.custom_puppet},

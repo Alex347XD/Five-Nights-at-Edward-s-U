@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "wiiu.h"
+
 #ifdef _WIN32
 #include <direct.h>
 #else
@@ -149,7 +151,7 @@ int headless_load_script(const char *path, HeadlessScript *out) {
         char arg2[64] = {0};
         int nf = sscanf(p, "%d %15s %255s %63s", &frame, action, arg1, arg2);
         if (nf < 3 || frame < 0) {
-            fprintf(stderr, "HEADLESS: %s:%d: bad line (want '<frame> <key|keyup|click|shot> <args>')\n",
+            fprintf(stderr, "HEADLESS: %s:%d: bad line (want '<frame> <key|keyup|click|mouse|shot|ai|pad> <args>')\n",
                 path, lineno);
             rc = 1;
             break;
@@ -191,6 +193,45 @@ int headless_load_script(const char *path, HeadlessScript *out) {
         } else if (strcmp(action, "shot") == 0) {
             ev->type = HEV_SHOT;
             strncpy(ev->shot, arg1, sizeof ev->shot - 1);
+        } else if (strcmp(action, "ai") == 0) {
+            /* Debug pose: park an animatronic at a route position so
+             * screenshots can capture states (doorway figures) that random
+             * AI would only reach nondeterministically. */
+            if (nf < 4) {
+                fprintf(stderr, "HEADLESS: %s:%d: ai needs WHO POS\n", path, lineno);
+                rc = 1;
+                break;
+            }
+            ev->type = HEV_AI;
+            if (strcmp(arg1, "freddy") == 0) ev->x = 0;
+            else if (strcmp(arg1, "foxy") == 0) ev->x = 1;
+            else {
+                fprintf(stderr, "HEADLESS: %s:%d: unknown ai '%s'\n", path, lineno, arg1);
+                rc = 1;
+                break;
+            }
+            ev->y = atoi(arg2);
+        } else if (strcmp(action, "pad") == 0) {
+            /* GamePad button event through the Wii U mapping (src/wiiu.h). */
+            if (nf < 4) {
+                fprintf(stderr, "HEADLESS: %s:%d: pad needs BTN down|up\n", path, lineno);
+                rc = 1;
+                break;
+            }
+            ev->type = HEV_PAD;
+            ev->x = atoi(arg1);
+            if (strcmp(arg2, "down") == 0) ev->y = 1;
+            else if (strcmp(arg2, "up") == 0) ev->y = 0;
+            else {
+                fprintf(stderr, "HEADLESS: %s:%d: pad needs down|up\n", path, lineno);
+                rc = 1;
+                break;
+            }
+            if (ev->x < 0 || ev->x > 15) {
+                fprintf(stderr, "HEADLESS: %s:%d: pad BTN out of range\n", path, lineno);
+                rc = 1;
+                break;
+            }
         } else {
             fprintf(stderr, "HEADLESS: %s:%d: unknown action '%s'\n", path, lineno, action);
             rc = 1;
@@ -234,6 +275,11 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                  * hold-driven states (music-box crank) never latch. */
                 case HEV_CLICK: fnae_press(game, ev->x, ev->y); fnae_click(game, ev->x, ev->y); fnae_release(game); break;
                 case HEV_MOUSE: fnae_mouse_move(game, ev->x, ev->y); break;
+                case HEV_AI:
+                    if (ev->x == 0) game->freddy.pos = ev->y;
+                    else game->foxy.pos = ev->y;
+                    break;
+                case HEV_PAD: fnae_pad_button(game, ev->x, ev->y); break;
                 case HEV_SHOT:
                     printf("HEADLESS shot frame=%d path=%s game_frame=%s\n",
                         f, ev->shot, fnae_frame_name(game->frame));
@@ -285,6 +331,8 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                         game->death_rip_b,
                         game->death_ticks,
                         game->gf_random == 1,
+                        game->freddy_door,
+                        game->foxy_stand,
                         (const int[]){game->custom_freddy, game->custom_foxy,
                             game->custom_springtrap, game->custom_golden,
                             game->custom_mangle, game->custom_bb,
@@ -360,6 +408,8 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
             game->death_rip_b,
             game->death_ticks,
             game->gf_random == 1,
+            game->freddy_door,
+            game->foxy_stand,
             (const int[]){game->custom_freddy, game->custom_foxy,
                 game->custom_springtrap, game->custom_golden,
                 game->custom_mangle, game->custom_bb, game->custom_puppet},

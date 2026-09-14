@@ -33,6 +33,12 @@ typedef struct {
     SDL_Texture *door_left[IMG_DOOR_FRAMES];
     SDL_Texture *door_right[IMG_DOOR_FRAMES];
     SDL_Texture *desk;
+    /* Door buttons (176/177: Stopped while the door is open/opening,
+     * Animation 12 while closing/closed) + doorway figures (Freddy 213
+     * at the left door, Foxy 228 at the right, both at 1.1 scale). */
+    SDL_Texture *door_btn[2];
+    SDL_Texture *freddy_door;
+    SDL_Texture *foxy_stand;
 
     /* Frame 3 camera minimap (Layer #5 UI): line-art map plus the four
      * clickable cam buttons (gray/green box + "CAM 0X" label each). */
@@ -122,6 +128,7 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                       int ph_bb_scare, int ph_bb_scare_on, int ph_annoy_a,
                        int death_addup, int death_red, int death_red_peaked,
                        int death_rip_a, int death_rip_b, int death_ticks, int gf_sit,
+                      int freddy_door, int foxy_stand,
                      /* Frame 8 Customize (NULL ai = hide). Order matches
                       * fnae_set_custom: freddy, foxy, spring, golden,
                       * mangle, bb, puppet. */

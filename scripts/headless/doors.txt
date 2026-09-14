@@ -1,0 +1,43 @@
+# Door controls + doorway figures verification (60fps frame indices).
+#
+# Flow: warning -> title -> new -> newspaper -> which night -> night 1,
+# pan left, close the left door via its wall button, pose Freddy at the
+# left door, pan right, pose Foxy at the right door, then exercise the
+# GamePad mapping (ZL = cameras, L = left door).
+#
+# Run with:
+#   ./build/FNaE/FNaE_Native.exe --headless --frames 310 \
+#     --script scripts/headless/doors.txt
+#
+# New script actions used here (see src/headless.h):
+#   <frame> ai <freddy|foxy> <POS>  debug pose (freddy 6 = left door,
+#                                   foxy 5 = right door)
+#   <frame> pad <BTN> <down|up>     GamePad button (8 = ZL, 6 = L)
+
+5 key return
+10 key return
+40 key return
+70 key return
+# Night starts; office_scroll starts centered (160). Pan fully left.
+75 mouse 0 360
+115 shot screenshots/doors-open.png
+# Left button sits at frame [105,500]; at scroll 0 that is screen (105,500).
+115 click 105 500
+130 shot screenshots/door-left-closed.png
+132 ai freddy 6
+140 shot screenshots/freddy-door.png
+# Pan fully right (160 -> 320 at 6px/tick, then hold).
+145 mouse 1280 360
+205 shot screenshots/doors-right.png
+207 ai foxy 5
+215 shot screenshots/foxy-stand.png
+# GamePad mapping: ZL (8) opens the cameras (0.55 s flip, up ~frame 253).
+220 pad 8 down
+235 shot screenshots/doors-cam-flip.png
+258 shot screenshots/doors-cam-up.png
+# ZL again closes them (down ~frame 293).
+260 pad 8 down
+# L (6) toggles the left door back open (was closed; view is 0 mid-flip).
+250 pad 6 down
+265 shot screenshots/doors-pad-door.png
+300 shot screenshots/doors-pad-open.png

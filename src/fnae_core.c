@@ -824,14 +824,15 @@ void fnae_click(FnaeGame* g,int x,int y){
   * night's phone call while it plays. The button only shows then, so a
   * click elsewhere here is a no-op for it. */
  if(g->current_call!=0&&x>=40&&x<160&&y>=40&&y<70){g->call_muted=1;fnae_push_sound(g,FNAE_SND_CALL_STOP);return;}
- if(g->view==0 && g->hidden_power>0){
-  /* Door click zones follow the panning doors: compare in frame space
-   * (screen x + scroll) so the zones stay glued to the door art. */
-  int fx=x+(int)g->office_scroll;
-  if(fx<180 && y>500){if(g->left_door==0){g->left_door=1;fnae_push_sound(g,FNAE_SND_DOOR);}else if(g->left_door==2){g->left_door=3;fnae_push_sound(g,FNAE_SND_DOOR);}return;}
-  if(fx>1100 && y>500){if(g->right_door==0){g->right_door=1;fnae_push_sound(g,FNAE_SND_DOOR);}else if(g->right_door==2){g->right_door=3;fnae_push_sound(g,FNAE_SND_DOOR);}return;}
-  if(x>500 && x<780 && y>560){g->cam_anim=CAM_UP_ANIM;g->cam_anim_timer=0;fnae_push_sound(g,FNAE_SND_CAM_UP);return;}
- }
+  if(g->view==0 && g->hidden_power>0){
+   /* Door buttons (Layer #2 world objects, 51x56 center-anchored at
+    * [105,500] / [1489,500]): compare in frame space (screen x + scroll)
+    * so the zones stay glued to the panning buttons, with a 2px grace. */
+   int fx=x+(int)g->office_scroll;
+   if(fx>=77&&fx<=133 && y>=470&&y<=530){if(g->left_door==0){g->left_door=1;fnae_push_sound(g,FNAE_SND_DOOR);}else if(g->left_door==2){g->left_door=3;fnae_push_sound(g,FNAE_SND_DOOR);}return;}
+   if(fx>=1461&&fx<=1517 && y>=470&&y<=530){if(g->right_door==0){g->right_door=1;fnae_push_sound(g,FNAE_SND_DOOR);}else if(g->right_door==2){g->right_door=3;fnae_push_sound(g,FNAE_SND_DOOR);}return;}
+   if(x>500 && x<780 && y>560){g->cam_anim=CAM_UP_ANIM;g->cam_anim_timer=0;fnae_push_sound(g,FNAE_SND_CAM_UP);return;}
+  }
   /* Camera buttons: clicks on any "CAM 01" box move You onto it and the
    * view follows ("[ Is Up ]" + "[ Cam 01 ]" groups). Rects are the verbatim
    * Frame 3 Objects.txt button hotspots (60x40 boxes, center-anchored like
