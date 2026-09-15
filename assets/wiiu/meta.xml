@@ -1,8 +1,20 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<menu version="1">
-  <title_version>0001</title_version>
-  <title_id>00050000464E4145</title_id>
+<?xml version="1.0" encoding="utf-8"?>
+<menu type="app" version="1">
+  <version>0</version>
+  <product_code>WUP-N-FNAE</product_code>
+  <content_platform>WUP</content_platform>
+  <company_code>0000</company_code>
+  <mastering_date>2024-01-01T00:00:00</mastering_date>
+  <logo_type>0</logo_type>
   <app_launch_type>00000000</app_launch_type>
+  <invisible_flag>00000000</invisible_flag>
+  <allow_audio_sharing>0</allow_audio_sharing>
+  <title_id>00050000464E4145</title_id>
+  <title_version>0001</title_version>
+  <app_type>0x80000</app_type>
+  <os_version>0x0005001000000000</os_version>
+  <processor_id>1</processor_id>
+  <vendor_id>0x00000000</vendor_id>
   <common_save_size>0000000000020000</common_save_size>
   <longname_ja>Five Nights at Edward's U</longname_ja>
   <longname_en>Five Nights at Edward's U</longname_en>

@@ -36,13 +36,14 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   (`177.png` olive) while A is 1/2; buttons hide with the doors when the
   cameras are up (office branch only).
 - Doorway figures: Freddy at your door (`213.png` @1.1, center-anchored,
-  drawn raised at [260,600]) reappears while Freddy Collision overlaps
+  drawn at [230,360], centered in the left doorway at Foxy's height)
+  reappears while Freddy Collision overlaps
   Left Door Collision on the office screen and hides otherwise; Foxy Stand
   (`228.png` @1.1 at the verbatim [1287,331]) mirrors it for the right
   door (Fusion `[ Freddy ]` / `[ Foxy ]` visibility events, View > 0 hides
   both). Freddy's verbatim Objects.txt spot [260,788] sits below the 720
-  screen and showed antennae only, so he rides 188px up like the CAM 01 /
-  GF Sit owner offsets. The native
+  screen and showed antennae only, so he is centered on the left door
+  (door `[119,0]` is 223 wide, center x~230) per owner request. The native
   `freddy_door` / `foxy_stand` flags reuse the route positions (freddy
   pos 6, foxy pos 5) with the same office-view + power gates.
 - Wii U GamePad (`src/wiiu.h`, hardware only): ZL = S (cameras), L/R = A/D
