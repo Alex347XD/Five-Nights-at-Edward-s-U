@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<cos version="1">
+  <os_version>0005001010040100</os_version>
+  <title_id>00050000464E4145</title_id>
+  <process_num>1</process_num>
+  <main_stack_size>0x00040000</main_stack_size>
+  <sdk_version>21213</sdk_version>
+  <app_type>80000001</app_type>
+  <arg_str_max_len>2048</arg_str_max_len>
+  <avail_size>0x40000000</avail_size>
+  <perm_info_system>0x0000000000000000</perm_info_system>
+  <perm_info_pfs>0x0000000000000000</perm_info_pfs>
+</cos>

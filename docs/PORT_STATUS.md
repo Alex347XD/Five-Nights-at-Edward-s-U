@@ -89,7 +89,12 @@ power-out fade into a death screen.
   textures can't cross renderers), so VRAM use roughly doubles. RPX + WUHB
   build verified with devkitPPC/wut (`powerpc-eabi-cmake -S . -B build-wiiu`
   then `--build build-wiiu`; needs the wiiu SDL2 portlibs); not yet run on
-  hardware.
+hardware. `build-wiiu/FNaE/` holds the unpacked-title layout (`code/` with the
+rpx plus `app.xml`/`cos.xml`, `content/`, `meta/` with `meta.xml` plus the
+`iconTex`/`bootTvTex`/`bootDrcTex` TGAs, nothing else) and every image/audio
+path goes through the
+  `fs:/vol/content` probe (`fnae_asset_root` in `src/wiiu.h`), so the game
+  finds its assets from the folder bundle, the `.wuhb`, or a flat folder.
 
 ### Frame 6 Which Night
 
@@ -181,10 +186,11 @@ termination notice, not the newspaper.)
   at [100,55], visible on office and camera screens while the call plays,
   stops it on click).
 - Phantoms render: Phantom Mangle's camera face (`405.png` x2.7, Layer #6
-  top) and office Annoy (`380.png` rising from [508,720], Layer #3 above
+  top, cameras-up only — hidden over the office, including the camera-down
+  transition) and office Annoy (`380.png` rising from [508,720], Layer #3 above
   the desk, panning with the office), Phantom BB's camera face (`352.png`
-  x2.7, Layer #6 top, dismissed by clicking a cam button) and post-scare
-  fade (`349.png` x2.7, alpha 0→255 after the 80-tick force-down).
+  x2.7, Layer #6 top, cameras-up only, dismissed by clicking a cam button)
+  and post-scare fade (`349.png` x2.7, alpha 0→255 after the 80-tick force-down).
 - Night HUD renders on all Frame 3 screens (office and camera views):
   "12 AM"-style clock top-right (time of day [1186,65] + am [1200,37]),
   "NIGHT n" under it (Which Night? [759,85] + The Night [1245,101]),

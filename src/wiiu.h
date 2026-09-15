@@ -18,6 +18,9 @@
 
 #include <SDL_keycode.h>
 
+#include <stdio.h>
+#include <string.h>
+
 #include "fnae_core.h"
 
 /* WiiU-only SDL window flags (from the sdl-wiiu port's SDL_video.h).
@@ -48,6 +51,32 @@ typedef enum {
     FNAE_PAD_RIGHT = 14,
     FNAE_PAD_DOWN = 15
 } FnaePadButton;
+
+/* Asset root probe (Wii U only): content can live at fs:/vol/content
+ * (.wuhb bundle, code/content/meta title folder) or next to the binary
+ * (dev working dir, flat HBL folder). Probe once for the title card and
+ * pin the prefix every image/audio path goes through, so the game boots
+ * no matter which layout launched it. Everywhere else this is "" — the
+ * desktop layout never changes. */
+static inline const char *fnae_asset_root(void) {
+#ifdef __WIIU__
+    static char root[64] = {0};
+    static int probed = 0;
+    if (!probed) {
+        probed = 1;
+        FILE *f = fopen("fs:/vol/content/assets/images/515.png", "rb");
+        if (f) {
+            fclose(f);
+            strcpy(root, "fs:/vol/content/");
+        } else {
+            root[0] = '\0';
+        }
+    }
+    return root;
+#else
+    return "";
+#endif
+}
 
 /* Pads that act as held states (flashlight / wind) report down=1 on press
  * and down=0 on release; every other pad only fires on press (down=1). */

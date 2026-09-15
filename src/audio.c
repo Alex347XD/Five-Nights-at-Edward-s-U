@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "wiiu.h"
+
 /* Fusion Sound channels (Frame 3 Events.txt [ Audio ] group). */
 #define CH_FAN 1
 #define CH_DEPTHS 2
@@ -44,13 +46,38 @@ int fnae_audio_init(FnaeAudio *a, const char *dir) {
  a->prev_frame = -1;
  if (Mix_Init(MIX_INIT_MP3) == 0)
   fprintf(stderr, "AUDIO: mp3 decoder unavailable: %s\n", Mix_GetError());
- if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0) {
-  fprintf(stderr, "AUDIO: Mix_OpenAudio failed (silent): %s\n", Mix_GetError());
+ /* Wii U AX runs at 48000 Hz and its SDL driver may reject 44100: try
+  * the desktop rate first (unchanged desktop behavior), then the native
+  * Wii U rate, then 22050. A rejected rate used to mean total silence. */
+ static const int freq_try[] = { 44100, 48000, 22050 };
+ int freq_got = 0;
+ for (size_t i = 0; i < sizeof freq_try / sizeof freq_try[0]; ++i) {
+  if (Mix_OpenAudio(freq_try[i], MIX_DEFAULT_FORMAT, 2, 2048) == 0) {
+   freq_got = freq_try[i];
+   break;
+  }
+  fprintf(stderr, "AUDIO: Mix_OpenAudio(%d) failed: %s\n",
+   freq_try[i], Mix_GetError());
+ }
+ if (!freq_got) {
+  fprintf(stderr, "AUDIO: no rate opened (silent)\n");
   return 0;
  }
- Mix_AllocateChannels(40);
+ {
+  int qf = 0; Uint16 qfmt = 0; int qch = 0;
+  Mix_QuerySpec(&qf, &qfmt, &qch);
+  printf("AUDIO opened=%dHz ch=%d\n", qf, qch);
+  fflush(stdout);
+ }
+  Mix_AllocateChannels(40);
 
- a->fan = load_one(dir, "fansound.wav");
+ /* Wii U content probe (code/content/meta, .wuhb, or flat folder): every
+  * sample dir goes through the pinned asset root ("" on desktop). */
+  char fulldir[576];
+  snprintf(fulldir, sizeof fulldir, "%s%s", fnae_asset_root(), dir);
+  dir = fulldir;
+
+  a->fan = load_one(dir, "fansound.wav");
  a->depths = load_one(dir, "In The Depths C.wav");
  a->camau = load_one(dir, "Camera Audio.wav");
  a->change = load_one(dir, "Change.wav");

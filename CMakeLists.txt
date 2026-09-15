@@ -66,6 +66,38 @@ if(WIIU)
         SHORTNAME "FNaE"
         CONTENT "${CMAKE_CURRENT_BINARY_DIR}/wuhb-content"
     )
+    # Unpacked-title folder bundle: build-wiiu/FNaE holds ONLY code/,
+    # content/, and meta/ — nothing loose at the root. Cemu boots
+    # code/FNaE_Native.rpx; the game's vol/content asset probe (src/wiiu.h)
+    # resolves content/assets no matter the working directory, so a bare
+    # .rpx elsewhere can no longer die on missing assets.
+    add_custom_command(TARGET FNaE_Native POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_Native.rpx"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/code/FNaE_Native.rpx"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/app.xml"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/code/app.xml"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/cos.xml"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/code/cos.xml"
+        COMMAND "${CMAKE_COMMAND}" -E copy_directory
+            "${CMAKE_SOURCE_DIR}/assets"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/content/assets"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/meta.xml"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/meta/meta.xml"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/iconTex.tga"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/meta/iconTex.tga"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootTvTex.tga"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/meta/bootTvTex.tga"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.tga"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/meta/bootDrcTex.tga"
+        COMMENT "Staging Wii U folder bundle (FNaE/{code,content,meta})"
+    )
 else()
 # Self-contained run folder: build/FNaE/FNaE_Native.exe + assets + DLLs,
 # so the game can be launched from there instead of the repo root.

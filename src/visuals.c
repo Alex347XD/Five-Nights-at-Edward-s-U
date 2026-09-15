@@ -1,6 +1,7 @@
 #include "visuals.h"
 #include "fnae_assets.h"
 #include "fnae_core.h"
+#include "wiiu.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +25,7 @@ static SDL_Texture *load_png(SDL_Renderer *r, const char *path) {
 }
 
 static void path_for(char *dst, size_t n, int id) {
-    snprintf(dst, n, "assets/images/%d.png", id);
+    snprintf(dst, n, "%sassets/images/%d.png", fnae_asset_root(), id);
 }
 
 static SDL_Texture *load_id(SDL_Renderer *r, int id) {
@@ -433,8 +434,12 @@ static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, in
     draw_texture(r, v->title_template, 64, 96);
     draw_texture(r, v->title_new,      96, 448);
     draw_texture(r, v->title_continue, 96, 512);
-    draw_texture(r, v->title_6night,   96, 576);
-    draw_texture(r, v->title_custom,   96, 640);
+    /* 6 Night reappears iff Star is visible (progress > 0), Custom iff
+     * Star 2 is visible (progress > 1) — Frame 2 Events.txt. Matches the
+     * input gating in fnae_key/fnae_click, so a locked item is neither
+     * shown nor reachable. */
+    if (progress > 0) draw_texture(r, v->title_6night,   96, 576);
+    if (progress > 1) draw_texture(r, v->title_custom,   96, 640);
 
     /* Arrow is positioned relative to the selected menu object.
      * Coordinates are verbatim Fusion hotspot positions from Frame 2
@@ -838,12 +843,18 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
     SDL_RenderClear(r);
 
     /* Jumpscare shake: the night scene jumps X/Y +/-Random(5) on any death
-     * (GF shakes +/-Random(8)). Applied to the office/cam draws below. */
+     * (GF shakes +/-Random(8)). Applied to the office/cam draws below.
+     * Derived from the per-tick death_addup counter (not rand() per render),
+     * so the offset holds steady across renders of the same tick and steps
+     * at the Fusion 60 Hz cadence on any refresh rate: re-rolling every
+     * present strobed/vibrated on uncapped or high-Hz loops. */
     int ox = 0, oy = 0;
     if (frame == 3 && death > 0) {
         int j = (death == 5) ? 8 : 5;
-        ox = rand() % (2 * j + 1) - j;
-        oy = rand() % (2 * j + 1) - j;
+        unsigned s1 = (unsigned)(death_addup < 0 ? 0 : death_addup) * 1103515245u + 12345u;
+        unsigned s2 = (unsigned)(death_addup < 0 ? 0 : death_addup) * 22695477u + 1u;
+        ox = (int)(s1 % (unsigned)(2 * j + 1)) - j;
+        oy = (int)((s2 >> 8) % (unsigned)(2 * j + 1)) - j;
     }
 
     if (frame == 1) {
@@ -1018,10 +1029,15 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
         /* Layer #6 top overlays (Phantom Mangle / Phantom BB camera haunts
          * + the BB scare fade): above feed, office, and camera UI alike,
          * in Objects.txt layer order. The camera haunts show while A==1
-         * (cameras-up phase); the scare fades in over the office after
-         * the B>80 force-down (gated on the first trigger in core). */
-        if (ph_mangle_cam) draw_phantom_cam(r, v->phmangle_cam, 255, ox, oy, 2.7f);
-        if (ph_bb_cam) draw_phantom_cam(r, v->phbb_cam, 255, ox, oy, 2.7f);
+         * AND the cameras are up: A only clears once View hits 0, so
+         * without the cameras-up gate the face lingered over the office
+         * through the 0.55 s camera-down transition. The scare fades in
+         * over the office after the B>80 force-down (gated on the first
+         * trigger in core), so it stays ungated. */
+        if (camera_up && ph_mangle_cam)
+            draw_phantom_cam(r, v->phmangle_cam, 255, ox, oy, 2.7f);
+        if (camera_up && ph_bb_cam)
+            draw_phantom_cam(r, v->phbb_cam, 255, ox, oy, 2.7f);
         if (ph_bb_scare_on && ph_bb_scare > 0)
             draw_phantom_cam(r, v->phbb_scare, ph_bb_scare, ox, oy, 2.7f);
         /* Jumpscare (Frame 3 "[ Jumpscares ]"): created at (0,0) x2.8 on
@@ -1105,5 +1121,17 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
              night, hour, power / 100, cam_names[cam], camera_up ? " (up)" : "",
              left_door > 0, right_door > 0, mask ? " | MASK" : "",
              music);
-    SDL_SetWindowTitle(SDL_GetWindowFromID(1), title);
+    /* Live state in the window title, but only pushed on change: calling
+     * SDL_SetWindowTitle 60-144x/sec makes the title bar visibly flicker
+     * on Windows and wastes a non-client repaint every present. */
+    SDL_Window *win = SDL_RenderGetWindow(r);
+    if (win) {
+        static SDL_Window *last_win = NULL;
+        static char last_title[256] = {0};
+        if (win != last_win || strcmp(title, last_title) != 0) {
+            last_win = win;
+            snprintf(last_title, sizeof last_title, "%s", title);
+            SDL_SetWindowTitle(win, title);
+        }
+    }
 }

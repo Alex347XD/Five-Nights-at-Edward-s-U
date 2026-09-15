@@ -81,6 +81,7 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
         pad = SDL_JoystickOpen(0);
 
     Uint64 last = SDL_GetPerformanceCounter();
+    float static_acc = 0.0f;
     while (game->running) {
         Uint64 now = SDL_GetPerformanceCounter();
         float dt = (float)((double)(now - last) /
@@ -110,7 +111,13 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
         }
 
         fnae_update(game, dt);
-        fnae_static_tick(game);
+        /* Fixed 1/60 static steps (see the desktop loop): keeps the static
+         * cadence at real-time speed on any display refresh. */
+        static_acc += dt;
+        while (static_acc >= 1.0f / 60.0f) {
+            static_acc -= 1.0f / 60.0f;
+            fnae_static_tick(game);
+        }
         fnae_audio_frame(audio, game);
 
         int cam_up = game->frame == FRAME_NIGHT && game->cam_anim == CAM_UP;
@@ -235,6 +242,15 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
             SDL_RenderClear(rdrc);
         }
         SDL_RenderPresent(rdrc);
+        /* Hold ~60 presents/s when vsync is unavailable (see desktop loop). */
+        {
+            Uint64 end = SDL_GetPerformanceCounter();
+            double elapsed = (double)(end - now) /
+                             (double)SDL_GetPerformanceFrequency();
+            double target = 1.0 / 60.0;
+            if (elapsed < target)
+                SDL_Delay((Uint32)((target - elapsed) * 1000.0));
+        }
     }
 
     if (pad) SDL_JoystickClose(pad);
@@ -316,6 +332,11 @@ int main(int argc, char *argv[]) {
     SDL_Renderer *r = SDL_CreateRenderer(
         w, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!r) {
+        /* Accelerated without vsync (driver override) still beats software;
+         * the main loop caps presents to ~60/s itself in that case. */
+        r = SDL_CreateRenderer(w, -1, SDL_RENDERER_ACCELERATED);
+    }
+    if (!r) {
         /* Dummy video driver (headless/CI) has no accelerated renderer. */
         r = SDL_CreateRenderer(w, -1, SDL_RENDERER_SOFTWARE);
     }
@@ -375,6 +396,7 @@ int main(int argc, char *argv[]) {
     }
 
     Uint64 last = SDL_GetPerformanceCounter();
+    float static_acc = 0.0f;
 
     while (game.running) {
         Uint64 now = SDL_GetPerformanceCounter();
@@ -402,7 +424,14 @@ int main(int argc, char *argv[]) {
         }
 
         fnae_update(&game, dt);
-        fnae_static_tick(&game);
+        /* TV-static + title-flash timing is defined in Fusion ticks (1/60):
+         * stepping them here keeps the ~20 fps static and the 0.2 s flash
+         * at real-time speed on any refresh rate instead of strobing. */
+        static_acc += dt;
+        while (static_acc >= 1.0f / 60.0f) {
+            static_acc -= 1.0f / 60.0f;
+            fnae_static_tick(&game);
+        }
         fnae_audio_frame(&audio, &game);
 
         visuals_render(
@@ -464,6 +493,19 @@ int main(int argc, char *argv[]) {
         );
 
         SDL_RenderPresent(r);
+        /* When vsync is unavailable (software fallback, driver override)
+         * Present returns immediately and the loop would spin at 1000+ fps,
+         * tearing and strobing every per-frame effect: hold ~60 presents/s.
+         * With working vsync this never fires (a present already took the
+         * whole budget). */
+        {
+            Uint64 end = SDL_GetPerformanceCounter();
+            double elapsed = (double)(end - now) /
+                             (double)SDL_GetPerformanceFrequency();
+            double target = 1.0 / 60.0;
+            if (elapsed < target)
+                SDL_Delay((Uint32)((target - elapsed) * 1000.0));
+        }
     }
 
     headless_free_script(&script);
