@@ -19,7 +19,11 @@ These match `visuals_init` in `src/visuals.c`:
 - `46.png`–`53.png` — TV-static animation (8-frame loop; title flickers
   alpha 100+Random(100), cameras run 150+Random(50) every 0.08 s while the
   feed is live, 0 on signal loss)
-- `4.png` — 6 AM screen
+- Frame 9 (6 AM) is black with the "which AM" odometer at [533,324]:
+  `389.png` Stopped ("5"), then the 5→6 roll
+  (`403/406/423-426/428-442/462/487/489/491/492`) starting 3 s in at
+  20fps and holding `492.png` ("6"). `4.png` is the night-6 overtime
+  paycheck (Frame 5 Final only), never the 6 AM screen
 - `1.png` — RIP Text GAME OVER frame (479x54, Frame 4 Death,
   center-anchored at [640,650], shown once RIP B>1 and fading per the RIP
   A/B state); `404.png` — RIP Text first frame (126x54 red RIP, same

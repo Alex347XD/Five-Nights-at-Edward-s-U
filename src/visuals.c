@@ -52,7 +52,15 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->cams[3][1] = load_id(r, IMG_CAM_DINO_FOXY);
     for (int i = 0; i < IMG_STATIC_COUNT; ++i)
         v->static_frames[i] = load_id(r, IMG_STATIC_FIRST + i);
-    v->six_am = load_id(r, IMG_SIX_AM);
+    /* Frame 9 "which AM" odometer (see fnae_assets.h): Stopped "5"
+     * first, then the roll up to "6" in bank order. */
+    {
+        static const int ids[IMG_WHICH_AM_COUNT] = {389, 403, 406, 423,
+            424, 425, 426, 428, 429, 430, 431, 432, 433, 434, 435, 436,
+            437, 438, 439, 440, 441, 442, 462, 487, 489, 491, 492};
+        for (int i = 0; i < IMG_WHICH_AM_COUNT; ++i)
+            v->which_am[i] = load_id(r, ids[i]);
+    }
     v->final_n6 = load_id(r, IMG_FINAL_N6);
     v->final_n7 = load_id(r, IMG_FINAL_N7);
     v->death = load_id(r, IMG_DEATH);
@@ -187,7 +195,8 @@ void visuals_free(FnaeVisuals *v) {
             destroy_texture(&v->cams[i][j]);
     for (int i = 0; i < 8; ++i)
         destroy_texture(&v->static_frames[i]);
-    destroy_texture(&v->six_am);
+    for (int i = 0; i < IMG_WHICH_AM_COUNT; ++i)
+        destroy_texture(&v->which_am[i]);
     destroy_texture(&v->final_n6);
     destroy_texture(&v->final_n7);
     destroy_texture(&v->death);
@@ -826,8 +835,9 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                      int camera_up, int night, int hour, int power,
                      int left_door, int right_door, int mask, int arrow, int progress,
                      int static_frame, int static_alpha, int office_scroll,
-                     int left_door_frame, int right_door_frame, int mask_frame, int title_bg_frame,
-                     int foxy_pos, int freddy_pos, int cam_static_alpha,
+                      int left_door_frame, int right_door_frame, int mask_frame, int title_bg_frame,
+                      float six_timer,
+                      int foxy_pos, int freddy_pos, int cam_static_alpha,
                      int death, int music, int cam_scroll, int usage,
                       int stand, int lure_area, int lure_cam,
                       int lure_cd, float lure_cd_timer,
@@ -952,39 +962,44 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             draw_night_hud(r, sel, 1, night, hour, power, usage);
         } else {
             draw_office_pan(r, v->office, office_scroll, ox, oy);
-            /* Layer order mirrors Fusion: office (#1), doors (#2), desk (#3).
-             * Doors/desk are world objects at verbatim Objects.txt positions,
-             * shifted by the pan scroll. */
+            /* Layer order mirrors Fusion Layer #2 (overlay office): each
+             * doorway figure sits BEHIND its door shutter, so a closed
+             * door covers the character. Per-side order is Freddy, left
+             * door, left button, then Foxy, right door, right button.
+             * Doors/desk are world objects at verbatim Objects.txt
+             * positions, shifted by the pan scroll. */
             if (left_door_frame < 0) left_door_frame = 0;
             if (left_door_frame >= IMG_DOOR_FRAMES) left_door_frame = IMG_DOOR_FRAMES - 1;
             if (right_door_frame < 0) right_door_frame = 0;
             if (right_door_frame >= IMG_DOOR_FRAMES) right_door_frame = IMG_DOOR_FRAMES - 1;
-            draw_world(r, v->door_left[left_door_frame], 119, 0, office_scroll, ox, oy);
-            draw_world(r, v->door_right[right_door_frame], 1263, 0, office_scroll, ox, oy);
-            /* Door buttons (Layer #2 world objects, center-anchored at
-             * their Objects.txt spots): Stopped while the door is
-             * open/opening (A 0/3), Animation 12 while closing/closed
-             * (A 1/2). The left_door/right_door params carry A. */
-            visuals_draw_anchored(r, v->door_btn[(left_door == 1 || left_door == 2) ? 1 : 0],
-                                  105 - office_scroll + ox, 500 + oy,
-                                  FNAE_ANCHOR_CENTER);
-            visuals_draw_anchored(r, v->door_btn[(right_door == 1 || right_door == 2) ? 1 : 0],
-                                  1489 - office_scroll + ox, 500 + oy,
-                                  FNAE_ANCHOR_CENTER);
-            /* Doorway figures (Layer #2, above the doors): Freddy at the
-             * left door (213 @1.1, center-anchored) and Foxy at the right
-             * (228 @1.1 at the verbatim [1287,331]), each while its
-             * collision overlaps that door's (office view only). Freddy is
-             * drawn at [230,360]: his verbatim Objects.txt spot [260,788]
-             * sits below the 720 screen and showed antennae only, so he is
+            /* Freddy at the left door (213 @1.1, center-anchored) while
+             * his collision overlaps it (office view only). Drawn at
+             * [230,360]: his verbatim Objects.txt spot [260,788] sits
+             * below the 720 screen and showed antennae only, so he is
              * centered in the left doorway (door [119,0] is 223 wide,
              * center x~230) at Foxy's height (owner request). */
             if (freddy_door)
                 draw_world_scaled(r, v->freddy_door, 230, 360, office_scroll, ox, oy,
                                   1.1f, FNAE_ANCHOR_CENTER);
+            draw_world(r, v->door_left[left_door_frame], 119, 0, office_scroll, ox, oy);
+            /* Left door button (center-anchored at its Objects.txt spot):
+             * Stopped while the door is open/opening (A 0/3), Animation
+             * 12 while closing/closed (A 1/2). left_door carries A. */
+            visuals_draw_anchored(r, v->door_btn[(left_door == 1 || left_door == 2) ? 1 : 0],
+                                  105 - office_scroll + ox, 500 + oy,
+                                  FNAE_ANCHOR_CENTER);
+            /* Foxy at the right door (228 @1.1, center-anchored) while her
+             * collision overlaps it. Drawn at [1387,331]: her verbatim
+             * Objects.txt spot [1287,331] sat 100px left of the right
+             * doorway (door [1263,0] is 248 wide, center x~1387), so she
+             * is centered in it like Freddy (owner request). */
             if (foxy_stand)
-                draw_world_scaled(r, v->foxy_stand, 1287, 331, office_scroll, ox, oy,
+                draw_world_scaled(r, v->foxy_stand, 1387, 331, office_scroll, ox, oy,
                                   1.1f, FNAE_ANCHOR_CENTER);
+            draw_world(r, v->door_right[right_door_frame], 1263, 0, office_scroll, ox, oy);
+            visuals_draw_anchored(r, v->door_btn[(right_door == 1 || right_door == 2) ? 1 : 0],
+                                  1489 - office_scroll + ox, 500 + oy,
+                                  FNAE_ANCHOR_CENTER);
             /* GF Sit (Layer #2 office overlay, above the doors): reappears
              * while GF Random == 1, invisible otherwise. A world object
              * like the doors, so it pans with the office. Drawn before
@@ -1065,7 +1080,18 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
     } else if (frame == 6) {
         draw_which_night(r, v, night);
     } else if (frame == 9) {
-        fit_center(r, v->six_am);
+        /* Frame 9 (6 AM): black screen with the "which AM" odometer at its
+         * verbatim [533,324] (top-left): Stopped "5" for the first 3 s,
+         * then the roll up to "6" at 20fps, holding the last frame (Frame
+         * 9 Events.txt: Timer > 03'' + once -> Start animation). The win
+         * screens (2/4/7.png) only show on Frame 5 Final after nights
+         * 5/6/7, never here. */
+        int widx = 0;
+        if (six_timer >= 3.0f) {
+            widx = 1 + (int)((six_timer - 3.0f) * 20.0f);
+            if (widx >= IMG_WHICH_AM_COUNT) widx = IMG_WHICH_AM_COUNT - 1;
+        }
+        draw_texture(r, v->which_am[widx], 533, 324);
     } else if (frame == 4) {
         /* Frame 4 Death: fullscreen red flash first (drains back to 0 so
          * the animation owns the rest of the screen). The devil-card Death

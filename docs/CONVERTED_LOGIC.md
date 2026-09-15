@@ -39,9 +39,11 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   drawn at [230,360], centered in the left doorway at Foxy's height)
   reappears while Freddy Collision overlaps
   Left Door Collision on the office screen and hides otherwise; Foxy Stand
-  (`228.png` @1.1 at the verbatim [1287,331]) mirrors it for the right
+  (`228.png` @1.1, drawn at [1387,331], centered in the right doorway)
+  mirrors it for the right
   door (Fusion `[ Freddy ]` / `[ Foxy ]` visibility events, View > 0 hides
-  both). Freddy's verbatim Objects.txt spot [260,788] sits below the 720
+  both). Each figure draws behind its door shutter in Layer #2 order, so a
+  closed door covers the character. Freddy's verbatim Objects.txt spot [260,788] sits below the 720
   screen and showed antennae only, so he is centered on the left door
   (door `[119,0]` is 223 wide, center x~230) per owner request. The native
   `freddy_door` / `foxy_stand` flags reuse the route positions (freddy
@@ -156,7 +158,10 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
 - Warning (Frame 1): boots here; `Timer equals 05''` auto-advances to Title
   after 5 s, and any key skips (no click event in Fusion, so clicks don't
   advance it).
-- 6 AM routes to Final for nights 6/7 or Night Story >= 5, else increments to
+- 6 AM (Frame 9) is black with the "which AM" odometer at [533,324]:
+  Stopped "5" (`389.png`), rolling to "6" at 20fps from 3 s in and holding
+  the last frame (`492.png`); the win screens never show here. It routes
+  to Final for nights 6/7 or Night Story >= 5, else increments to
   the next night via Which Night. Final shows the per-night win screen
   (Frame 5 Events.txt creates one of Night 5/6/7 from the "6th or 7th
   night" counter): night 5 -> weekly paycheck (`2.png`), night 6 ->

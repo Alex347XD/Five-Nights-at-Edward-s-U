@@ -18,9 +18,12 @@ typedef struct {
  *   <frame> click <X> <Y> left-click at window coordinates
  *   <frame> mouse <X> <Y> move the pointer (no click; drives office panning)
  *   <frame> shot <PATH>   save the current frame (extra screenshots mid-run)
- *   <frame> ai <WHO> <POS> debug pose: place an animatronic (WHO: freddy,
- *                             foxy) at route position POS (freddy 6 = left
- *                             door, foxy 5 = right door)
+  *   <frame> ai <WHO> <POS> debug pose: place an animatronic (WHO: freddy,
+  *                             foxy) at route position POS (freddy 6 = left
+  *                             door, foxy 5 = right door)
+  *   <frame> clock <HOUR> debug warp: jump the night clock to HOUR with 5 s
+  *                             left in it (captures 6 AM without playing the
+  *                             full shift)
  *   <frame> pad <BTN> <down|up> GamePad button event (BTN: 0-15 in vpad
  *                             order A B X Y STICK_L STICK_R L R ZL ZR PLUS
  *                             MINUS LEFT UP RIGHT DOWN, see src/wiiu.h)
@@ -34,6 +37,7 @@ typedef enum {
     HEV_MOUSE,
     HEV_SHOT,
     HEV_AI,
+    HEV_CLOCK,
     HEV_PAD
 } HeadlessEvType;
 
@@ -42,8 +46,9 @@ typedef struct {
     HeadlessEvType type;
     int key;           /* HEV_KEY/HEV_KEYUP: SDL_Keycode */
     int x, y;          /* HEV_CLICK/HEV_MOUSE: window coordinates;
-                        * HEV_AI: x = 0 freddy / 1 foxy, y = route pos;
-                        * HEV_PAD: x = button index, y = down (1) / up (0) */
+                         * HEV_AI: x = 0 freddy / 1 foxy, y = route pos;
+                         * HEV_CLOCK: x = hour to jump to;
+                         * HEV_PAD: x = button index, y = down (1) / up (0) */
     char shot[256];    /* HEV_SHOT: output path */
 } HeadlessEvent;
 
