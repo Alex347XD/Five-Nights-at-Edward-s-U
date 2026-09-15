@@ -1,4 +1,4 @@
-FNaE Native test controls
+FNaE Native test controls (desktop)
 
 Enter  = start / advance / retry
 ESC    = quit
@@ -8,5 +8,23 @@ A      = left door
 D      = right door
 M      = mask
 Z      = flashlight
+E      = audio lure (camera up, not Cam 04)
+R      = wind music box (hold, Cam 04)
+Click door wall buttons (51x56, beside each door) = toggle that door
+Click desk flip zone (x 500-780, y > 560) = camera up
 
-The final Wii U build will replace these with GamePad/Controller input.
+Wii U GamePad (hardware only; cameras live on the GamePad screen, the
+office and everything else stays on the TV)
+
+ZL        = cameras open/close
+L / R     = left / right door
+Y         = mask
+B (hold)  = flashlight
+X         = audio lure (camera up, not Cam 04)
+ZR (hold) = wind music box (Cam 04)
+A / Plus  = start / advance / retry (Enter)
+Minus     = mute phone call
+D-pad Up/Down    = menu navigation
+D-pad Left/Right = switch camera (camera up) / menus otherwise
+Left stick       = look around the office (pan)
+Touchscreen      = camera buttons, lure, music-box crank (tap / hold)

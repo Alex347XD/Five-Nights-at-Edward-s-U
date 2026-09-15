@@ -1,4 +1,5 @@
 build
+build-wiiu
 # Native save file (Fusion INI group "Base" as Edward; lives in
 # %APPDATA%\MMFApplications, working-directory copy is legacy).
 /Edward

@@ -5,7 +5,11 @@
 #                        up/down/left/right, or a single character
 #   <frame> keyup <KEY>  release a key
 #   <frame> click <X> <Y>  left-click at window coordinates
+#   <frame> mouse <X> <Y>  move the pointer (no click; drives office panning)
 #   <frame> shot <PATH>  save the current frame mid-run (.png or .bmp)
+#   <frame> ai <WHO> <POS>  debug pose: freddy|foxy at route position
+#                           (freddy 6 = left door, foxy 5 = right door)
+#   <frame> pad <BTN> <down|up>  GamePad button 0-15 (see src/wiiu.h)
 #
 # Run with:
 #   ./build/FNaE/FNaE_Native.exe --headless --frames 300 \

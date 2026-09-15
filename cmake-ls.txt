@@ -1,0 +1,2 @@
+-rwxr-xr-x 1 zacha zacha 12451964 Mar 30 00:57 /opt/devkitpro/msys2/usr/bin/cmake.exe
+-rw-r--r-- 1 zacha zacha        0 Sep 14 13:03 cmake-out.txt

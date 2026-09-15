@@ -1,6 +1,7 @@
 #include "visuals.h"
 #include "fnae_assets.h"
 #include "fnae_core.h"
+#include "wiiu.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +25,7 @@ static SDL_Texture *load_png(SDL_Renderer *r, const char *path) {
 }
 
 static void path_for(char *dst, size_t n, int id) {
-    snprintf(dst, n, "assets/images/%d.png", id);
+    snprintf(dst, n, "%sassets/images/%d.png", fnae_asset_root(), id);
 }
 
 static SDL_Texture *load_id(SDL_Renderer *r, int id) {
@@ -73,6 +74,11 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
         v->door_left[i] = load_id(r, IMG_DOOR_LEFT_FIRST + i);
         v->door_right[i] = load_id(r, IMG_DOOR_RIGHT_FIRST + i);
     }
+    /* Door buttons (off = Stopped, on = Animation 12) + doorway figures. */
+    v->door_btn[0] = load_id(r, IMG_DOORBTN_OFF);
+    v->door_btn[1] = load_id(r, IMG_DOORBTN_ON);
+    v->freddy_door = load_id(r, IMG_FREDDY_DOOR);
+    v->foxy_stand = load_id(r, IMG_FOXY_STAND);
     /* Camera minimap + buttons (see src/fnae_assets.h for layout). */
     v->minimap = load_id(r, IMG_MINIMAP);
     v->cam_btn_off = load_id(r, IMG_CAMBTN_OFF);
@@ -193,6 +199,10 @@ void visuals_free(FnaeVisuals *v) {
         destroy_texture(&v->door_left[i]);
         destroy_texture(&v->door_right[i]);
     }
+    destroy_texture(&v->door_btn[0]);
+    destroy_texture(&v->door_btn[1]);
+    destroy_texture(&v->freddy_door);
+    destroy_texture(&v->foxy_stand);
     destroy_texture(&v->desk);
     destroy_texture(&v->minimap);
     destroy_texture(&v->cam_btn_off);
@@ -370,6 +380,25 @@ static void draw_world(SDL_Renderer *r, SDL_Texture *t, int fx, int fy, int scro
     SDL_RenderCopy(r, t, NULL, &d);
 }
 
+/* Scaled world-layer object with an explicit Fusion-hotspot anchor
+ * (doorway figures render at 1.1 scale, center-anchored). */
+static void draw_world_scaled(SDL_Renderer *r, SDL_Texture *t, int fx, int fy,
+                              int scroll, int ox, int oy, float scale, FnaeAnchor anchor) {
+    if (!t) return;
+    int w, h;
+    SDL_QueryTexture(t, NULL, NULL, &w, &h);
+    int sw = (int)(w * scale);
+    int sh = (int)(h * scale);
+    int x = fx - scroll + ox, y = fy + oy;
+    switch (anchor) {
+    case FNAE_ANCHOR_CENTER: x -= sw / 2; y -= sh / 2; break;
+    case FNAE_ANCHOR_RIGHT_CENTER: x -= sw; y -= sh / 2; break;
+    case FNAE_ANCHOR_TOP_LEFT: default: break;
+    }
+    SDL_Rect d = {x, y, sw, sh};
+    SDL_RenderCopy(r, t, NULL, &d);
+}
+
 /* Bitmap-font text (defined below; counters/strings are rendered text
  * in Fusion, not PNG frames). */
 static void draw_text(SDL_Renderer *r, const char *s, int x, int y, int scale);
@@ -405,8 +434,12 @@ static void draw_title(SDL_Renderer *r, FnaeVisuals *v, int night, int arrow, in
     draw_texture(r, v->title_template, 64, 96);
     draw_texture(r, v->title_new,      96, 448);
     draw_texture(r, v->title_continue, 96, 512);
-    draw_texture(r, v->title_6night,   96, 576);
-    draw_texture(r, v->title_custom,   96, 640);
+    /* 6 Night reappears iff Star is visible (progress > 0), Custom iff
+     * Star 2 is visible (progress > 1) — Frame 2 Events.txt. Matches the
+     * input gating in fnae_key/fnae_click, so a locked item is neither
+     * shown nor reachable. */
+    if (progress > 0) draw_texture(r, v->title_6night,   96, 576);
+    if (progress > 1) draw_texture(r, v->title_custom,   96, 640);
 
     /* Arrow is positioned relative to the selected menu object.
      * Coordinates are verbatim Fusion hotspot positions from Frame 2
@@ -801,20 +834,27 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                       int winding, int warning, int mute_visible,
                       int ph_mangle_cam, int ph_bb_cam,
                       int ph_bb_scare, int ph_bb_scare_on, int ph_annoy_a,
-                      int death_addup, int death_red, int death_red_peaked,
-                      int death_rip_a, int death_rip_b, int death_ticks, int gf_sit,
-                     const int *cust_ai, int cust_sel, int cust_ch,
-                     int cust_b, int cust_check, int cust_cool) {
+                       int death_addup, int death_red, int death_red_peaked,
+                       int death_rip_a, int death_rip_b, int death_ticks, int gf_sit,
+                      int freddy_door, int foxy_stand,
+                      const int *cust_ai, int cust_sel, int cust_ch,
+                      int cust_b, int cust_check, int cust_cool) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
     /* Jumpscare shake: the night scene jumps X/Y +/-Random(5) on any death
-     * (GF shakes +/-Random(8)). Applied to the office/cam draws below. */
+     * (GF shakes +/-Random(8)). Applied to the office/cam draws below.
+     * Derived from the per-tick death_addup counter (not rand() per render),
+     * so the offset holds steady across renders of the same tick and steps
+     * at the Fusion 60 Hz cadence on any refresh rate: re-rolling every
+     * present strobed/vibrated on uncapped or high-Hz loops. */
     int ox = 0, oy = 0;
     if (frame == 3 && death > 0) {
         int j = (death == 5) ? 8 : 5;
-        ox = rand() % (2 * j + 1) - j;
-        oy = rand() % (2 * j + 1) - j;
+        unsigned s1 = (unsigned)(death_addup < 0 ? 0 : death_addup) * 1103515245u + 12345u;
+        unsigned s2 = (unsigned)(death_addup < 0 ? 0 : death_addup) * 22695477u + 1u;
+        ox = (int)(s1 % (unsigned)(2 * j + 1)) - j;
+        oy = (int)((s2 >> 8) % (unsigned)(2 * j + 1)) - j;
     }
 
     if (frame == 1) {
@@ -921,6 +961,29 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             if (right_door_frame >= IMG_DOOR_FRAMES) right_door_frame = IMG_DOOR_FRAMES - 1;
             draw_world(r, v->door_left[left_door_frame], 119, 0, office_scroll, ox, oy);
             draw_world(r, v->door_right[right_door_frame], 1263, 0, office_scroll, ox, oy);
+            /* Door buttons (Layer #2 world objects, center-anchored at
+             * their Objects.txt spots): Stopped while the door is
+             * open/opening (A 0/3), Animation 12 while closing/closed
+             * (A 1/2). The left_door/right_door params carry A. */
+            visuals_draw_anchored(r, v->door_btn[(left_door == 1 || left_door == 2) ? 1 : 0],
+                                  105 - office_scroll + ox, 500 + oy,
+                                  FNAE_ANCHOR_CENTER);
+            visuals_draw_anchored(r, v->door_btn[(right_door == 1 || right_door == 2) ? 1 : 0],
+                                  1489 - office_scroll + ox, 500 + oy,
+                                  FNAE_ANCHOR_CENTER);
+            /* Doorway figures (Layer #2, above the doors): Freddy at the
+             * left door (213 @1.1, center-anchored) and Foxy at the right
+             * (228 @1.1 at the verbatim [1287,331]), each while its
+             * collision overlaps that door's (office view only). Freddy is
+             * drawn raised to [260,600]: his verbatim Objects.txt spot
+             * [260,788] sits below the 720 screen and showed antennae only
+             * (owner request, like the CAM 01 / GF Sit offsets). */
+            if (freddy_door)
+                draw_world_scaled(r, v->freddy_door, 260, 600, office_scroll, ox, oy,
+                                  1.1f, FNAE_ANCHOR_CENTER);
+            if (foxy_stand)
+                draw_world_scaled(r, v->foxy_stand, 1287, 331, office_scroll, ox, oy,
+                                  1.1f, FNAE_ANCHOR_CENTER);
             /* GF Sit (Layer #2 office overlay, above the doors): reappears
              * while GF Random == 1, invisible otherwise. A world object
              * like the doors, so it pans with the office. Drawn before
@@ -966,10 +1029,15 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
         /* Layer #6 top overlays (Phantom Mangle / Phantom BB camera haunts
          * + the BB scare fade): above feed, office, and camera UI alike,
          * in Objects.txt layer order. The camera haunts show while A==1
-         * (cameras-up phase); the scare fades in over the office after
-         * the B>80 force-down (gated on the first trigger in core). */
-        if (ph_mangle_cam) draw_phantom_cam(r, v->phmangle_cam, 255, ox, oy, 2.7f);
-        if (ph_bb_cam) draw_phantom_cam(r, v->phbb_cam, 255, ox, oy, 2.7f);
+         * AND the cameras are up: A only clears once View hits 0, so
+         * without the cameras-up gate the face lingered over the office
+         * through the 0.55 s camera-down transition. The scare fades in
+         * over the office after the B>80 force-down (gated on the first
+         * trigger in core), so it stays ungated. */
+        if (camera_up && ph_mangle_cam)
+            draw_phantom_cam(r, v->phmangle_cam, 255, ox, oy, 2.7f);
+        if (camera_up && ph_bb_cam)
+            draw_phantom_cam(r, v->phbb_cam, 255, ox, oy, 2.7f);
         if (ph_bb_scare_on && ph_bb_scare > 0)
             draw_phantom_cam(r, v->phbb_scare, ph_bb_scare, ox, oy, 2.7f);
         /* Jumpscare (Frame 3 "[ Jumpscares ]"): created at (0,0) x2.8 on
@@ -1053,5 +1121,17 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
              night, hour, power / 100, cam_names[cam], camera_up ? " (up)" : "",
              left_door > 0, right_door > 0, mask ? " | MASK" : "",
              music);
-    SDL_SetWindowTitle(SDL_GetWindowFromID(1), title);
+    /* Live state in the window title, but only pushed on change: calling
+     * SDL_SetWindowTitle 60-144x/sec makes the title bar visibly flicker
+     * on Windows and wastes a non-client repaint every present. */
+    SDL_Window *win = SDL_RenderGetWindow(r);
+    if (win) {
+        static SDL_Window *last_win = NULL;
+        static char last_title[256] = {0};
+        if (win != last_win || strcmp(title, last_title) != 0) {
+            last_win = win;
+            snprintf(last_title, sizeof last_title, "%s", title);
+            SDL_SetWindowTitle(win, title);
+        }
+    }
 }

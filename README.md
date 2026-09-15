@@ -134,6 +134,29 @@ containing `FNaE_Native.exe` plus `assets/` and the required SDL DLLs.
 
 ---
 
+# Building for Wii U (RPX + WUHB)
+
+With devkitPPC + wut + the wiiu SDL2 portlibs installed (devkitPro pacman,
+`wiiu-dev` group), configure with the Wii U toolchain wrapper and build:
+
+```bash
+powerpc-eabi-cmake -S . -B build-wiiu
+powerpc-eabi-cmake --build build-wiiu
+```
+
+This produces `build-wiiu/FNaE_Native.rpx` and the Aroma bundle
+`build-wiiu/FNaE_Native.wuhb` (game + `assets/` in one file, installed to
+`sd:/wiiu/apps/`). A homebrew-folder bundle also lands in `build-wiiu/FNaE/` with only
+`code/` (`FNaE_Native.rpx`, `app.xml`, `cos.xml`), `content/` (`assets/`), and `meta/`
+(`meta.xml`, `iconTex.tga`, `bootTvTex.tga`, `bootDrcTex.tga`) — nothing loose at the root. Point Cemu's
+File > Load at `code/FNaE_Native.rpx` (or copy the folder to
+`sd:/wiiu/apps/FNaE/` for the Homebrew Launcher); the game probes
+`fs:/vol/content` for its assets, so it boots from any of these layouts. On hardware the office runs on
+the TV while the camera feeds run on the GamePad screen — see `KEYS.txt`
+for the GamePad controls.
+
+---
+
 # Running the Game
 
 From the project root, run:
@@ -192,7 +215,8 @@ SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
 ```
 
 Scripts live in `scripts/headless/` (`example.txt` shows the format:
-`<frame> <key|keyup|click|shot> <args>`). Screenshots land in
+`<frame> <key|keyup|click|mouse|shot|ai|pad> <args>`; `doors.txt` covers
+the office door controls). Screenshots land in
 `screenshots/`; remove them with:
 
 ```bash

@@ -55,12 +55,46 @@ power-out fade into a death screen.
 - Night: mouse position pans the office view — pointer in the left/right edge
   zones scrolls toward that side at the Fusion 2/4/6 px-per-tick speeds,
   clamped to the 1600px-wide office scene (see `CONVERTED_LOGIC.md`)
+- Night: door wall buttons (`176.png` dark red = open/opening, `177.png`
+  olive = closing/closed, 51x56 center-anchored at [105,500] left /
+  [1489,500] right, panning with the office) toggle their door on click,
+  exactly like the Fusion Button Left/Right objects; the old full-height
+  side click strips are gone
+- Night: doorway figures — Freddy (`213.png` red Edward @1.1 at [260,788])
+  looms at the left door while his collision overlaps it, Foxy (`228.png`
+  blue dino @1.1 at [1287,331]) stands at the right door while hers does
+  (office view only, like the Fusion reappear/invisible events); verified
+  with `scripts/headless/doors.txt`
 - Camera and door transition timers are implemented
 - Night: doors render their 16-frame shutter animation (`144.png`–`159.png`
   left at [119,0], `160.png`–`175.png` right at [1263,0]), and the desk
   (`238.png`) sits at [266,177] — all panning with the office view
 - Flashlight and music-box controls release correctly on key-up
 - Title menu responds to physical Up/Down keys (SDL1-era keycodes `273`/`274`/`308` replaced with `SDLK_` constants; `308` was Left Alt for the flashlight)
+
+### Wii U: GamePad controls + dual screen
+
+- On hardware (`__WIIU__` build) the game opens two windows: the office and
+  everything else render on the TV (`SDL_WINDOW_WIIU_TV_ONLY`), the camera
+  feeds render on the GamePad screen (`SDL_WINDOW_WIIU_GAMEPAD_ONLY`,
+  values from the sdl-wiiu port, with fallbacks in `src/wiiu.h`). Cameras
+  closed = just a black GamePad screen, per owner request.
+- GamePad mapping (`src/wiiu.h`, expressed through the desktop
+  `fnae_key`/`fnae_click` API so it stays headless-testable): ZL cameras,
+  L/R doors, Y mask, B-hold flashlight, X lure, ZR-hold wind, A/Plus
+  confirm, Minus mute call, D-pad menus (+ camera switch while viewing),
+  left stick office pan, touchscreen taps for the camera UI. Desktop and
+  headless builds are unchanged (single window, keyboard+mouse).
+- Wii U caveat: each screen needs its own renderer + texture set (SDL
+  textures can't cross renderers), so VRAM use roughly doubles. RPX + WUHB
+  build verified with devkitPPC/wut (`powerpc-eabi-cmake -S . -B build-wiiu`
+  then `--build build-wiiu`; needs the wiiu SDL2 portlibs); not yet run on
+hardware. `build-wiiu/FNaE/` holds the unpacked-title layout (`code/` with the
+rpx plus `app.xml`/`cos.xml`, `content/`, `meta/` with `meta.xml` plus the
+`iconTex`/`bootTvTex`/`bootDrcTex` TGAs, nothing else) and every image/audio
+path goes through the
+  `fs:/vol/content` probe (`fnae_asset_root` in `src/wiiu.h`), so the game
+  finds its assets from the folder bundle, the `.wuhb`, or a flat folder.
 
 ### Frame 6 Which Night
 
@@ -152,10 +186,11 @@ termination notice, not the newspaper.)
   at [100,55], visible on office and camera screens while the call plays,
   stops it on click).
 - Phantoms render: Phantom Mangle's camera face (`405.png` x2.7, Layer #6
-  top) and office Annoy (`380.png` rising from [508,720], Layer #3 above
+  top, cameras-up only — hidden over the office, including the camera-down
+  transition) and office Annoy (`380.png` rising from [508,720], Layer #3 above
   the desk, panning with the office), Phantom BB's camera face (`352.png`
-  x2.7, Layer #6 top, dismissed by clicking a cam button) and post-scare
-  fade (`349.png` x2.7, alpha 0→255 after the 80-tick force-down).
+  x2.7, Layer #6 top, cameras-up only, dismissed by clicking a cam button)
+  and post-scare fade (`349.png` x2.7, alpha 0→255 after the 80-tick force-down).
 - Night HUD renders on all Frame 3 screens (office and camera views):
   "12 AM"-style clock top-right (time of day [1186,65] + am [1200,37]),
   "NIGHT n" under it (Which Night? [759,85] + The Night [1245,101]),

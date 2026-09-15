@@ -18,6 +18,12 @@ typedef struct {
  *   <frame> click <X> <Y> left-click at window coordinates
  *   <frame> mouse <X> <Y> move the pointer (no click; drives office panning)
  *   <frame> shot <PATH>   save the current frame (extra screenshots mid-run)
+ *   <frame> ai <WHO> <POS> debug pose: place an animatronic (WHO: freddy,
+ *                             foxy) at route position POS (freddy 6 = left
+ *                             door, foxy 5 = right door)
+ *   <frame> pad <BTN> <down|up> GamePad button event (BTN: 0-15 in vpad
+ *                             order A B X Y STICK_L STICK_R L R ZL ZR PLUS
+ *                             MINUS LEFT UP RIGHT DOWN, see src/wiiu.h)
  * Blank lines and '#' comments are ignored. <frame> is the 60fps frame
  * index at which the event fires. */
 
@@ -26,14 +32,18 @@ typedef enum {
     HEV_KEYUP,
     HEV_CLICK,
     HEV_MOUSE,
-    HEV_SHOT
+    HEV_SHOT,
+    HEV_AI,
+    HEV_PAD
 } HeadlessEvType;
 
 typedef struct {
     int frame;
     HeadlessEvType type;
     int key;           /* HEV_KEY/HEV_KEYUP: SDL_Keycode */
-    int x, y;          /* HEV_CLICK/HEV_MOUSE: window coordinates */
+    int x, y;          /* HEV_CLICK/HEV_MOUSE: window coordinates;
+                        * HEV_AI: x = 0 freddy / 1 foxy, y = route pos;
+                        * HEV_PAD: x = button index, y = down (1) / up (0) */
     char shot[256];    /* HEV_SHOT: output path */
 } HeadlessEvent;
 

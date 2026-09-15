@@ -44,12 +44,13 @@ No display or real input needed. Headless runs fixed 1/60 steps, honors
   --script scripts/headless/title.txt
 ```
 
-- Script format (`<frame> <key|keyup|click|shot> <args>`, `#` comments):
+- Script format (`<frame> <key|keyup|click|mouse|shot|ai|pad> <args>`, `#` comments):
   see `scripts/headless/example.txt`. Keys are true SDL keycodes
   (`return/enter, esc/escape, space, up/down/left/right`, single chars).
 - Tracked scripts: `scripts/headless/example.txt` (title→night→camera),
-  `scripts/headless/title.txt` (menu-arrow alignment). Scratch work goes
-  in `scripts/headless/local.txt` (git-ignored).
+  `scripts/headless/title.txt` (menu-arrow alignment),
+  `scripts/headless/doors.txt` (door buttons, doorway figures, pad map).
+  Scratch work goes in `scripts/headless/local.txt` (git-ignored).
 - Screenshots land under `screenshots/` (git-ignored, `.gitkeep` kept).
   Clean with `cmake --build build --target clean-screenshots`.
 - Loop: write/tweak a script → run → read the PNGs → patch → rebuild →

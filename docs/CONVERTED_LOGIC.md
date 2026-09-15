@@ -26,6 +26,35 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   1=closing (Close 0→15), 2=closed (hold 15), 3=opening (Open 15→0), over the
   existing 0.25 s transitions. Left art is `144.png`–`159.png` (223x720) at
   [119,0], right art is `160.png`–`175.png` (248x720) at [1263,0].
+- Door buttons (Button Left [105,500] / Button Right [1489,500], Layer #2
+  world objects): clicking one toggles its door exactly like the A/D keys
+  (Fusion `[ Doors ]` click events, same death/power/view gates as the keys
+  via the shared toggle path). Native click zones are the 51x56 button
+  frames (center-anchored) plus 2px grace: left fx 77–133, right fx
+  1461–1517, y 470–530 in frame space (screen x + office scroll). The button
+  shows Stopped (`176.png` dark red) while A is 0/3 and Animation 12
+  (`177.png` olive) while A is 1/2; buttons hide with the doors when the
+  cameras are up (office branch only).
+- Doorway figures: Freddy at your door (`213.png` @1.1, center-anchored,
+  drawn raised at [260,600]) reappears while Freddy Collision overlaps
+  Left Door Collision on the office screen and hides otherwise; Foxy Stand
+  (`228.png` @1.1 at the verbatim [1287,331]) mirrors it for the right
+  door (Fusion `[ Freddy ]` / `[ Foxy ]` visibility events, View > 0 hides
+  both). Freddy's verbatim Objects.txt spot [260,788] sits below the 720
+  screen and showed antennae only, so he rides 188px up like the CAM 01 /
+  GF Sit owner offsets. The native
+  `freddy_door` / `foxy_stand` flags reuse the route positions (freddy
+  pos 6, foxy pos 5) with the same office-view + power gates.
+- Wii U GamePad (`src/wiiu.h`, hardware only): ZL = S (cameras), L/R = A/D
+  (doors), Y = M (mask), B-hold = Z (flashlight), X = E (lure),
+  ZR-hold = R (wind), A/Plus = Return, Minus = Mute-Call click zone,
+  D-pad Up/Down = menu arrows, D-pad Left/Right = camera switch while
+  viewing (title/customize arrows otherwise), left stick = office pan via
+  the mouse zones, touchscreen = press/click/release in 1280x720 space.
+  Dual screen: TV window renders with cameras forced down (office always),
+  GamePad window renders the live camera UI while `CAM_UP`, black
+  otherwise (owner: cams on gamepad, everything else on tv, black DRC
+  when closed).
 - Desk (`238.png`, 1066x511) draws at [266,177] in the office view (hidden
   while the camera is up); doors/desk pan with the office scroll.
 - Title background flash: Random(50)=1 plays one RRandom(12,14) sequence —
