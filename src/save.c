@@ -19,18 +19,36 @@
  * new location has no file yet. */
 #define SAVE_LEGACY "Edward"
 
+#ifdef __WIIU__
+/* Installable-title save (NAND/USB): the OS mounts this title's save area
+ * at fs:/vol/save when assets/wiiu/meta.xml declares a common_save_size,
+ * so plain stdio lands on NAND (or USB, wherever the title is installed).
+ * The common dir is shared across accounts, like the single desktop save,
+ * and needs no per-account handling. */
+#define SAVE_WIIU_PRIMARY "fs:/vol/save/common/Edward"
+/* Fallbacks when vol/save is unavailable (HBL / .wuhb run, Cemu without a
+ * mounted save dir): the homebrew app folder on the SD card, then the
+ * working directory. Tried in order; the first readable file wins. */
+#define SAVE_WIIU_SD "fs:/vol/external01/wiiu/apps/FNaE/Edward"
+#endif
+
 /* Resolved save path, computed once: %APPDATA%\MMFApplications\Edward
- * on Windows, plain Edward wherever %APPDATA% is unavailable. */
+ * on Windows, fs:/vol/save/common/Edward on Wii U (title save on
+ * NAND/USB), plain Edward wherever %APPDATA% is unavailable. */
 static char save_path[512];
 static int save_path_ready = 0;
 
 static const char *resolve_path(void) {
  if (!save_path_ready) {
+#ifdef __WIIU__
+  snprintf(save_path, sizeof save_path, "%s", SAVE_WIIU_PRIMARY);
+#else
   const char *app = getenv("APPDATA");
   if (app && *app)
    snprintf(save_path, sizeof save_path, "%s\\%s\\%s", app, SAVE_DIR, SAVE_FILE);
   else
    snprintf(save_path, sizeof save_path, "%s", SAVE_FILE);
+#endif
   save_path[sizeof save_path - 1] = '\0';
   save_path_ready = 1;
  }
@@ -39,9 +57,11 @@ static const char *resolve_path(void) {
 
 const char *fnae_save_path(void) { return resolve_path(); }
 
-/* Creates the save folder (everything before the final \ or /).
+/* Creates the save folders (everything before the final \ or /).
  * Missing folders are normal on first run; errors are ignored and
- * surface as a store failure instead. */
+ * surface as a store failure instead. Each level is created in turn so
+ * multi-level paths (the Wii U SD fallback) work even when several
+ * folders are missing. */
 static void ensure_parent_dir(const char *path) {
  char tmp[512];
  size_t n = strlen(path);
@@ -52,6 +72,14 @@ static void ensure_parent_dir(const char *path) {
  if (fsep && (!sep || fsep > sep)) sep = fsep;
  if (!sep) return; /* bare filename: working directory exists */
  *sep = '\0';
+ for (char *p = tmp + 1; *p; p++) {
+  if (*p == '\\' || *p == '/') {
+   char c = *p;
+   *p = '\0';
+   FNAE_MKDIR(tmp);
+   *p = c;
+  }
+ }
  FNAE_MKDIR(tmp);
 }
 
@@ -106,15 +134,18 @@ int fnae_save_load(FnaeSave *s) {
  fnae_save_default(s);
  const char *path = resolve_path();
  if (load_file(s, path) == 0) return 0;
+#ifdef __WIIU__
+ /* Not installed to NAND/USB (HBL / .wuhb run, or Cemu without a mounted
+  * save dir): fall back to the SD copy, then the working directory. */
+ if (load_file(s, SAVE_WIIU_SD) == 0) return 0;
+#endif
  /* One-time import of a working-directory save left by earlier builds;
   * the new location wins whenever both exist. */
  if (strcmp(path, SAVE_LEGACY) != 0 && load_file(s, SAVE_LEGACY) == 0) return 0;
  return 1;
 }
 
-int fnae_save_store(const FnaeSave *s) {
- if (!s) return 1;
- const char *path = resolve_path();
+static int store_file(const FnaeSave *s, const char *path) {
  ensure_parent_dir(path);
  FILE *f = fopen(path, "w");
  if (!f) return 1;
@@ -123,6 +154,16 @@ int fnae_save_store(const FnaeSave *s) {
  fprintf(f, "Progress=%d\n", clamp_progress(s->progress));
  for (int i = 1; i <= 3; i++)
   fprintf(f, "Challenge%d=%d\n", i, clamp_flag(s->challenge[i]));
- int rc = (fclose(f) == 0) ? 0 : 1;
- return rc;
+ return (fclose(f) == 0) ? 0 : 1;
+}
+
+int fnae_save_store(const FnaeSave *s) {
+ if (!s) return 1;
+ if (store_file(s, resolve_path()) == 0) return 0;
+#ifdef __WIIU__
+ /* Title save unavailable: persist to the SD fallback, then CWD. */
+ if (store_file(s, SAVE_WIIU_SD) == 0) return 0;
+ if (store_file(s, SAVE_LEGACY) == 0) return 0;
+#endif
+ return 1;
 }

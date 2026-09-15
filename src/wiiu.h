@@ -31,6 +31,20 @@
 #ifndef SDL_WINDOW_WIIU_TV_ONLY
 #define SDL_WINDOW_WIIU_TV_ONLY 0x02000000u
 #endif
+/* Single-swap discipline (current wiiu-sdl2 portlibs, 2.32.x): every
+ * SDL_RenderPresent ends in GX2SwapScanBuffers(), which flips BOTH the TV
+ * and the DRC scan buffers. Presenting the TV and GamePad renderers back
+ * to back therefore swaps twice per game frame, so each screen alternates
+ * between the fresh frame and a stale back-buffer frame -- full-screen
+ * flicker on both Cemu windows (plus two vsync waits per frame). A window
+ * created with PREVENT_SWAP copies its colour buffer to its scan buffer
+ * without swapping, so the dual-screen loop presents the GamePad renderer
+ * first (no swap) and the TV renderer last (the frame's single swap).
+ * Older portlibs ignore the bit (flicker remains there); rebuild against
+ * current wiiu-sdl2 to pick the fix up. */
+#ifndef SDL_WINDOW_WIIU_PREVENT_SWAP
+#define SDL_WINDOW_WIIU_PREVENT_SWAP 0x04000000u
+#endif
 
 /* GamePad joystick button indices (vpad_button_map order). */
 typedef enum {

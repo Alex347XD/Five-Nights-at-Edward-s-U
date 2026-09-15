@@ -86,7 +86,15 @@ power-out fade into a death screen.
   left stick office pan, touchscreen taps for the camera UI. Desktop and
   headless builds are unchanged (single window, keyboard+mouse).
 - Wii U caveat: each screen needs its own renderer + texture set (SDL
-  textures can't cross renderers), so VRAM use roughly doubles. RPX + WUHB
+  textures can't cross renderers), so VRAM use roughly doubles. The frame
+  performs exactly one `GX2SwapScanBuffers`: the GamePad window is created
+  with `SDL_WINDOW_WIIU_PREVENT_SWAP` and presented first (copies the DRC
+  image without swapping), the TV window is presented last (the single
+  swap). Swapping in both Presents flickered TV and DRC on Cemu -- every
+  `SDL_RenderPresent` flips both scan buffers, so each screen alternated
+  between the fresh frame and a stale back-buffer frame. Needs current
+  wiiu-sdl2 portlibs (2.32.x, which defines `PREVENT_SWAP`); rebuild
+  `build-wiiu` after updating portlibs. RPX + WUHB
   build verified with devkitPPC/wut (`powerpc-eabi-cmake -S . -B build-wiiu`
   then `--build build-wiiu`; needs the wiiu SDL2 portlibs); not yet run on
 hardware. `build-wiiu/FNaE/` holds the unpacked-title layout (`code/` with the
@@ -211,6 +219,15 @@ menu exactly like the Fusion `Progress` reads. Custom-night AI levels
 still reset each launch (Fusion never wrote those to the INI either),
 and the `ChallengeN` flags are now read (Check marks) and written
 (unmodified-preset night-7 clear) by the Customize screen.
+
+Wii U (`__WIIU__`): the save lives in the title's common save dir
+(`fs:/vol/save/common/Edward`), so a NAND/USB install via WUP Installer
+keeps progress on the console like a proper title (back it up/inject it
+with SaveMii). `assets/wiiu/meta.xml` declares a 128 KiB
+`common_save_size` so the OS allocates the save area at install. HBL /
+`.wuhb` runs and Cemu without a mounted save dir fall back to the SD
+copy (`fs:/vol/external01/wiiu/apps/FNaE/Edward`), then the working
+directory — same INI format, so files are interchangeable by hand.
 
 ### Frame 8 Customize
 
