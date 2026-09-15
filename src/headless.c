@@ -211,6 +211,17 @@ int headless_load_script(const char *path, HeadlessScript *out) {
                 break;
             }
             ev->y = atoi(arg2);
+        } else if (strcmp(action, "clock") == 0) {
+            /* Debug warp: jump the night clock to HOUR with 5 s left in
+             * it, so screenshots can capture 6 AM without playing the
+             * full shift (same pattern as the ai debug pose). */
+            if (nf < 3) {
+                fprintf(stderr, "HEADLESS: %s:%d: clock needs HOUR\n", path, lineno);
+                rc = 1;
+                break;
+            }
+            ev->type = HEV_CLOCK;
+            ev->x = atoi(arg1);
         } else if (strcmp(action, "pad") == 0) {
             /* GamePad button event through the Wii U mapping (src/wiiu.h). */
             if (nf < 4) {
@@ -279,6 +290,12 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                     if (ev->x == 0) game->freddy.pos = ev->y;
                     else game->foxy.pos = ev->y;
                     break;
+                case HEV_CLOCK:
+                    if (game->frame == FRAME_NIGHT) {
+                        game->time_of_day = ev->x;
+                        game->time_to_hour = 45.0f;
+                    }
+                    break;
                 case HEV_PAD: fnae_pad_button(game, ev->x, ev->y); break;
                 case HEV_SHOT:
                     printf("HEADLESS shot frame=%d path=%s game_frame=%s\n",
@@ -304,6 +321,7 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                         game->right_door_frame,
                         game->mask_frame,
                         game->title_bg_frame,
+                        game->six_timer,
                         game->foxy.pos,
                         game->freddy.pos,
                         game->cam_static_alpha,
@@ -381,6 +399,7 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
             game->right_door_frame,
             game->mask_frame,
             game->title_bg_frame,
+            game->six_timer,
             game->foxy.pos,
             game->freddy.pos,
             game->cam_static_alpha,

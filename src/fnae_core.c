@@ -436,7 +436,7 @@ void fnae_start_night(FnaeGame* g,int night){
 static void hour(FnaeGame* g){
  g->time_of_day++; if(g->time_of_day>12)g->time_of_day=1;
  difficulty(g,g->time_of_day);
- if(g->time_of_day>5 && g->time_of_day!=12)g->frame=FRAME_6AM;
+  if(g->time_of_day>5 && g->time_of_day!=12){g->frame=FRAME_6AM;g->six_timer=0;}
 }
 
 void fnae_mouse_move(FnaeGame* g, int x, int y){
@@ -542,10 +542,13 @@ void fnae_update(FnaeGame* g,float dt){
      return;
     }
    /* Night simulation (power, AI, phantoms, music box, death rolls) is
-    * Frame 3-only in Fusion. Without this gate the title/newspaper/
-    * customize/6AM/final screens kept draining power and rolling deaths
-    * (power_out fades 255->0 then enter_death fires ~6 s after boot),
-    * so idling on the title ended on the death screen. */
+   * Frame 3-only in Fusion. Without this gate the title/newspaper/
+   * customize/6AM/final screens kept draining power and rolling deaths
+   * (power_out fades 255->0 then enter_death fires ~6 s after boot),
+   * so idling on the title ended on the death screen. */
+   /* Frame 9 which-AM roll runs on the frame timer (Timer > 03'' ->
+    * Start animation, run once). */
+   if(g->frame==FRAME_6AM) g->six_timer+=dt;
    return;
   }
   update_cam_scroll(g,dt);

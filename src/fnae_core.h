@@ -29,8 +29,9 @@ typedef enum {
 typedef struct {
  FnaeFrame frame; int running; int night; int six_or_seven; int arrow; int progress; int challenge;
  int time_of_day; float time_to_hour;
- float which_timer; /* Frame 6 auto-advance: Every 02'' -> Night */
- float warn_timer; /* Frame 1 auto-advance: Timer equals 05'' -> Title */
+  float which_timer; /* Frame 6 auto-advance: Every 02'' -> Night */
+  float warn_timer; /* Frame 1 auto-advance: Timer equals 05'' -> Title */
+  float six_timer; /* Frame 9: which-AM roll starts 3 s in (Timer > 03'' -> Start animation) */
   int death; int death_addup; int gf_random; int gf_death_addup;
   /* Fractional-tick accumulators: Fusion event logic runs per game tick
    * (1/60 s), but fnae_update receives real-time dt, so at >60 Hz displays

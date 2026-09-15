@@ -60,11 +60,14 @@ power-out fade into a death screen.
   [1489,500] right, panning with the office) toggle their door on click,
   exactly like the Fusion Button Left/Right objects; the old full-height
   side click strips are gone
-- Night: doorway figures — Freddy (`213.png` red Edward @1.1 at [260,788])
-  looms at the left door while his collision overlaps it, Foxy (`228.png`
-  blue dino @1.1 at [1287,331]) stands at the right door while hers does
-  (office view only, like the Fusion reappear/invisible events); verified
-  with `scripts/headless/doors.txt`
+- Night: doorway figures — Freddy (`213.png` red Edward @1.1, drawn at
+  [230,360]) looms in the left doorway while his collision overlaps it,
+  Foxy (`228.png` blue dino @1.1, drawn at [1387,331]) stands in the right
+  doorway while hers does (office view only, like the Fusion
+  reappear/invisible events; verbatim spots [260,788] / [1287,331] sit
+  offscreen / off-door, so both are centered in their doorways per owner
+  request, each behind its shutter); verified with
+  `scripts/headless/doors.txt`
 - Camera and door transition timers are implemented
 - Night: doors render their 16-frame shutter animation (`144.png`–`159.png`
   left at [119,0], `160.png`–`175.png` right at [1263,0]), and the desk
@@ -129,9 +132,11 @@ termination notice, not the newspaper.)
   (`141.png`–`143.png` at [0,0]) — Layer #5 UI above the HUD, frames
   proportional to the 0.45 s transitions, verified with headless
   screenshots
-- Win screens (Frame 5 Final): night 5 shows the weekly paycheck
-  (`2.png`), night 6 the overtime paycheck (`4.png`), night 7/custom the
-  termination notice (`7.png`), matching the Fusion Night 5/6/7 objects
+- Win screens (Frame 5 Final) show only after nights 5/6/7: night 5 the
+  weekly paycheck (`2.png`), night 6 the overtime paycheck (`4.png`),
+  night 7/custom the termination notice (`7.png`), matching the Fusion
+  Night 5/6/7 objects. The 6 AM screen (Frame 9) is black with the
+  "which AM" 5→6 odometer (`389.png` + roll frames), never a paycheck
 - Camera static follows the Fusion cadence (150+Random(50) every 0.08 s,
   0 on signal loss); the scene shakes during the death wait, with the
   killer's jumpscare fullscreen over it (see `CONVERTED_LOGIC.md`), then
