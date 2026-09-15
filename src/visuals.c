@@ -975,11 +975,12 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
              * left door (213 @1.1, center-anchored) and Foxy at the right
              * (228 @1.1 at the verbatim [1287,331]), each while its
              * collision overlaps that door's (office view only). Freddy is
-             * drawn raised to [260,600]: his verbatim Objects.txt spot
-             * [260,788] sits below the 720 screen and showed antennae only
-             * (owner request, like the CAM 01 / GF Sit offsets). */
+             * drawn at [230,360]: his verbatim Objects.txt spot [260,788]
+             * sits below the 720 screen and showed antennae only, so he is
+             * centered in the left doorway (door [119,0] is 223 wide,
+             * center x~230) at Foxy's height (owner request). */
             if (freddy_door)
-                draw_world_scaled(r, v->freddy_door, 260, 600, office_scroll, ox, oy,
+                draw_world_scaled(r, v->freddy_door, 230, 360, office_scroll, ox, oy,
                                   1.1f, FNAE_ANCHOR_CENTER);
             if (foxy_stand)
                 draw_world_scaled(r, v->foxy_stand, 1287, 331, office_scroll, ox, oy,

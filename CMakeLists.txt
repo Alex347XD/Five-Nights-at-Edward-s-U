@@ -54,18 +54,6 @@ if(WIIU)
     # wuhbtool reads the content dir at build time, so make sure it exists
     # at configure time (it is filled by the staging step below, which is
     # ordered before the .wuhb via the RPX target dependency).
-    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/wuhb-content")
-    add_custom_command(TARGET FNaE_Native POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy_directory
-            "${CMAKE_SOURCE_DIR}/assets"
-            "${CMAKE_CURRENT_BINARY_DIR}/wuhb-content/assets"
-        COMMENT "Staging assets for WUHB content"
-    )
-    wut_create_wuhb(FNaE_Native
-        NAME "Five Nights at Edward's"
-        SHORTNAME "FNaE"
-        CONTENT "${CMAKE_CURRENT_BINARY_DIR}/wuhb-content"
-    )
     # Unpacked-title folder bundle: build-wiiu/FNaE holds ONLY code/,
     # content/, and meta/ — nothing loose at the root. Cemu boots
     # code/FNaE_Native.rpx; the game's vol/content asset probe (src/wiiu.h)
@@ -97,6 +85,12 @@ if(WIIU)
             "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.tga"
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE/meta/bootDrcTex.tga"
         COMMENT "Staging Wii U folder bundle (FNaE/{code,content,meta})"
+    )
+    wut_create_wuhb(FNaE_Native
+        NAME "Five Nights at Edward's U"
+        SHORTNAME "FNaE U"
+        AUTHOR "Alex347_XD"
+        CONTENT "${CMAKE_CURRENT_BINARY_DIR}/FNaE"
     )
 else()
 # Self-contained run folder: build/FNaE/FNaE_Native.exe + assets + DLLs,
