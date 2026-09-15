@@ -155,6 +155,16 @@ File > Load at `code/FNaE_Native.rpx` (or copy the folder to
 the TV while the camera feeds run on the GamePad screen — see `KEYS.txt`
 for the GamePad controls.
 
+### Wii U saves (NAND/USB)
+
+Pack `build-wiiu/FNaE/` (`code/`, `content/`, `meta/`) with NUSPacker and
+install it with WUP Installer GX2 to NAND or USB: progress is kept in the
+title's own save dir (`fs:/vol/save/common/Edward`, 128 KiB common save
+declared in `assets/wiiu/meta.xml`), shared across accounts, in the same
+INI format as the desktop save — back it up or inject an old file with
+SaveMii. HBL / `.wuhb` runs (no installed title save) fall back to the SD
+copy `sd:/wiiu/apps/FNaE/Edward`, then the working directory.
+
 ---
 
 # Running the Game

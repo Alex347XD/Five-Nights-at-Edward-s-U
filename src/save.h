@@ -25,9 +25,21 @@
  * the working directory. A leftover working-directory Edward from
  * earlier builds is imported once (new location wins when both exist).
  *
+ * Wii U (__WIIU__): the primary file is fs:/vol/save/common/Edward, the
+ * title's common save dir, so a NAND/USB install (WUP Installer) keeps
+ * progress on the console like a proper title (SaveMii-compatible). This
+ * needs the common_save_size declared in assets/wiiu/meta.xml, which the
+ * OS uses to allocate the save area at install. When vol/save is
+ * unavailable (HBL / .wuhb run, Cemu without a mounted save dir), load
+ * and store fall back to the SD copy
+ * (fs:/vol/external01/wiiu/apps/FNaE/Edward), then the working
+ * directory. Moving from a fallback layout to an installed title starts
+ * a fresh save unless the old file is injected (e.g. SaveMii).
+ *
  * All values are clamped on load; a missing/corrupt file yields defaults.
  * Store failures are silent (never block gameplay). C11 plus mkdir only,
- * so a future port (Wii U) can swap the file backend in one place.
+ * plain stdio on every platform (Wii U fs: paths included), so no
+ * platform SDK includes are needed here.
  */
 
 typedef struct {
@@ -42,6 +54,7 @@ void fnae_save_default(FnaeSave *s);
 int fnae_save_load(FnaeSave *s);
 /* Writes s to the save file. Returns 0 on success, nonzero on IO error. */
 int fnae_save_store(const FnaeSave *s);
-/* Resolved save filename (%APPDATA%\MMFApplications\Edward, or a
- * working-directory Edward fallback). Pointer stays valid. */
+/* Resolved save filename (%APPDATA%\MMFApplications\Edward, or
+ * fs:/vol/save/common/Edward on Wii U, or a working-directory Edward
+ * fallback). Pointer stays valid. */
 const char *fnae_save_path(void);

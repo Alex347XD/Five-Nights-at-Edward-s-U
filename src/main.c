@@ -29,16 +29,24 @@ static void print_usage(const char *prog) {    printf("Usage: %s [--headless] [-
 /* Wii U dual-screen loop: office/everything-else on the TV window, camera
  * feeds on the GamePad (DRC) window. The sdl-wiiu port routes each window
  * to its screen via SDL_WINDOW_WIIU_TV_ONLY / GAMEPAD_ONLY (see src/wiiu.h
- * for the values); each window needs its own renderer + texture set. */
+ * for the values); each window needs its own renderer + texture set.
+ * Presents are ordered DRC-then-TV so the frame performs exactly one
+ * GX2SwapScanBuffers (see below); two swaps per frame flickered on Cemu. */
 static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
     SDL_Window *wtv = SDL_CreateWindow(
         "Five Nights at Edward's",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         1280, 720, SDL_WINDOW_SHOWN | SDL_WINDOW_WIIU_TV_ONLY);
+    /* The GamePad window carries PREVENT_SWAP (see src/wiiu.h): its
+     * Present copies the camera image to the DRC scan buffer without
+     * swapping, and the TV Present below performs the frame's single
+     * GX2SwapScanBuffers. Swapping in both Presents flickered TV and DRC
+     * on Cemu (each screen alternated fresh/stale every swap). */
     SDL_Window *wdrc = SDL_CreateWindow(
         "Five Nights at Edward's - Cameras",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        1280, 720, SDL_WINDOW_SHOWN | SDL_WINDOW_WIIU_GAMEPAD_ONLY);
+        1280, 720, SDL_WINDOW_SHOWN | SDL_WINDOW_WIIU_GAMEPAD_ONLY |
+                   SDL_WINDOW_WIIU_PREVENT_SWAP);
     if (!wtv || !wdrc) {
         fprintf(stderr, "WiiU CreateWindow failed: %s\n", SDL_GetError());
         if (wtv) SDL_DestroyWindow(wtv);
@@ -179,7 +187,6 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
                 && game->custom_check[game->custom_ch]) ? 1 : 0,
             game->custom_cool
         );
-        SDL_RenderPresent(rtv);
 
         if (cam_up) {
             /* GamePad shows the live camera UI (feed + minimap + lure +
@@ -241,7 +248,14 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
             SDL_SetRenderDrawColor(rdrc, 0, 0, 0, 255);
             SDL_RenderClear(rdrc);
         }
+        /* One GX2SwapScanBuffers per game frame: the GamePad window was
+         * created with PREVENT_SWAP, so this copies the DRC image without
+         * swapping, and the TV Present below flips both scan buffers with
+         * fresh images on each side. Presenting the TV first (or swapping
+         * in both) alternated each screen between fresh and stale buffers
+         * -- the Cemu flicker on both windows. */
         SDL_RenderPresent(rdrc);
+        SDL_RenderPresent(rtv);
         /* Hold ~60 presents/s when vsync is unavailable (see desktop loop). */
         {
             Uint64 end = SDL_GetPerformanceCounter();
