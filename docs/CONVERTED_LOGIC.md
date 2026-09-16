@@ -179,9 +179,12 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   Cam 04 -> Cam 02, with B re-rolled on Cam 01/02 like the Fusion
   RRandom(0,1) sets. Cam 03 is the kill room (4 s watch -> 50% death id 4).
   The Stand figure reappears while viewing Springtrap's camera.
-- Camera Out ("Connection Lost"): 50% re-tune every 0.5 s, forced clear after
-  2 s; camera static runs 150+Random(50) every 0.08 s while the feed is live,
-  0 on signal loss.
+- Camera Out ("Connection Lost"): any Freddy/Foxy/Springtrap step while viewing
+  (plus the audio-lure pull) raises Movement Out, which cuts the feed to black
+  with the `333.png` banner centered (minimap/lure/HUD stay up); 50% re-tune
+  every 0.5 s, forced clear after 2 s, so the blackout lasts a second or two
+  before the feed returns. Camera static runs 150+Random(50) every 0.08 s
+  while the feed is live, 0 on signal loss.
 - Music-box warnings (<600 low, <200 critical, <=0 empty) and the power-out
   fade (255 -> 0, death rolls start once it is gone) are tracked in core.
 - Closed doors swing open on power loss; any death forces the cameras down,

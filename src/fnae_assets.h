@@ -24,6 +24,12 @@
 #define IMG_STATIC_FIRST  46  /* TV-static animation, 8 frames (46-53), */
 #define IMG_STATIC_COUNT  8   /* shared by title Static + camera static */
 
+/* Connection Lost banner (Frame 3 "[ Camera Out ]" group): 579x53, drawn
+ * centered on black while Movement Out > 0 (character moved while viewing).
+ * Fusion parks it at [640,60] over the feed; native centers it on the
+ * blacked-out feed per owner request. */
+#define IMG_CONNECTION_LOST 333
+
 #define IMG_DEATH         1   /* GAME OVER screen */
 /* RIP Text (Frame 4) frame 0: 126x54 red box shown while RIP B==0 (fading
  * out); B>1 switches to the GAME OVER frame (1.png, fading back in).

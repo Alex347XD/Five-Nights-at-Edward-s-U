@@ -52,6 +52,7 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->cams[3][1] = load_id(r, IMG_CAM_DINO_FOXY);
     for (int i = 0; i < IMG_STATIC_COUNT; ++i)
         v->static_frames[i] = load_id(r, IMG_STATIC_FIRST + i);
+    v->connection_lost = load_id(r, IMG_CONNECTION_LOST);
     /* Frame 9 "which AM" odometer (see fnae_assets.h): Stopped "5"
      * first, then the roll up to "6" in bank order. */
     {
@@ -195,6 +196,7 @@ void visuals_free(FnaeVisuals *v) {
             destroy_texture(&v->cams[i][j]);
     for (int i = 0; i < 8; ++i)
         destroy_texture(&v->static_frames[i]);
+    destroy_texture(&v->connection_lost);
     for (int i = 0; i < IMG_WHICH_AM_COUNT; ++i)
         destroy_texture(&v->which_am[i]);
     destroy_texture(&v->final_n6);
@@ -846,9 +848,10 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                       int ph_bb_scare, int ph_bb_scare_on, int ph_annoy_a,
                        int death_addup, int death_red, int death_red_peaked,
                        int death_rip_a, int death_rip_b, int death_ticks, int gf_sit,
-                      int freddy_door, int foxy_stand,
+                       int freddy_door, int foxy_stand,
                       const int *cust_ai, int cust_sel, int cust_ch,
-                      int cust_b, int cust_check, int cust_cool) {
+                      int cust_b, int cust_check, int cust_cool,
+                      int movement_out) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
@@ -890,19 +893,30 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             else if (idx == 1 && foxy_pos == 2) occupied = 1;
             else if (idx == 2 && freddy_pos == 3) occupied = 1;
             else if (idx == 3 && foxy_pos == 4) occupied = 1;
-            /* The feed auto-pans left <-> right on the Camera Center
-             * Object (see update_cam_scroll); drawn cover-cropped so the
-             * full 1600px width scrolls through the 1280px view. */
-            draw_cam_pan(r, v->cams[idx][occupied], cam_scroll, ox, oy);
-            draw_static(r, v->static_frames[static_frame & 7], cam_static_alpha);
-            /* Layer order mirrors Fusion: feed (#1), Springtrap Stand (#2),
-             * then the camera UI (#5: minimap, lure button, frame, HUD).
-             * The Stand is a world object at its Objects.txt position,
-             * shifted by the feed scroll like doors shift with the office.
-             * It reappears only while viewing Springtrap's camera
-             * ("View > 0 + You overlapping Springtrap"). */
-            if (stand)
-                draw_world(r, v->springtrap_stand, 416, -24, cam_scroll, ox, oy);
+            /* Movement Out ("Connection Lost"): the feed cuts to black with
+             * the 333 banner centered (owner request; Fusion parks it at
+             * [640,60] over the live feed). The screen is already cleared
+             * black above, so just skip the feed/static/stand here. */
+            if (movement_out) {
+                int rw, rh;
+                SDL_GetRendererOutputSize(r, &rw, &rh);
+                visuals_draw_anchored(r, v->connection_lost,
+                                      rw / 2, rh / 2, FNAE_ANCHOR_CENTER);
+            } else {
+                /* The feed auto-pans left <-> right on the Camera Center
+                 * Object (see update_cam_scroll); drawn cover-cropped so the
+                 * full 1600px width scrolls through the 1280px view. */
+                draw_cam_pan(r, v->cams[idx][occupied], cam_scroll, ox, oy);
+                draw_static(r, v->static_frames[static_frame & 7], cam_static_alpha);
+                /* Layer order mirrors Fusion: feed (#1), Springtrap Stand (#2),
+                 * then the camera UI (#5: minimap, lure button, frame, HUD).
+                 * The Stand is a world object at its Objects.txt position,
+                 * shifted by the feed scroll like doors shift with the office.
+                 * It reappears only while viewing Springtrap's camera
+                 * ("View > 0 + You overlapping Springtrap"). */
+                if (stand)
+                    draw_world(r, v->springtrap_stand, 416, -24, cam_scroll, ox, oy);
+            }
             /* UI sits above the feed static (Static precedes minimap in Layer #5). */
             int sel = camera < 1 ? 1 : camera > IMG_CAMBTN_COUNT ? IMG_CAMBTN_COUNT : camera;
             draw_minimap(r, v, sel);
