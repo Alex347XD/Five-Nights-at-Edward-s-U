@@ -81,8 +81,11 @@ power-out fade into a death screen.
 - On hardware (`__WIIU__` build) the game opens two windows: the office and
   everything else render on the TV (`SDL_WINDOW_WIIU_TV_ONLY`), the camera
   feeds render on the GamePad screen (`SDL_WINDOW_WIIU_GAMEPAD_ONLY`,
-  values from the sdl-wiiu port, with fallbacks in `src/wiiu.h`). Cameras
-  closed = just a black GamePad screen, per owner request.
+   values from the sdl-wiiu port, with fallbacks in `src/wiiu.h`). Cameras
+   closed = just a black GamePad screen, per owner request. The camera
+   flip-flash blip (573-581) plays on the GamePad only, never the TV:
+   the blip opens the cams, so the GamePad shows just the blip over
+   black through the 0.55 s flip transitions (no feed until it lands).
 - GamePad mapping (`src/wiiu.h`, expressed through the desktop
   `fnae_key`/`fnae_click` API so it stays headless-testable): ZL cameras,
   L/R doors, Y mask, B-hold flashlight, X lure, ZR-hold wind, A/Plus

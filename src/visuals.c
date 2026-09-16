@@ -326,6 +326,11 @@ static void fit_center(SDL_Renderer *r, SDL_Texture *t) {
     fit_center_off(r, t, 0, 0);
 }
 
+void visuals_draw_cam_flip(FnaeVisuals *v, SDL_Renderer *r, int frame) {
+    if (frame < 0 || frame >= IMG_CAMFLIP_COUNT) return;
+    if (v->cam_flip[frame]) fit_center(r, v->cam_flip[frame]);
+}
+
 static void draw_static(SDL_Renderer *r, SDL_Texture *t, int alpha) {
     if (!t || alpha <= 0) return;
     int rw, rh;
