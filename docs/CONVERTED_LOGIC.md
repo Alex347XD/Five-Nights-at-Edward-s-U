@@ -70,6 +70,10 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   (PC/Mobile = 0), office view only (View = 0), no pan while dead. Starts
   centered (Fusion starts at the left edge, X 640).
 - Camera flip uses S; camera 1-4 are Hell, Mountain, Forest, Dinosaur Exhibit.
+  The flip transitions play the Cam Up/Down Animation flash (`573.png`–
+  `581.png`, dash -> lens flare): 9 frames spread over the 0.55 s flip-up,
+  reversed over the flip-down, resized to fit the screen over the office/cam
+  UI like the Fusion Layer #5 overlay.
 - Camera buttons (`[ Is Up ]` + `[ Cam 01 ]` groups): clicking any "CAM 01"
   box moves You onto it and the view follows the overlapped "Cam 0X Text".
   Native click zones are the Objects.txt button hotspots (60x40

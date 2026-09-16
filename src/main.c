@@ -187,7 +187,8 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
             (game->custom_ch > 0 && game->custom_ch <= 3
                 && game->custom_check[game->custom_ch]) ? 1 : 0,
             game->custom_cool,
-            game->movement_out
+            game->movement_out,
+            game->cam_flip_frame
         );
 
         if (cam_up) {
@@ -245,7 +246,8 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
                 game->foxy_stand,
                 NULL,
                 0, 0, 0, 0, 0,
-                game->movement_out
+                game->movement_out,
+                game->cam_flip_frame
             );
         } else {
             /* Cameras closed: just a black screen on the GamePad. */
@@ -509,7 +511,8 @@ int main(int argc, char *argv[]) {
             (game.custom_ch > 0 && game.custom_ch <= 3
                 && game.custom_check[game.custom_ch]) ? 1 : 0,
             game.custom_cool,
-            game.movement_out
+            game.movement_out,
+            game.cam_flip_frame
         );
 
         SDL_RenderPresent(r);

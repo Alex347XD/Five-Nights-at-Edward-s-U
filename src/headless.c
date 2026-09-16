@@ -359,7 +359,8 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                         (game->custom_ch > 0 && game->custom_ch <= 3
                             && game->custom_check[game->custom_ch]) ? 1 : 0,
                         game->custom_cool,
-                        game->movement_out
+                        game->movement_out,
+                        game->cam_flip_frame
                     );
                     SDL_RenderPresent(r);
                     if (headless_save_screenshot(r, ev->shot) != 0)
@@ -437,7 +438,8 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
             (game->custom_ch > 0 && game->custom_ch <= 3
                 && game->custom_check[game->custom_ch]) ? 1 : 0,
             game->custom_cool,
-            game->movement_out
+            game->movement_out,
+            game->cam_flip_frame
         );
         SDL_RenderPresent(r);
         if ((f + 1) % 60 == 0) {

@@ -51,6 +51,10 @@ target_link_libraries(FNaE_Native PRIVATE
 #   /opt/devkitpro/portlibs/wiiu/bin/powerpc-eabi-cmake -S . -B build-wiiu
 if(WIIU)
     wut_create_rpx(FNaE_Native)
+
+    set(NUSPACKER_JAR "${CMAKE_SOURCE_DIR}/NUSPacker/NUSPacker.jar")
+    set(NUSPACKER_OUT "${CMAKE_CURRENT_BINARY_DIR}/FNaE_WUP")
+
     # wuhbtool reads the content dir at build time, so make sure it exists
     # at configure time (it is filled by the staging step below, which is
     # ordered before the .wuhb via the RPX target dependency).
@@ -84,6 +88,10 @@ if(WIIU)
         COMMAND "${CMAKE_COMMAND}" -E copy
             "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.tga"
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE/meta/bootDrcTex.tga"
+        COMMAND "${CMAKE_COMMAND}" -E remove_directory "${NUSPACKER_OUT}"
+        COMMAND java -jar "${NUSPACKER_JAR}"
+            -in "${CMAKE_CURRENT_BINARY_DIR}/FNaE"
+            -out "${NUSPACKER_OUT}"
         COMMENT "Staging Wii U folder bundle (FNaE/{code,content,meta})"
     )
     wut_create_wuhb(FNaE_Native

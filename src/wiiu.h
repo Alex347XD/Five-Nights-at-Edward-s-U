@@ -66,24 +66,34 @@ typedef enum {
     FNAE_PAD_DOWN = 15
 } FnaePadButton;
 
-/* Asset root probe (Wii U only): content can live at fs:/vol/content
- * (.wuhb bundle, code/content/meta title folder) or next to the binary
- * (dev working dir, flat HBL folder). Probe once for the title card and
- * pin the prefix every image/audio path goes through, so the game boots
- * no matter which layout launched it. Everywhere else this is "" — the
- * desktop layout never changes. */
+/* Asset root probe (Wii U only): the unpacked folder title
+ * (code/content/meta) mounts its content dir AT fs:/vol/content, while the
+ * .wuhb bundle packs that whole title folder INSIDE content (wuhbtool logs
+ * assets at /content/content/assets), so the prefix differs by layout.
+ * Probe once for the title card under each candidate and pin whichever
+ * hits, so the game boots from the folder, the .wuhb, or next to the
+ * binary (dev working dir). Everywhere else this is "" — the desktop
+ * layout never changes. */
 static inline const char *fnae_asset_root(void) {
 #ifdef __WIIU__
     static char root[64] = {0};
     static int probed = 0;
     if (!probed) {
         probed = 1;
-        FILE *f = fopen("fs:/vol/content/assets/images/515.png", "rb");
-        if (f) {
-            fclose(f);
-            strcpy(root, "fs:/vol/content/");
-        } else {
-            root[0] = '\0';
+        static const char *cands[] = {
+            "fs:/vol/content/",
+            "fs:/vol/content/content/",
+            NULL,
+        };
+        for (int i = 0; cands[i]; ++i) {
+            char p[128];
+            snprintf(p, sizeof p, "%sassets/images/515.png", cands[i]);
+            FILE *f = fopen(p, "rb");
+            if (f) {
+                fclose(f);
+                strcpy(root, cands[i]);
+                break;
+            }
         }
     }
     return root;

@@ -24,6 +24,13 @@
 #define IMG_STATIC_FIRST  46  /* TV-static animation, 8 frames (46-53), */
 #define IMG_STATIC_COUNT  8   /* shared by title Static + camera static */
 
+/* Cam flip animation (Frame 3 "[ Camera ]" flip events): Cam Up Animation
+ * plays 573-581 on flip-up; Cam Down Animation is the same run reversed.
+ * 435x337 flash frames (dash -> lens flare on black), resized to fit the
+ * screen at render. Owner-confirmed bank IDs. */
+#define IMG_CAMFLIP_FIRST 573
+#define IMG_CAMFLIP_COUNT 9
+
 /* Connection Lost banner (Frame 3 "[ Camera Out ]" group): 579x53, drawn
  * centered on black while Movement Out > 0 (character moved while viewing).
  * Fusion parks it at [640,60] over the feed; native centers it on the
