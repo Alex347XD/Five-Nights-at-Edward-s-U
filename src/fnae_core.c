@@ -58,21 +58,32 @@ static void enter_death(FnaeGame* g,int who){
  g->flashlight=0;
 }
 
+static void trip_movement(FnaeGame* g){
+ /* Fusion sets Cam 0X Text A=5 on every step, then Camera Out raises
+  * Movement Out while viewing that cam. Native collapses that to: any
+  * successful step while watching cams cuts the feed to black. */
+ if(g->view>0){ g->movement_out=1; g->movement_half_tick=0; g->movement_force_tick=0; }
+}
+
 static void ai_move(FnaeGame* g){
  if(g->death) return;
  if(rnd(30)<g->foxy_ai && g->foxy.move==0) g->foxy.move=1;
  if(g->foxy.move){
+  int before=g->foxy.pos;
   if(g->foxy.pos==2)g->foxy.pos=4;
   else if(g->foxy.pos==4)g->foxy.pos=5;
   else if(g->foxy.pos==5){ if(g->right_door==0)g->foxy.pos=6; else g->foxy.pos=2; }
+  if(g->foxy.pos!=before) trip_movement(g);
   g->foxy.move=0;
  }
  if(g->foxy.pos==6 && g->view>0 && g->hidden_power>0) enter_death(g,3);
  if(rnd(30)<g->freddy_ai && g->freddy.move==0) g->freddy.move=1;
  if(g->freddy.move){
+  int before=g->freddy.pos;
   if(g->freddy.pos==1)g->freddy.pos=3;
   else if(g->freddy.pos==3)g->freddy.pos=6;
   else if(g->freddy.pos==6){ if(g->left_door==0)g->freddy.pos=7; else g->freddy.pos=1; }
+  if(g->freddy.pos!=before) trip_movement(g);
   g->freddy.move=0;
  }
  if(g->freddy.pos==7 && g->view>0 && g->hidden_power>0) enter_death(g,2);
@@ -663,6 +674,7 @@ void fnae_update(FnaeGame* g,float dt){
     else if(p==2) g->springtrap_pos=(g->springtrap_b==0)?4:1;
     else if(p==3) g->springtrap_pos=1;
     else if(p==4) g->springtrap_pos=2;
+    if(g->springtrap_pos!=p) trip_movement(g);
     /* pos 3 is the kill room: Springtrap waits there for the death rolls. */
     if(g->springtrap_pos==1||g->springtrap_pos==2) g->springtrap_b=rr(0,1);
    }
