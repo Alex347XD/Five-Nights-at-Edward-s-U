@@ -9,6 +9,7 @@ typedef struct {
     SDL_Texture *cams[4][2]; /* per camera: [0] empty base, [1] animatronic present */
     SDL_Texture *static_frames[IMG_STATIC_COUNT]; /* TV-static animation, shared title/cameras */
     SDL_Texture *connection_lost; /* 333 banner, centered on black while Movement Out > 0 */
+    SDL_Texture *cam_flip[IMG_CAMFLIP_COUNT]; /* flip flash 573-581 (open), reversed on close */
     SDL_Texture *which_am[IMG_WHICH_AM_COUNT]; /* Frame 9 5->6 odometer */
     SDL_Texture *final_n6; /* night-6 win screen (4.png) */
     SDL_Texture *final_n7; /* night-7 win screen (7.png) */
@@ -136,4 +137,4 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                       * mangle, bb, puppet. */
                      const int *cust_ai, int cust_sel, int cust_ch,
                      int cust_b, int cust_check, int cust_cool,
-                     int movement_out);
+                     int movement_out, int cam_flip_frame);

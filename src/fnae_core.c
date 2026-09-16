@@ -199,7 +199,7 @@ void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAM
   * the Add 1 / Set 20 buttons visibly work on the Puppet column too
   * instead of clamping 7 -> 7). */
  g->custom_freddy=0; g->custom_foxy=0; g->custom_springtrap=0; g->custom_golden=0;
- g->custom_mangle=0; g->custom_bb=0; g->custom_puppet=0; g->mask_frame=-1; }
+ g->custom_mangle=0; g->custom_bb=0; g->custom_puppet=0; g->mask_frame=-1; g->cam_flip_frame=-1; }
 
 void fnae_set_custom(FnaeGame* g,int freddy,int foxy,int springtrap,int golden,int mangle,int bb,int puppet){
  if(freddy<0)freddy=0; if(freddy>20)freddy=20;
@@ -431,7 +431,7 @@ void fnae_start_night(FnaeGame* g,int night){
  g->music_left=2000; g->music_winding=0; g->music_tick=0; g->current_call=0; g->call_muted=0;
  g->mouse_down=0; g->key_wind=0;
  g->windup_snd_tick=0; g->snd_head=g->snd_tail=0;
- g->cam_anim_timer=g->mask_anim_timer=g->left_door_timer=g->right_door_timer=0; g->mask_frame=-1;
+ g->cam_anim_timer=g->mask_anim_timer=g->left_door_timer=g->right_door_timer=0; g->mask_frame=-1; g->cam_flip_frame=-1;
  g->ai_timer=g->power_out_timer=g->springtrap_timer=g->phantom_timer=0;
  ai_reset(&g->foxy,0,2); ai_reset(&g->freddy,0,1); g->springtrap_a=0;g->springtrap_b=0;
     g->ph_mangle_a=g->ph_mangle_b=g->ph_mangle_c=0;g->ph_annoy_a=g->ph_annoy_b=0;g->ph_bb_a=g->ph_bb_b=0;
@@ -600,6 +600,16 @@ void fnae_update(FnaeGame* g,float dt){
   else if(g->mask_anim==MASK_DOWN)f=7;
   else if(g->mask_anim==MASK_DOWN_ANIM){f=8+(int)(3.0f*g->mask_anim_timer/0.45f);if(f>10)f=10;}
   g->mask_frame=f;
+ }
+
+ /* Cam flip flash (Frame 3 "[ Camera ]" flip events): 573-581 spread over
+  * the 0.55 s flip-up, reversed over the flip-down, like the door
+  * shutters and mask frames above. */
+ {
+  int f=-1;
+  if(g->cam_anim==CAM_UP_ANIM){f=(int)(9.0f*g->cam_anim_timer/0.55f);if(f<0)f=0;if(f>8)f=8;}
+  else if(g->cam_anim==CAM_DOWN_ANIM){f=8-(int)(9.0f*g->cam_anim_timer/0.55f);if(f<0)f=0;if(f>8)f=8;}
+  g->cam_flip_frame=f;
  }
 
  if(g->left_door==1){g->left_door_timer+=dt;if(g->left_door_timer>=0.25f){g->left_door=2;g->left_door_timer=0;}}

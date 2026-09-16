@@ -53,6 +53,8 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     for (int i = 0; i < IMG_STATIC_COUNT; ++i)
         v->static_frames[i] = load_id(r, IMG_STATIC_FIRST + i);
     v->connection_lost = load_id(r, IMG_CONNECTION_LOST);
+    for (int i = 0; i < IMG_CAMFLIP_COUNT; ++i)
+        v->cam_flip[i] = load_id(r, IMG_CAMFLIP_FIRST + i);
     /* Frame 9 "which AM" odometer (see fnae_assets.h): Stopped "5"
      * first, then the roll up to "6" in bank order. */
     {
@@ -197,6 +199,8 @@ void visuals_free(FnaeVisuals *v) {
     for (int i = 0; i < 8; ++i)
         destroy_texture(&v->static_frames[i]);
     destroy_texture(&v->connection_lost);
+    for (int i = 0; i < IMG_CAMFLIP_COUNT; ++i)
+        destroy_texture(&v->cam_flip[i]);
     for (int i = 0; i < IMG_WHICH_AM_COUNT; ++i)
         destroy_texture(&v->which_am[i]);
     destroy_texture(&v->final_n6);
@@ -851,7 +855,7 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                        int freddy_door, int foxy_stand,
                       const int *cust_ai, int cust_sel, int cust_ch,
                       int cust_b, int cust_check, int cust_cool,
-                      int movement_out) {
+                      int movement_out, int cam_flip_frame) {
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
@@ -1056,6 +1060,12 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
                 }
             }
         }
+        /* Cam flip flash (Frame 3 "[ Camera ]" flip events, Layer #5 UI):
+         * 573-581 fit to screen on flip-up, reversed on flip-down, over
+         * the office/cam UI below and under the Layer #6 overlays. The
+         * frames are black-background, so the contain fit blends in. */
+        if (cam_flip_frame >= 0 && cam_flip_frame < IMG_CAMFLIP_COUNT)
+            fit_center(r, v->cam_flip[cam_flip_frame]);
         /* Layer #6 top overlays (Phantom Mangle / Phantom BB camera haunts
          * + the BB scare fade): above feed, office, and camera UI alike,
          * in Objects.txt layer order. The camera haunts show while A==1

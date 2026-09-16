@@ -68,7 +68,8 @@ power-out fade into a death screen.
   offscreen / off-door, so both are centered in their doorways per owner
   request, each behind its shutter); verified with
   `scripts/headless/doors.txt`
-- Camera and door transition timers are implemented
+- Camera and door transition timers are implemented; the camera flip plays
+  the `573.png`–`581.png` flash (fit to screen, reversed on close)
 - Night: doors render their 16-frame shutter animation (`144.png`–`159.png`
   left at [119,0], `160.png`–`175.png` right at [1263,0]), and the desk
   (`238.png`) sits at [266,177] — all panning with the office view

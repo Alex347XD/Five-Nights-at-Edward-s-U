@@ -144,6 +144,13 @@ powerpc-eabi-cmake -S . -B build-wiiu
 powerpc-eabi-cmake --build build-wiiu
 ```
 
+Run these from an MSYS2 shell (not PowerShell — `powerpc-eabi-cmake` and
+`make` must resolve to the MSYS2/devkitPro ones). The build-tree path must
+not contain spaces or apostrophes: devkitPPC's Windows-native gcc chokes on
+MSYS path conversion, so a checkout at e.g. `Five Nights at Edward's U`
+cannot build Wii U in-tree — copy the tree to a clean path (CI uses `/x`)
+and build there, then copy the `.rpx`/`.wuhb`/`FNaE/` outputs back.
+
 This produces `build-wiiu/FNaE_Native.rpx` and the Aroma bundle
 `build-wiiu/FNaE_Native.wuhb` (game + `assets/` in one file, installed to
 `sd:/wiiu/apps/`). A homebrew-folder bundle also lands in `build-wiiu/FNaE/` with only
