@@ -188,7 +188,7 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
                 && game->custom_check[game->custom_ch]) ? 1 : 0,
             game->custom_cool,
             game->movement_out,
-            game->cam_flip_frame
+            -1 /* cam flip flash lives on the GamePad (DRC), never the TV */
         );
 
         if (cam_up) {
@@ -249,6 +249,14 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
                 game->movement_out,
                 game->cam_flip_frame
             );
+        } else if (game->frame == FRAME_NIGHT && game->cam_flip_frame >= 0) {
+            /* The flip-flash blip opens the cams: while it plays (the
+             * 0.55 s CAM_UP/DOWN_ANIM transitions) the GamePad shows just
+             * the blip over black -- no feed until the flip lands -- while
+             * the TV stays on the office. */
+            SDL_SetRenderDrawColor(rdrc, 0, 0, 0, 255);
+            SDL_RenderClear(rdrc);
+            visuals_draw_cam_flip(&vdrc, rdrc, game->cam_flip_frame);
         } else {
             /* Cameras closed: just a black screen on the GamePad. */
             SDL_SetRenderDrawColor(rdrc, 0, 0, 0, 255);
