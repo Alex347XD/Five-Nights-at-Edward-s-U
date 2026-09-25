@@ -88,6 +88,20 @@ if(WIIU)
         COMMAND "${CMAKE_COMMAND}" -E copy
             "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.tga"
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE/meta/bootDrcTex.tga"
+        # Mirror of the FNaE bundle plus icons at the exact build-root
+        # paths the .wuhb step references (CONTENT/ICON/TV_SPLASH/DRC_SPLASH).
+        COMMAND "${CMAKE_COMMAND}" -E copy_directory
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE"
+            "${CMAKE_CURRENT_BINARY_DIR}/content"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/iconTex.tga"
+            "${CMAKE_CURRENT_BINARY_DIR}/iconTex.tga"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootTvTex.tga"
+            "${CMAKE_CURRENT_BINARY_DIR}/bootTvTex.tga"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.tga"
+            "${CMAKE_CURRENT_BINARY_DIR}/bootDrcTex.tga"
         COMMAND "${CMAKE_COMMAND}" -E remove_directory "${NUSPACKER_OUT}"
         COMMAND java -jar "${NUSPACKER_JAR}"
             -in "${CMAKE_CURRENT_BINARY_DIR}/FNaE"
@@ -99,7 +113,10 @@ if(WIIU)
         NAME "Five Nights at Edward's U"
         SHORTNAME "FNaE U"
         AUTHOR "Alex347_XD"
-        CONTENT "${CMAKE_CURRENT_BINARY_DIR}/FNaE"
+        CONTENT "${CMAKE_CURRENT_BINARY_DIR}/content"
+        ICON ${CMAKE_CURRENT_BINARY_DIR}/iconTex.tga
+        TV_SPLASH ${CMAKE_CURRENT_BINARY_DIR}/bootTvTex.tga
+        DRC_SPLASH ${CMAKE_CURRENT_BINARY_DIR}/bootDrcTex.tga
     )
 else()
 # Self-contained run folder: build/FNaE/FNaE_Native.exe + assets + DLLs,

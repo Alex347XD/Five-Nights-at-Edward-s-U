@@ -13,6 +13,17 @@
 
 #include <string.h>
 
+#ifdef __WIIU__
+/* CafeOS process UI (HOME-menu / overlay handling): pump ProcUI messages
+ * every frame so the OS never flags the title unresponsive, and idle while
+ * backgrounded so the night doesn't advance behind the menu. Saves are
+ * synchronous file writes (see save.c), so the save-done callback reports
+ * ready-to-release immediately. Symbols verified against the WUT headers
+ * (coreinit/foreground.h declares OSSavesDone_ReadyToRelease). */
+#include <coreinit/foreground.h>
+#include <proc_ui/procui.h>
+#endif
+
 static void print_usage(const char *prog) {    printf("Usage: %s [--headless] [--frames N] [--screenshot PATH] [--script PATH]\n", prog);
     printf("  --headless          run without a visible window (hidden window,\n");
     printf("                      software renderer fallback, fixed 1/60 dt)\n");
@@ -33,6 +44,9 @@ static void print_usage(const char *prog) {    printf("Usage: %s [--headless] [-
  * Presents are ordered DRC-then-TV so the frame performs exactly one
  * GX2SwapScanBuffers (see below); two swaps per frame flickered on Cemu. */
 static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
+    /* Register with CafeOS before creating windows: without this the HOME
+     * button menu can't foreground/background us cleanly. */
+    ProcUIInit(OSSavesDone_ReadyToRelease);
     SDL_Window *wtv = SDL_CreateWindow(
         "Five Nights at Edward's",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -90,7 +104,18 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
 
     Uint64 last = SDL_GetPerformanceCounter();
     float static_acc = 0.0f;
-    while (game->running) {
+    while (game->running && ProcUIIsRunning()) {
+        /* Non-blocking OS message pump: keeps HOME/overlay transitions
+         * flowing without stalling the frame cadence. */
+        ProcUIProcessMessages(0);
+        if (!ProcUIInForeground()) {
+            /* Backgrounded (HOME menu open): idle instead of stepping the
+             * sim or presenting. dt is clamped below, so no time jump lands
+             * on return. */
+            SDL_Delay(16);
+            last = SDL_GetPerformanceCounter();
+            continue;
+        }
         Uint64 now = SDL_GetPerformanceCounter();
         float dt = (float)((double)(now - last) /
                            (double)SDL_GetPerformanceFrequency());
@@ -282,6 +307,7 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
     }
 
     if (pad) SDL_JoystickClose(pad);
+    ProcUIShutdown();
     visuals_free(&vtv);
     visuals_free(&vdrc);
     SDL_DestroyRenderer(rtv);
