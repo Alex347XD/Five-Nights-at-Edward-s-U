@@ -92,6 +92,7 @@ if(WIIU)
         COMMAND java -jar "${NUSPACKER_JAR}"
             -in "${CMAKE_CURRENT_BINARY_DIR}/FNaE"
             -out "${NUSPACKER_OUT}"
+            -encryptKeyWith "D7B00402659BA2ABD2CB0DB27FA2B656"
         COMMENT "Staging Wii U folder bundle (FNaE/{code,content,meta})"
     )
     wut_create_wuhb(FNaE_Native
