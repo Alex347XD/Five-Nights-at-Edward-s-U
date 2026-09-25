@@ -60,13 +60,13 @@ if(WIIU)
     # ordered before the .wuhb via the RPX target dependency).
     # Unpacked-title folder bundle: build-wiiu/FNaE holds ONLY code/,
     # content/, and meta/ — nothing loose at the root. Cemu boots
-    # code/FNaE_Native.rpx; the game's vol/content asset probe (src/wiiu.h)
+    # code/main.rpx; the game's vol/content asset probe (src/wiiu.h)
     # resolves content/assets no matter the working directory, so a bare
     # .rpx elsewhere can no longer die on missing assets.
     add_custom_command(TARGET FNaE_Native POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_Native.rpx"
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/code/FNaE_Native.rpx"
+            "${CMAKE_CURRENT_BINARY_DIR}/main.rpx"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/code/main.rpx"
         COMMAND "${CMAKE_COMMAND}" -E copy
             "${CMAKE_SOURCE_DIR}/assets/wiiu/app.xml"
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE/code/app.xml"
