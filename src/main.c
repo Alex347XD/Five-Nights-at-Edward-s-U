@@ -179,6 +179,17 @@ static int run_wiiu_dualscreen(FnaeGame *game) {
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
                 game->running = 0;
+            } else if (e.type == SDL_JOYDEVICEADDED) {
+                /* GamePad (re)connect or late attach: (re)open it. Without
+                 * this a reconnect leaves a dead handle and all inputs
+                 * stop, and a pad attached after boot never works. */
+                if (!pad) pad = SDL_JoystickOpen(e.jdevice.which);
+            } else if (e.type == SDL_JOYDEVICEREMOVED) {
+                /* Drop the stale handle now; ADDED reopens on reconnect. */
+                if (pad) {
+                    SDL_JoystickClose(pad);
+                    pad = NULL;
+                }
             } else if (e.type == SDL_JOYBUTTONDOWN) {
                 fnae_pad_button(game, (int)e.jbutton.button, 1);
             } else if (e.type == SDL_JOYBUTTONUP) {
