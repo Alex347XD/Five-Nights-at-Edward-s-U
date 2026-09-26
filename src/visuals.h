@@ -11,6 +11,7 @@ typedef struct {
     SDL_Texture *connection_lost; /* 333 banner, centered on black while Movement Out > 0 */
     SDL_Texture *cam_flip[IMG_CAMFLIP_COUNT]; /* flip flash 573-581 (open), reversed on close */
     SDL_Texture *which_am[IMG_WHICH_AM_COUNT]; /* Frame 9 5->6 odometer */
+    SDL_Texture *am_text; /* Frame 9 "AM" card (287) beside the digit */
     SDL_Texture *final_n6; /* night-6 win screen (4.png) */
     SDL_Texture *final_n7; /* night-7 win screen (7.png) */
     SDL_Texture *death;
@@ -102,7 +103,16 @@ typedef struct {
     SDL_Texture *death_rip;
 } FnaeVisuals;
 
-int visuals_init(FnaeVisuals *v, SDL_Renderer *r);
+#include "fnae_core.h"
+
+/* subset=0 loads the full set (TV/desktop: every screen draws from it).
+ * subset=1 loads only what the GamePad ever displays (camera feeds +
+ * static, minimap/cam buttons/text, lure + music-box UI, flip blip,
+ * warnings, phantom figures, death card): the two full sets together
+ * (~150 MB decoded each) don't fit in console GPU RAM, so the DRC set
+ * must stay small. Everything else stays NULL (render tolerates it --
+ * the DRC branches only ever select the loaded fields). */
+int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, void *ctx, int subset);
 void visuals_free(FnaeVisuals *v);
 
 /* Fusion object coordinates address the object's hotspot, while SDL draws

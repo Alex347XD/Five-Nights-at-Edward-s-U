@@ -45,10 +45,11 @@
 #define IMG_GOODJOB       2   /* GOOD JOB CAPTAIN final screen (Frame 5) */
 /* Frame 9 (6 AM) "which AM" odometer (53x72 digit at [533,324]): Stopped =
  * 389 ("5"); Timer > 03'' starts the roll up to "6" (bank order below,
- * owner-verified frame by frame; ends on 492). Time Text ("AM" at
- * [624,324]) is an invisible Alterable-Value carrier in Fusion (no visual
- * events ever reference it), so the digit draws alone on black. */
+ * owner-verified frame by frame; ends on 492). Time Text is a visible
+ * Active (not just a value carrier): its Stopped frame is the "AM" card
+ * at [624,324], always shown beside the digit. */
 #define IMG_WHICH_AM_COUNT 27
+#define IMG_AM_TEXT       287 /* "AM" card (113x72) beside the 6 AM digit */
 /* Frame 5 Final win screens (Frame 5 Events.txt creates one of Night 5/6/7
  * at (0,0) from the "6th or 7th night" counter): night 5 -> 2.png
  * (weekly paycheck), night 6 -> 4.png (overtime paycheck), night 7 ->

@@ -26,13 +26,55 @@ static void print_usage(const char *prog) {    printf("Usage: %s [--headless] [-
 }
 
 #ifdef __WIIU__
+/* Loading-screen state for the staged dualscreen texture init (two full
+ * texture sets, one per renderer -- minutes on hardware SD). */
+struct FnaeLoadCtx {
+    SDL_Renderer *rtv;
+    SDL_Renderer *rdrc;
+    int base;  /* percent offset for this init phase */
+    int span;  /* percent range for this init phase */
+    int abort; /* set on quit request */
+};
+
+/* Progress hook (see visuals.h): paints a loading bar on both screens
+ * between texture groups. Needs no textures -- nothing is loaded yet.
+ * Returns nonzero to abort the init. */
+static int dualscreen_load_progress(int percent, void *ctx) {
+    struct FnaeLoadCtx *c = (struct FnaeLoadCtx *)ctx;
+    int p = c->base + percent * c->span / 100;
+    if (p < 0) p = 0;
+    if (p > 100) p = 100;
+
+    /* DRC first, then TV: same single-swap discipline as the game loop
+     * (DRC copies without swapping, TV flips both scan buffers). No OS
+     * pump here (or anywhere: ProcUIProcessMessages hangs on hardware,
+     * so the title runs legacy mode with no ProcUI registration at all);
+     * quit during load is not honored (abort stays 0). */
+    SDL_Renderer *rs[2] = { c->rdrc, c->rtv };
+    for (int i = 0; i < 2; ++i) {
+        SDL_Renderer *r = rs[i];
+        SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
+        SDL_RenderClear(r);
+        SDL_SetRenderDrawColor(r, 255, 255, 255, 255);
+        SDL_Rect frame = { 340, 340, 600, 40 };
+        SDL_RenderDrawRect(r, &frame);
+        SDL_Rect fill = { 344, 344, (600 - 8) * p / 100, 32 };
+        if (fill.w > 0)
+            SDL_RenderFillRect(r, &fill);
+        SDL_RenderPresent(r);
+    }
+    return 0;
+}
+
 /* Wii U dual-screen loop: office/everything-else on the TV window, camera
  * feeds on the GamePad (DRC) window. The sdl-wiiu port routes each window
  * to its screen via SDL_WINDOW_WIIU_TV_ONLY / GAMEPAD_ONLY (see src/wiiu.h
  * for the values); each window needs its own renderer + texture set.
  * Presents are ordered DRC-then-TV so the frame performs exactly one
  * GX2SwapScanBuffers (see below); two swaps per frame flickered on Cemu. */
-static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
+static int run_wiiu_dualscreen(FnaeGame *game) {
+    /* TV + DRC windows only (a third window's scanbuffers would eat the
+     * same GPU pool textures allocate from). */
     SDL_Window *wtv = SDL_CreateWindow(
         "Five Nights at Edward's",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -70,8 +112,40 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
         return 1;
     }
 
+    /* Staged init with a loading bar (DRC subset = 0-45%, TV set =
+     * 45-90%, audio = 90-100%): the full load takes minutes from hardware
+     * SD. The small DRC set loads first so the GamePad side is up early;
+     * abort funnels into the existing failure path -- free tolerates
+     * partial sets. */
     FnaeVisuals vtv, vdrc;
-    if (visuals_init(&vtv, rtv) != 0 || visuals_init(&vdrc, rdrc) != 0) {
+    FnaeAudio audio;
+    memset(&audio, 0, sizeof audio);
+    struct FnaeLoadCtx lctx;
+    lctx.rtv = rtv;
+    lctx.rdrc = rdrc;
+    lctx.base = 0;
+    lctx.span = 45;
+    lctx.abort = 0;
+    /* Paint 0% before texture #1: from here on a silent screen always
+     * means pre-video, never asset loading. */
+    int rcd = dualscreen_load_progress(0, &lctx) != 0;
+    int rcv = rcd;
+    if (rcd == 0 && !lctx.abort) {
+        rcd = visuals_init(&vdrc, rdrc, dualscreen_load_progress, &lctx, 1);
+        rcv = rcd;
+    }
+    if (rcd == 0 && !lctx.abort) {
+        lctx.base = 45;
+        rcv = visuals_init(&vtv, rtv, dualscreen_load_progress, &lctx, 0);
+    }
+    if (rcd == 0 && !lctx.abort) {
+        /* Audio last: 40 WAVs from SD. */
+        lctx.base = 90;
+        lctx.span = 10;
+        fnae_audio_init(&audio, "audio", dualscreen_load_progress, &lctx);
+    }
+    if (rcv != 0 || rcd != 0 || lctx.abort) {
+        fnae_audio_free(&audio);
         visuals_free(&vtv);
         visuals_free(&vdrc);
         SDL_DestroyRenderer(rtv);
@@ -90,6 +164,10 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
 
     Uint64 last = SDL_GetPerformanceCounter();
     float static_acc = 0.0f;
+    /* No ProcUI pump/gate anywhere: ProcUIProcessMessages never returns
+     * on hardware, and InForeground / IsRunning only refresh via the
+     * pump, so the title runs legacy mode (no ProcUI registration) and
+     * the OS owns HOME transitions outright. The game runs flat-out. */
     while (game->running) {
         Uint64 now = SDL_GetPerformanceCounter();
         float dt = (float)((double)(now - last) /
@@ -126,7 +204,7 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
             static_acc -= 1.0f / 60.0f;
             fnae_static_tick(game);
         }
-        fnae_audio_frame(audio, game);
+        fnae_audio_frame(&audio, game);
 
         int cam_up = game->frame == FRAME_NIGHT && game->cam_anim == CAM_UP;
         /* TV shows everything with the cameras forced down (office view). */
@@ -165,7 +243,7 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
             game->lure_cd_timer,
             game->music_winding,
             game->warning,
-            fnae_audio_call_playing(audio),
+            fnae_audio_call_playing(&audio),
             game->ph_mangle_a == 1,
             game->ph_bb_a == 1,
             game->ph_bb_scare,
@@ -229,7 +307,7 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
                 game->lure_cd_timer,
                 game->music_winding,
                 game->warning,
-                fnae_audio_call_playing(audio),
+                fnae_audio_call_playing(&audio),
                 game->ph_mangle_a == 1,
                 game->ph_bb_a == 1,
                 game->ph_bb_scare,
@@ -282,6 +360,7 @@ static int run_wiiu_dualscreen(FnaeGame *game, FnaeAudio *audio) {
     }
 
     if (pad) SDL_JoystickClose(pad);
+    fnae_audio_free(&audio);
     visuals_free(&vtv);
     visuals_free(&vdrc);
     SDL_DestroyRenderer(rtv);
@@ -344,6 +423,21 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+#ifdef __WIIU__
+    /* Hardware fast-path: straight into dual-screen. The desktop window /
+     * renderer / texture set below would triple texture memory and then
+     * be thrown away. Headless keeps the single-window path. */
+    if (!headless) {
+        FnaeGame wgame;
+        fnae_init(&wgame);
+        int wrc = run_wiiu_dualscreen(&wgame);
+        headless_free_script(&script);
+        IMG_Quit();
+        SDL_Quit();
+        return wrc;
+    }
+#endif
+
     SDL_Window *w = SDL_CreateWindow(
         "Five Nights at Edward's",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -379,7 +473,8 @@ int main(int argc, char *argv[]) {
     }
 
     FnaeVisuals visuals;
-    if (visuals_init(&visuals, r) != 0) {
+    /* Desktop/headless loads from SSD in seconds: no progress hook, full set. */
+    if (visuals_init(&visuals, r, NULL, NULL, 0) != 0) {
         headless_free_script(&script);
         SDL_DestroyRenderer(r);
         SDL_DestroyWindow(w);
@@ -394,21 +489,8 @@ int main(int argc, char *argv[]) {
     /* Audio is best-effort: init failure means silent play, never a crash.
      * Works headless too (SDL_AUDIODRIVER=dummy), draining the queue. */
     FnaeAudio audio;
-    fnae_audio_init(&audio, "assets/audio");
-
-#ifdef __WIIU__
-    /* On hardware the game runs dual-screen (TV + GamePad) through its own
-     * windows/renderers instead of the single desktop window below.
-     * Headless keeps the single-window path. */
-    if (!headless) {
-        int rc = run_wiiu_dualscreen(&game, &audio);
-        headless_free_script(&script);
-        fnae_audio_free(&audio);
-        IMG_Quit();
-        SDL_Quit();
-        return rc;
-    }
-#endif
+    /* Bare "audio": fnae_asset_root() already ends at the assets dir. */
+    fnae_audio_init(&audio, "audio", NULL, NULL);
 
     if (headless) {
         int rc = headless_run(r, &visuals, &game, &hopt,

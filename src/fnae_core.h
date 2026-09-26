@@ -132,3 +132,10 @@ const char* fnae_frame_name(FnaeFrame f);
 void fnae_push_sound(FnaeGame* g, int snd);
 /* Pops the oldest request, or -1 when the queue is empty. */
 int fnae_pop_sound(FnaeGame* g);
+
+/* Staged-init progress hook (visuals + audio): percent runs 0..100 within
+ * one init call. It fires on the calling thread between load groups so the
+ * caller can repaint a loading screen and pump the OS; return nonzero to
+ * abort (treated like a load failure -- callers free the partial set).
+ * NULL = load everything silently, as before. */
+typedef int (*FnaeLoadProgress)(int percent, void *ctx);

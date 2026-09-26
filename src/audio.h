@@ -28,9 +28,11 @@ struct FnaeAudio {
  int prev_foxy_pos, prev_freddy_pos; /* doorway-knock edges (view-independent) */
 };
 
-/* Loads every sample under dir (e.g. "assets/audio"). Never fatal:
+/* Loads every sample under dir, resolved against fnae_asset_root()
+ * (e.g. "audio" -> "assets/audio" on desktop). Reports staged progress
+ * like visuals_init (NULL = silent). Never fatal:
  * on failure ok=0 and fnae_audio_frame is a silent no-op. */
-int fnae_audio_init(FnaeAudio *a, const char *dir);
+int fnae_audio_init(FnaeAudio *a, const char *dir, FnaeLoadProgress progress, void *ctx);
 void fnae_audio_free(FnaeAudio *a);
 /* Drain the core queue, restart loops on frame edges, refresh volumes. */
 void fnae_audio_frame(FnaeAudio *a, FnaeGame *g);

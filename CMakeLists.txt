@@ -60,13 +60,13 @@ if(WIIU)
     # ordered before the .wuhb via the RPX target dependency).
     # Unpacked-title folder bundle: build-wiiu/FNaE holds ONLY code/,
     # content/, and meta/ — nothing loose at the root. Cemu boots
-    # code/FNaE_Native.rpx; the game's vol/content asset probe (src/wiiu.h)
+    # code/main.rpx; the game's vol/content asset probe (src/wiiu.h)
     # resolves content/assets no matter the working directory, so a bare
     # .rpx elsewhere can no longer die on missing assets.
     add_custom_command(TARGET FNaE_Native POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E copy
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE_Native.rpx"
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/code/FNaE_Native.rpx"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/code/main.rpx"
         COMMAND "${CMAKE_COMMAND}" -E copy
             "${CMAKE_SOURCE_DIR}/assets/wiiu/app.xml"
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE/code/app.xml"
@@ -88,6 +88,20 @@ if(WIIU)
         COMMAND "${CMAKE_COMMAND}" -E copy
             "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.tga"
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE/meta/bootDrcTex.tga"
+        # Mirror of the FNaE bundle plus icons at the exact build-root
+        # paths the .wuhb step references (CONTENT/ICON/TV_SPLASH/DRC_SPLASH).
+        COMMAND "${CMAKE_COMMAND}" -E copy_directory
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE"
+            "${CMAKE_CURRENT_BINARY_DIR}/content"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/iconTex.png"
+            "${CMAKE_CURRENT_BINARY_DIR}/iconTex.png"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootTvTex.png"
+            "${CMAKE_CURRENT_BINARY_DIR}/bootTvTex.png"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.png"
+            "${CMAKE_CURRENT_BINARY_DIR}/bootDrcTex.png"
         COMMAND "${CMAKE_COMMAND}" -E remove_directory "${NUSPACKER_OUT}"
         COMMAND java -jar "${NUSPACKER_JAR}"
             -in "${CMAKE_CURRENT_BINARY_DIR}/FNaE"
@@ -99,7 +113,38 @@ if(WIIU)
         NAME "Five Nights at Edward's U"
         SHORTNAME "FNaE U"
         AUTHOR "Alex347_XD"
-        CONTENT "${CMAKE_CURRENT_BINARY_DIR}/FNaE"
+        # 1. Point this to the STAGED directory so it carries the internal /assets subfolder layout
+        CONTENT "${CMAKE_CURRENT_BINARY_DIR}/FNaE/content" 
+        # 2. Make sure these target the clean, uncompressed PNG files directly
+        ICON "${CMAKE_SOURCE_DIR}/assets/wiiu/iconTex.png"
+        TV_SPLASH "${CMAKE_SOURCE_DIR}/assets/wiiu/bootTvTex.png"
+        DRC_SPLASH "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.png"
+    )
+    # Aroma/HBL drop-in folder: build-wiiu/FNaE_U/ carries the renamed
+    # .wuhb + .rpx plus meta.xml and the PNG icon/splash files.
+    add_custom_target(FNaE_U_bundle ALL
+        DEPENDS FNaE_Native_wuhb
+        COMMAND "${CMAKE_COMMAND}" -E make_directory
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_Native.wuhb"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/FNaE_U.wuhb"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_Native.rpx"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/FNaE_U.rpx"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/meta.xml"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/meta.xml"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/iconTex.png"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/iconTex.png"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootTvTex.png"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/bootTvTex.png"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.png"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/bootDrcTex.png"
+        COMMENT "Staging FNaE_U drop-in folder"
     )
 else()
 # Self-contained run folder: build/FNaE/FNaE_Native.exe + assets + DLLs,
