@@ -179,6 +179,17 @@ static int run_wiiu_dualscreen(FnaeGame *game) {
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
                 game->running = 0;
+            } else if (e.type == SDL_JOYDEVICEADDED) {
+                /* GamePad (re)connect or late attach: (re)open it. Without
+                 * this a reconnect leaves a dead handle and all inputs
+                 * stop, and a pad attached after boot never works. */
+                if (!pad) pad = SDL_JoystickOpen(e.jdevice.which);
+            } else if (e.type == SDL_JOYDEVICEREMOVED) {
+                /* Drop the stale handle now; ADDED reopens on reconnect. */
+                if (pad) {
+                    SDL_JoystickClose(pad);
+                    pad = NULL;
+                }
             } else if (e.type == SDL_JOYBUTTONDOWN) {
                 fnae_pad_button(game, (int)e.jbutton.button, 1);
             } else if (e.type == SDL_JOYBUTTONUP) {
@@ -326,6 +337,70 @@ static int run_wiiu_dualscreen(FnaeGame *game) {
                 0, 0, 0, 0, 0,
                 game->movement_out,
                 game->cam_flip_frame
+            );
+        } else if (game->frame == FRAME_CUSTOMIZE) {
+            /* Custom night shows on the GamePad too: same UI as the TV,
+             * rendered from the DRC texture subset (customize art loads
+             * in both sets). */
+            visuals_render(
+                &vdrc, rdrc,
+                (int)game->frame,
+                game->camera,
+                0,
+                game->night,
+                game->time_of_day,
+                game->hidden_power,
+                game->left_door,
+                game->right_door,
+                game->mask_anim == MASK_DOWN,
+                game->arrow,
+                game->progress,
+                game->static_frame,
+                game->static_alpha,
+                (int)game->office_scroll,
+                game->left_door_frame,
+                game->right_door_frame,
+                game->mask_frame,
+                game->title_bg_frame,
+                game->six_timer,
+                game->foxy.pos,
+                game->freddy.pos,
+                game->cam_static_alpha,
+                game->death,
+                game->music_left,
+                (int)game->cam_scroll,
+                game->power_left,
+                game->springtrap_stand,
+                game->lure_area,
+                game->lure_cam,
+                game->lure_cd,
+                game->lure_cd_timer,
+                game->music_winding,
+                game->warning,
+                fnae_audio_call_playing(&audio),
+                game->ph_mangle_a == 1,
+                game->ph_bb_a == 1,
+                game->ph_bb_scare,
+                game->ph_bb_scare_on,
+                game->ph_annoy_a,
+                game->death_addup,
+                game->death_red,
+                game->death_red_peaked,
+                game->death_rip_a,
+                game->death_rip_b,
+                game->death_ticks,
+                game->gf_random == 1,
+                game->freddy_door,
+                game->foxy_stand,
+                (const int[]){game->custom_freddy, game->custom_foxy,
+                    game->custom_springtrap, game->custom_golden,
+                    game->custom_mangle, game->custom_bb, game->custom_puppet},
+                game->custom_sel, game->custom_ch, game->custom_b,
+                (game->custom_ch > 0 && game->custom_ch <= 3
+                    && game->custom_check[game->custom_ch]) ? 1 : 0,
+                game->custom_cool,
+                game->movement_out,
+                -1
             );
         } else if (game->frame == FRAME_NIGHT && game->cam_flip_frame >= 0) {
             /* The flip-flash blip opens the cams: while it plays (the
