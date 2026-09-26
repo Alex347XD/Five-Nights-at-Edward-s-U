@@ -13,17 +13,6 @@
 
 #include <string.h>
 
-#ifdef __WIIU__
-/* CafeOS process UI (HOME-menu / overlay handling): pump ProcUI messages
- * every frame so the OS never flags the title unresponsive, and idle while
- * backgrounded so the night doesn't advance behind the menu. Saves are
- * synchronous file writes (see save.c), so the save-done callback reports
- * ready-to-release immediately. Symbols verified against the WUT headers
- * (coreinit/foreground.h declares OSSavesDone_ReadyToRelease). */
-#include <coreinit/foreground.h>
-#include <proc_ui/procui.h>
-#endif
-
 static void print_usage(const char *prog) {    printf("Usage: %s [--headless] [--frames N] [--screenshot PATH] [--script PATH]\n", prog);
     printf("  --headless          run without a visible window (hidden window,\n");
     printf("                      software renderer fallback, fixed 1/60 dt)\n");
@@ -44,7 +33,7 @@ struct FnaeLoadCtx {
     SDL_Renderer *rdrc;
     int base;  /* percent offset for this init phase */
     int span;  /* percent range for this init phase */
-    int abort; /* set on quit request / ProcUI shutdown */
+    int abort; /* set on quit request */
 };
 
 /* Progress hook (see visuals.h): paints a loading bar on both screens
@@ -57,11 +46,10 @@ static int dualscreen_load_progress(int percent, void *ctx) {
     if (p > 100) p = 100;
 
     /* DRC first, then TV: same single-swap discipline as the game loop
-     * (DRC copies without swapping, TV flips both scan buffers).
-     * Deliberately unpumped: the first ProcUIProcessMessages call stalls
-     * pre-foreground on hardware and froze boot here (bar stuck at 0%).
-     * The game loop pumps once running instead; quit during load is not
-     * honored (abort stays 0). */
+     * (DRC copies without swapping, TV flips both scan buffers). No OS
+     * pump here (or anywhere: ProcUIProcessMessages hangs on hardware,
+     * so the title runs legacy mode with no ProcUI registration at all);
+     * quit during load is not honored (abort stays 0). */
     SDL_Renderer *rs[2] = { c->rdrc, c->rtv };
     for (int i = 0; i < 2; ++i) {
         SDL_Renderer *r = rs[i];
@@ -85,8 +73,6 @@ static int dualscreen_load_progress(int percent, void *ctx) {
  * Presents are ordered DRC-then-TV so the frame performs exactly one
  * GX2SwapScanBuffers (see below); two swaps per frame flickered on Cemu. */
 static int run_wiiu_dualscreen(FnaeGame *game) {
-    /* ProcUI was registered in main() before SDL_Init (canonical order);
-     * no second init here. */
     /* TV + DRC windows only (a third window's scanbuffers would eat the
      * same GPU pool textures allocate from). */
     SDL_Window *wtv = SDL_CreateWindow(
@@ -178,12 +164,10 @@ static int run_wiiu_dualscreen(FnaeGame *game) {
 
     Uint64 last = SDL_GetPerformanceCounter();
     float static_acc = 0.0f;
-    /* Unpumped game loop: ProcUIProcessMessages never returns on hardware
-     * (proven over many boots: entered-but-never-pumped, pre- and
-     * post-foreground alike), and InForeground / IsRunning only refresh
-     * via the pump, so gating on them would idle forever on stale state.
-     * The game runs flat-out; HOME-menu pause behavior is TBD (pump
-     * thread if needed). */
+    /* No ProcUI pump/gate anywhere: ProcUIProcessMessages never returns
+     * on hardware, and InForeground / IsRunning only refresh via the
+     * pump, so the title runs legacy mode (no ProcUI registration) and
+     * the OS owns HOME transitions outright. The game runs flat-out. */
     while (game->running) {
         Uint64 now = SDL_GetPerformanceCounter();
         float dt = (float)((double)(now - last) /
@@ -376,7 +360,6 @@ static int run_wiiu_dualscreen(FnaeGame *game) {
     }
 
     if (pad) SDL_JoystickClose(pad);
-    ProcUIShutdown();
     fnae_audio_free(&audio);
     visuals_free(&vtv);
     visuals_free(&vdrc);
@@ -430,13 +413,6 @@ int main(int argc, char *argv[]) {
     if (script_path && headless_load_script(script_path, &script) != 0)
         return 1;
 
-#ifdef __WIIU__
-    /* Canonical CafeOS order: register with ProcUI before any SDL/video
-     * init, so the OS foreground handshake can't stall behind it (Cemu
-     * foregrounds instantly; hardware may not). Headless keeps SDL-only. */
-    if (!headless)
-        ProcUIInit(OSSavesDone_ReadyToRelease);
-#endif
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS) != 0) {
         headless_free_script(&script);
         return 1;

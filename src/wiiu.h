@@ -126,8 +126,12 @@ static inline void fnae_pad_button(FnaeGame *g, int btn, int down) {
         if (down) fnae_key(g, 'r');
         else fnae_key_up(g, 'r');
         break;
-    case FNAE_PAD_B: /* flashlight (Z key equivalent, hold) */
-        if (down) fnae_key(g, 'z');
+    case FNAE_PAD_B: /* flashlight (Z key equivalent, hold); on the
+     * customize screen the pad has no Escape key, so B goes back to
+     * the title instead (desktop ESC behavior). */
+        if (g->frame == FRAME_CUSTOMIZE) {
+            if (down) fnae_key(g, SDLK_ESCAPE);
+        } else if (down) fnae_key(g, 'z');
         else fnae_key_up(g, 'z');
         break;
     case FNAE_PAD_X: /* audio lure (E key equivalent) */

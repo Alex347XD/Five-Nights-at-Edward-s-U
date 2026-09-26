@@ -19,7 +19,7 @@ office and everything else stays on the TV)
 ZL        = cameras open/close
 L / R     = left / right door
 Y (hold)  = wind music box (Cam 04)
-B (hold)  = flashlight
+B (hold)  = flashlight (back to title on the customize screen)
 X         = audio lure (camera up, not Cam 04)
 ZR        = mask
 A / Plus  = start / advance / retry (Enter)
