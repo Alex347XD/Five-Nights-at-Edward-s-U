@@ -34,6 +34,11 @@ struct FnaeLoadCtx {
     int base;  /* percent offset for this init phase */
     int span;  /* percent range for this init phase */
     int abort; /* set on quit request */
+    /* Night-transition loads hide the bar: the hook repaints the static
+     * Which Night card instead (needs the visuals + game for it). */
+    int card;
+    FnaeVisuals *vtv;
+    FnaeGame *game;
 };
 
 /* Progress hook (see visuals.h): paints a loading bar on both screens
@@ -44,6 +49,17 @@ static int dualscreen_load_progress(int percent, void *ctx) {
     int p = c->base + percent * c->span / 100;
     if (p < 0) p = 0;
     if (p > 100) p = 100;
+
+    if (c->card) {
+        /* Night-transition load: static Which Night card on the TV (its
+         * texture came with the title phase), black GamePad. No bar. */
+        draw_which_night(c->rtv, c->vtv, c->game->night);
+        SDL_SetRenderDrawColor(c->rdrc, 0, 0, 0, 255);
+        SDL_RenderClear(c->rdrc);
+        SDL_RenderPresent(c->rdrc);
+        SDL_RenderPresent(c->rtv);
+        return 0;
+    }
 
     /* DRC first, then TV: same single-swap discipline as the game loop
      * (DRC copies without swapping, TV flips both scan buffers). No OS
@@ -112,11 +128,12 @@ static int run_wiiu_dualscreen(FnaeGame *game) {
         return 1;
     }
 
-    /* Staged init with a loading bar (DRC subset = 0-45%, TV set =
-     * 45-90%, audio = 90-100%): the full load takes minutes from hardware
-     * SD. The small DRC set loads first so the GamePad side is up early;
-     * abort funnels into the existing failure path -- free tolerates
-     * partial sets. */
+    /* Boot loads the title phase only (bar 0-100%: TV title set, then
+     * GamePad custom art): title + menus + customize + odometer + static.
+     * The night sets stream in later at the Which Night transition,
+     * behind the static card with no bar. Audio all loads here too (WAV
+     * reads are fast, no inflate). Abort funnels into the existing
+     * failure path -- free tolerates partial sets. */
     FnaeVisuals vtv, vdrc;
     FnaeAudio audio;
     memset(&audio, 0, sizeof audio);
@@ -124,27 +141,28 @@ static int run_wiiu_dualscreen(FnaeGame *game) {
     lctx.rtv = rtv;
     lctx.rdrc = rdrc;
     lctx.base = 0;
-    lctx.span = 45;
+    lctx.span = 90;
     lctx.abort = 0;
+    lctx.card = 0;
+    lctx.vtv = &vtv;
+    lctx.game = game;
     /* Paint 0% before texture #1: from here on a silent screen always
      * means pre-video, never asset loading. */
-    int rcd = dualscreen_load_progress(0, &lctx) != 0;
-    int rcv = rcd;
-    if (rcd == 0 && !lctx.abort) {
-        rcd = visuals_init(&vdrc, rdrc, dualscreen_load_progress, &lctx, 1);
-        rcv = rcd;
+    int rct = dualscreen_load_progress(0, &lctx) != 0;
+    int rctd = rct;
+    if (rct == 0 && !lctx.abort) {
+        rct = visuals_init_title(&vtv, rtv, dualscreen_load_progress, &lctx, 0);
+        rctd = rct;
     }
-    if (rcd == 0 && !lctx.abort) {
-        lctx.base = 45;
-        rcv = visuals_init(&vtv, rtv, dualscreen_load_progress, &lctx, 0);
-    }
-    if (rcd == 0 && !lctx.abort) {
-        /* Audio last: 40 WAVs from SD. */
+    if (rct == 0 && !lctx.abort) {
         lctx.base = 90;
         lctx.span = 10;
-        fnae_audio_init(&audio, "audio", dualscreen_load_progress, &lctx);
+        rctd = visuals_init_title(&vdrc, rdrc, dualscreen_load_progress, &lctx, 1);
     }
-    if (rcv != 0 || rcd != 0 || lctx.abort) {
+    if (rct == 0 && !lctx.abort) {
+        fnae_audio_init(&audio, "audio", NULL, NULL);
+    }
+    if (rct != 0 || rctd != 0 || lctx.abort) {
         fnae_audio_free(&audio);
         visuals_free(&vtv);
         visuals_free(&vdrc);
@@ -164,6 +182,7 @@ static int run_wiiu_dualscreen(FnaeGame *game) {
 
     Uint64 last = SDL_GetPerformanceCounter();
     float static_acc = 0.0f;
+    int night_loaded = 0; /* night sets stream in once, at the transition */
     /* No ProcUI pump/gate anywhere: ProcUIProcessMessages never returns
      * on hardware, and InForeground / IsRunning only refresh via the
      * pump, so the title runs legacy mode (no ProcUI registration) and
@@ -205,6 +224,28 @@ static int run_wiiu_dualscreen(FnaeGame *game) {
             } else if (e.type == SDL_FINGERUP) {
                 fnae_pad_touch(game, 2, 0, 0);
             }
+        }
+
+        /* Night-transition load (once): runs only after the 2 s card
+         * read, extending the card as long as loading takes -- 2 seconds
+         * + load time if needed, never load-then-2. The card texture came
+         * with the title phase, so it draws while the rest loads; input
+         * during the load applies after. Later nights skip (resident).
+         * One shot even on failure (a retry loop would hang the card
+         * forever on persistent errors; render tolerates missing art). */
+        if (!night_loaded && game->frame == FRAME_WHICH_NIGHT && game->which_timer >= 2.0f) {
+            struct FnaeLoadCtx nctx;
+            nctx.rtv = rtv;
+            nctx.rdrc = rdrc;
+            nctx.base = 0;
+            nctx.span = 100;
+            nctx.abort = 0;
+            nctx.card = 1;
+            nctx.vtv = &vtv;
+            nctx.game = game;
+            visuals_init_night(&vtv, rtv, dualscreen_load_progress, &nctx, 0);
+            visuals_init_night(&vdrc, rdrc, dualscreen_load_progress, &nctx, 1);
+            night_loaded = 1;
         }
 
         fnae_update(game, dt);
@@ -505,6 +546,9 @@ int main(int argc, char *argv[]) {
     if (!headless) {
         FnaeGame wgame;
         fnae_init(&wgame);
+        /* Night sets load at the transition (see the loop gate): block
+         * the Which Night auto-start until they land. */
+        wgame.night_ready = 0;
         int wrc = run_wiiu_dualscreen(&wgame);
         headless_free_script(&script);
         IMG_Quit();

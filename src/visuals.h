@@ -111,6 +111,15 @@ typedef struct {
  * warnings, phantom figures, death card, customize screen), keeping the
  * DRC load small. Everything else stays NULL (render tolerates it --
  * the DRC branches only ever select the loaded fields). */
+/* Phased loading (Wii U boot speed): title phase first (title scene +
+ * menus + customize + odometer + static -> interactive title fast), night
+ * phase at the Which Night transition (office + cameras + scares + end
+ * screens). visuals_init runs both back-to-back (desktop behavior). The
+ * night phase continues the title-phase struct (no re-memset): groups
+ * live in exactly one phase each. */
+int visuals_init_title(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, void *ctx, int subset);
+int visuals_init_night(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, void *ctx, int subset);
+void draw_which_night(SDL_Renderer *r, FnaeVisuals *v, int night);
 int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, void *ctx, int subset);
 void visuals_free(FnaeVisuals *v);
 

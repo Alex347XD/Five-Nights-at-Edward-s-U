@@ -193,7 +193,7 @@ static void update_music(FnaeGame* g,float dt){
  if(g->music_left<=0 && g->hidden_power>0 && g->death==0 && ((g->cam_anim==CAM_UP&&rnd(5)==1)||(g->mask_anim==MASK_DOWN&&rnd(5)==1))) enter_death(g,1);
 }
 
-void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_WARNING; { FnaeSave s; fnae_save_load(&s); g->night=s.night; g->progress=s.progress; } g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2; g->cam_scroll=FNAE_CAM_SCROLL_MIN; g->cam_scroll_dir=0; g->cam_static_alpha=185; g->power_out_alpha=255;
+void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->night_ready=1; g->frame=FRAME_WARNING; { FnaeSave s; fnae_save_load(&s); g->night=s.night; g->progress=s.progress; } g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2; g->cam_scroll=FNAE_CAM_SCROLL_MIN; g->cam_scroll_dir=0; g->cam_static_alpha=185; g->power_out_alpha=255;
  /* Customize-screen defaults: everything 0, including Puppet (owner
   * request — Fusion ships Puppet Global at 7, but starting at 0 means
   * the Add 1 / Set 20 buttons visibly work on the Puppet column too
@@ -444,6 +444,27 @@ void fnae_start_night(FnaeGame* g,int night){
   g->custom_golden==20&&g->custom_mangle==20&&g->custom_bb==20&&g->custom_puppet==7)?1:0;
 }
 
+/* 6 AM win transition, shared by the (removed) key path and the auto path:
+ * nights 6/7 or Night Story >= 5 -> Final (with Progress/Challenge
+ * writes), else next night -> Which Night. */
+static void advance_from_6am(FnaeGame* g){
+ /* Fusion: nights 6/7 or Night Story >= 5 -> Final, else next night -> Which Night. */
+ if(g->six_or_seven>0||g->night>=5){
+  /* Final-frame Progress writes: story night 5 -> 1, 6th -> 2,
+   * 7th/custom all-20 -> 3 (a plain night-7 clear writes nothing).
+   * A custom clear with an unmodified challenge preset (A/B>0)
+   * additionally writes Challenge<A>=1 (Frame 5 Final). */
+  if(g->six_or_seven==2){
+   if(g->all20) save_progress(g,3);
+   if(g->custom_ch>0&&g->custom_b>0) save_challenge(g,g->custom_ch);
+  }
+  else if(g->six_or_seven==1) save_progress(g,2);
+  else save_progress(g,1);
+  g->frame=FRAME_FINAL; g->final_timer=0;
+ }
+ else {g->night++;g->six_or_seven=0;save_night(g);enter_which_night(g);}
+}
+
 static void hour(FnaeGame* g){
  g->time_of_day++; if(g->time_of_day>12)g->time_of_day=1;
  difficulty(g,g->time_of_day);
@@ -500,10 +521,11 @@ void fnae_update(FnaeGame* g,float dt){
   if(g->warn_timer>=5.0f) enter_title(g);
   return;
  }
- /* Frame 6 interstitial: Every 02'' -> Night, no input required. */
+ /* Frame 6 interstitial: 2 s card first, then the night sets load (Wii U
+  * gate flips night_ready after); auto-start only when both are done. */
  if(g->frame==FRAME_WHICH_NIGHT){
   g->which_timer+=dt;
-  if(g->which_timer>=2.0f) fnae_start_night(g,g->night);
+  if(g->which_timer>=2.0f && g->night_ready) fnae_start_night(g,g->night);
   return;
  }
  /* Frame 8 Customize runs its own tick (hover/arrows/presets). */
@@ -557,10 +579,13 @@ void fnae_update(FnaeGame* g,float dt){
    * customize/6AM/final screens kept draining power and rolling deaths
    * (power_out fades 255->0 then enter_death fires ~6 s after boot),
    * so idling on the title ended on the death screen. */
-   /* Frame 9 which-AM roll runs on the frame timer (Timer > 03'' ->
-    * Start animation, run once). */
-   if(g->frame==FRAME_6AM) g->six_timer+=dt;
-   return;
+ /* Frame 9 which-AM roll runs on the frame timer (Timer > 03'' ->
+  * Start animation, run once). Win transitions flow on their own: 6 AM
+  * advances past the odometer roll, the paycheck (Final) returns to the
+  * title. Key input stays live as skip-ahead on the paycheck. */
+ if(g->frame==FRAME_6AM){g->six_timer+=dt;if(g->six_timer>=6.0f)advance_from_6am(g);}
+ if(g->frame==FRAME_FINAL){g->final_timer+=dt;if(g->final_timer>=6.0f)enter_title(g);}
+ return;
   }
   update_cam_scroll(g,dt);
   /* Death wait ([ Jumpscares ]: fullscreen scare over the shaking office
@@ -752,29 +777,13 @@ void fnae_key(FnaeGame* g,int key){
   if(g->arrow<0)g->arrow=0;{int max=g->progress+1;if(max>3)max=3;if(g->arrow>max)g->arrow=max;}return;
  }
  if(g->frame==FRAME_NEWSPAPER){if(key==SDLK_RETURN)enter_which_night(g);return;}
- if(g->frame==FRAME_WHICH_NIGHT){if(key==SDLK_RETURN)fnae_start_night(g,g->night);return;}
+ if(g->frame==FRAME_WHICH_NIGHT)return;
  if(g->frame==FRAME_CUSTOMIZE){
   if(key==SDLK_RETURN){g->custom_arrow_dir=0;g->six_or_seven=2;enter_which_night(g);}
   return;
  }
-  if(g->frame==FRAME_6AM){if(key==SDLK_RETURN){
-   /* Fusion: nights 6/7 or Night Story >= 5 -> Final, else next night -> Which Night. */
-    if(g->six_or_seven>0||g->night>=5){
-     /* Final-frame Progress writes: story night 5 -> 1, 6th -> 2,
-      * 7th/custom all-20 -> 3 (a plain night-7 clear writes nothing).
-      * A custom clear with an unmodified challenge preset (A/B>0)
-      * additionally writes Challenge<A>=1 (Frame 5 Final). */
-     if(g->six_or_seven==2){
-      if(g->all20) save_progress(g,3);
-      if(g->custom_ch>0&&g->custom_b>0) save_challenge(g,g->custom_ch);
-     }
-     else if(g->six_or_seven==1) save_progress(g,2);
-     else save_progress(g,1);
-     g->frame=FRAME_FINAL;
-    }
-   else {g->night++;g->six_or_seven=0;save_night(g);enter_which_night(g);}
-  }return;}
- if(g->frame==FRAME_DEATH){if(key==SDLK_RETURN)enter_title(g);return;}
+  if(g->frame==FRAME_6AM)return;
+ if(g->frame==FRAME_DEATH)return;
  if(g->frame==FRAME_FINAL){if(key==SDLK_RETURN)enter_title(g);return;}
  if(g->frame!=FRAME_NIGHT)return;
 

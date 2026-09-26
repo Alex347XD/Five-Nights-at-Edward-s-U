@@ -41,13 +41,93 @@ static SDL_Texture *load_id(SDL_Renderer *r, int id) {
     if (progress && progress((p), pctx)) return -1; \
 } while (0)
 
-int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, void *pctx, int subset) {
+/* Title-phase groups (boot -> title, both renderers; subset loads custom
+ * only): warning, title scene + menus, night cards, customize UI,
+ * 6 AM odometer, static. */
+int visuals_init_title(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, void *pctx, int subset) {
     memset(v, 0, sizeof *v);
+    if (!subset) {
+        v->warning = load_id(r, IMG_WARNING);
+        FNAE_LOAD_PCT(8);
+        v->title_bg = load_id(r, IMG_TITLE_BG);
+        for (int i = 0; i < IMG_TITLE_BG_ANIM_COUNT; ++i)
+            v->title_bg_anim[i] = load_id(r, IMG_TITLE_BG_ANIM_FIRST + i);
+        FNAE_LOAD_PCT(20);
+        v->title_new = load_id(r, IMG_TITLE_NEW);
+        v->title_continue = load_id(r, IMG_TITLE_CONTINUE);
+        v->title_6night = load_id(r, IMG_TITLE_6NIGHT);
+        v->title_custom = load_id(r, IMG_TITLE_CUSTOM);
+        v->title_arrow = load_id(r, IMG_TITLE_ARROW);
+        v->title_star = load_id(r, IMG_TITLE_STAR);
+        /* Template Title is the "Five Nights at Edward's" text card (464,
+         * 266x271) at the Template Title position (64,96). */
+        v->title_template = load_id(r, IMG_TITLE_TEXT);
+        FNAE_LOAD_PCT(30);
+        for (int i = 0; i < IMG_NIGHT_COUNT; ++i)
+            v->title_nights[i] = load_id(r, IMG_NIGHT_FIRST + i);
+        FNAE_LOAD_PCT(35);
+    }
+    /* Frame 8 Customize screen (see src/fnae_assets.h for the mapping).
+     * Loaded in both sets: custom night shows on the GamePad too. Small
+     * art (~1 MB), worth it. */
+    v->cust_bg[0] = load_id(r, IMG_CUST_BG_FIRST);
+    v->cust_bg[1] = load_id(r, IMG_CUST_BG_2);
+    v->cust_bg[2] = load_id(r, IMG_CUST_BG_3);
+    {
+        static const int ids[7] = {IMG_CUST_FREDDY, IMG_CUST_MANGLE,
+            IMG_CUST_FOXY, IMG_CUST_GOLDEN, IMG_CUST_SPRING,
+            IMG_CUST_BB, IMG_CUST_PUPPET};
+        for (int i = 0; i < 7; ++i)
+            v->cust_portrait[i] = load_id(r, ids[i]);
+    }
+    v->cust_select = load_id(r, IMG_CUST_SELECT);
+    v->cust_arrow = load_id(r, IMG_CUST_ARROW);
+    v->cust_go = load_id(r, IMG_CUST_GO);
+    v->cust_set20 = load_id(r, IMG_CUST_SET20);
+    v->cust_add1 = load_id(r, IMG_CUST_ADD1);
+    v->cust_check = load_id(r, IMG_CUST_CHECK);
+    FNAE_LOAD_PCT(55);
+    if (!subset) {
+        /* Frame 9 "which AM" odometer (see fnae_assets.h): Stopped "5"
+         * first, then the roll up to "6" in bank order, plus the "AM" card.
+         * TV-only (Frame 9 never shows on the GamePad). */
+        static const int ids[IMG_WHICH_AM_COUNT] = {389, 403, 406, 423,
+            424, 425, 426, 428, 429, 430, 431, 432, 433, 434, 435, 436,
+            437, 438, 439, 440, 441, 442, 462, 487, 489, 491, 492};
+        for (int i = 0; i < IMG_WHICH_AM_COUNT; ++i)
+            v->which_am[i] = load_id(r, ids[i]);
+        v->am_text = load_id(r, IMG_AM_TEXT);
+        FNAE_LOAD_PCT(62);
+        for (int i = 0; i < IMG_STATIC_COUNT; ++i)
+            v->static_frames[i] = load_id(r, IMG_STATIC_FIRST + i);
+    }
+    FNAE_LOAD_PCT(100);
+    if (subset)
+        return v->cust_go ? 0 : -1;
+    return v->title_bg ? 0 : -1;
+}
 
-    /* Real extracted gameplay assets (see src/fnae_assets.h). The office
-     * view never shows on the GamePad (cams closed = black there). */
-    if (!subset)
+/* Night-phase groups (Which Night transition -> night; the card stays up,
+ * no bar): office + doors + mask, cameras (+static for the subset only),
+ * cam UI, scares, death/end screens. Continues the title-phase struct (no
+ * memset): every group lives in exactly one phase. */
+int visuals_init_night(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, void *pctx, int subset) {
+    if (!subset) {
+        /* Real extracted gameplay assets (see src/fnae_assets.h). The office
+         * view never shows on the GamePad (cams closed = black there). */
         v->office = load_id(r, IMG_OFFICE);
+        v->desk = load_id(r, IMG_DESK_SCENE);
+        for (int i = 0; i < IMG_DOOR_FRAMES; ++i) {
+            v->door_left[i] = load_id(r, IMG_DOOR_LEFT_FIRST + i);
+            v->door_right[i] = load_id(r, IMG_DOOR_RIGHT_FIRST + i);
+        }
+        /* Door buttons (off = Stopped, on = Animation 12) + doorway figures. */
+        v->door_btn[0] = load_id(r, IMG_DOORBTN_OFF);
+        v->door_btn[1] = load_id(r, IMG_DOORBTN_ON);
+        v->freddy_door = load_id(r, IMG_FREDDY_DOOR);
+        v->foxy_stand = load_id(r, IMG_FOXY_STAND);
+        FNAE_LOAD_PCT(18);
+    }
     /* Cam 01 = Hell, Cam 02 = Mountain, Cam 03 = Forest,
      * Cam 04 = Dinosaur Exhibit. Each camera has an empty base frame
      * plus an occupied frame for its haunting animatronic. */
@@ -59,72 +139,24 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, voi
     v->cams[2][1] = load_id(r, IMG_CAM_FOREST_FRED);
     v->cams[3][0] = load_id(r, IMG_CAM_DINO);
     v->cams[3][1] = load_id(r, IMG_CAM_DINO_FOXY);
-    for (int i = 0; i < IMG_STATIC_COUNT; ++i)
-        v->static_frames[i] = load_id(r, IMG_STATIC_FIRST + i);
-    FNAE_LOAD_PCT(16);
+    FNAE_LOAD_PCT(30);
+    /* Static lives in the title phase for the full set; the subset picks
+     * it up here (its cam overlay needs it, and the title phase only gave
+     * the subset customize art). */
+    if (subset) {
+        for (int i = 0; i < IMG_STATIC_COUNT; ++i)
+            v->static_frames[i] = load_id(r, IMG_STATIC_FIRST + i);
+    }
     v->connection_lost = load_id(r, IMG_CONNECTION_LOST);
     for (int i = 0; i < IMG_CAMFLIP_COUNT; ++i)
         v->cam_flip[i] = load_id(r, IMG_CAMFLIP_FIRST + i);
-    FNAE_LOAD_PCT(20);
-    /* Frame 9 "which AM" odometer (see fnae_assets.h): Stopped "5"
-     * first, then the roll up to "6" in bank order, plus the "AM" card.
-     * TV-only (Frame 9 never shows on the GamePad). */
-    if (!subset) {
-        static const int ids[IMG_WHICH_AM_COUNT] = {389, 403, 406, 423,
-            424, 425, 426, 428, 429, 430, 431, 432, 433, 434, 435, 436,
-            437, 438, 439, 440, 441, 442, 462, 487, 489, 491, 492};
-        for (int i = 0; i < IMG_WHICH_AM_COUNT; ++i)
-            v->which_am[i] = load_id(r, ids[i]);
-        v->am_text = load_id(r, IMG_AM_TEXT);
-    }
-    FNAE_LOAD_PCT(28);
-    /* TV-only results screens (6AM odometer, night-end cards). The death
-     * card stays: a death with cameras up still overlays it on the DRC. */
-    if (!subset) {
-        v->final_n6 = load_id(r, IMG_FINAL_N6);
-        v->final_n7 = load_id(r, IMG_FINAL_N7);
-    }
-    v->death = load_id(r, IMG_DEATH);
-    if (!subset) {
-        v->newspaper = load_id(r, IMG_NEWSPAPER);
-        v->final_screen = load_id(r, IMG_GOODJOB);
-    }
-    v->warning = load_id(r, IMG_WARNING);
-    FNAE_LOAD_PCT(32);
-
-    /*
-     * Frame 2 (Title) assets mapped from the exported object layout
-     * (see src/fnae_assets.h and docs/TITLE_ASSET_MAP.md).
-     *
-     * The three Star objects all use the same source image in Fusion.
-     */
-    /* Title scene, desk, doors and doorway figures: the office view
-     * never shows on the GamePad. */
-    if (!subset) {
-        v->title_bg = load_id(r, IMG_TITLE_BG);
-        for (int i = 0; i < IMG_TITLE_BG_ANIM_COUNT; ++i)
-            v->title_bg_anim[i] = load_id(r, IMG_TITLE_BG_ANIM_FIRST + i);
-        v->desk = load_id(r, IMG_DESK_SCENE);
-        for (int i = 0; i < IMG_DOOR_FRAMES; ++i) {
-            v->door_left[i] = load_id(r, IMG_DOOR_LEFT_FIRST + i);
-            v->door_right[i] = load_id(r, IMG_DOOR_RIGHT_FIRST + i);
-        }
-    }
-    FNAE_LOAD_PCT(44);
-    /* Door buttons (off = Stopped, on = Animation 12) + doorway figures. */
-    if (!subset) {
-        v->door_btn[0] = load_id(r, IMG_DOORBTN_OFF);
-        v->door_btn[1] = load_id(r, IMG_DOORBTN_ON);
-        v->freddy_door = load_id(r, IMG_FREDDY_DOOR);
-        v->foxy_stand = load_id(r, IMG_FOXY_STAND);
-    }
+    FNAE_LOAD_PCT(38);
     /* Camera minimap + buttons (see src/fnae_assets.h for layout). */
     v->minimap = load_id(r, IMG_MINIMAP);
     v->cam_btn_off = load_id(r, IMG_CAMBTN_OFF);
     v->cam_btn_on = load_id(r, IMG_CAMBTN_ON);
     for (int i = 0; i < IMG_CAMBTN_COUNT; ++i)
         v->cam_txt[i] = load_id(r, IMG_CAMTXT_FIRST + i);
-    FNAE_LOAD_PCT(50);
     v->lure_button = load_id(r, IMG_LURE_BUTTON);
     v->lure_cd[0] = load_id(r, IMG_LURE_CD_1);
     v->lure_cd[1] = load_id(r, IMG_LURE_CD_2);
@@ -138,7 +170,7 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, voi
     v->music_hold = load_id(r, IMG_MUSIC_CLICKHOLD);
     for (int i = 0; i < IMG_MUSIC_PIE_COUNT; ++i)
         v->music_pie[i] = load_id(r, IMG_MUSIC_PIE_FIRST + i);
-    FNAE_LOAD_PCT(56);
+    FNAE_LOAD_PCT(55);
     v->warn_out_steady = load_id(r, IMG_WARN_OUT_STEADY);
     v->warn_out_flash = load_id(r, IMG_WARN_OUT_FLASH);
     v->warn_out_blank = load_id(r, IMG_WARN_OUT_BLANK);
@@ -186,53 +218,32 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, voi
             v->scare_foxy[IMG_SCARE_FOXY_A_COUNT + i] = load_id(r, IMG_SCARE_FOXY_B_FIRST + i);
     }
     FNAE_LOAD_PCT(84);
-    /* Title menu, night cards and customize UI: TV-only. */
+    /* Night-end screens (Frame 5 Final, newspaper, 6th/7th cards) plus
+     * the death stills the GamePad overlays with cameras up. TV-only
+     * results otherwise. */
     if (!subset) {
+        v->final_n6 = load_id(r, IMG_FINAL_N6);
+        v->final_n7 = load_id(r, IMG_FINAL_N7);
+        v->newspaper = load_id(r, IMG_NEWSPAPER);
+        v->final_screen = load_id(r, IMG_GOODJOB);
         v->scare_gf = load_id(r, IMG_SCARE_GF);
         v->gf_sit = load_id(r, IMG_GF_SIT);
         v->death_devil[0] = load_id(r, IMG_DEATH_DEVIL_A);
         v->death_devil[1] = load_id(r, IMG_DEATH_DEVIL_B);
         v->death_rip = load_id(r, IMG_RIP_TEXT);
-        v->title_new = load_id(r, IMG_TITLE_NEW);
-        v->title_continue = load_id(r, IMG_TITLE_CONTINUE);
-        v->title_6night = load_id(r, IMG_TITLE_6NIGHT);
-        v->title_custom = load_id(r, IMG_TITLE_CUSTOM);
-        v->title_arrow = load_id(r, IMG_TITLE_ARROW);
-        v->title_star = load_id(r, IMG_TITLE_STAR);
-        /* Template Title is the "Five Nights at Edward's" text card (464,
-         * 266x271) at the Template Title position (64,96). The 600x507 devil
-         *  cards (233/460) are the Frame 4 Death Anim backdrop cycle. */
-        v->title_template = load_id(r, IMG_TITLE_TEXT);
-        for (int i = 0; i < IMG_NIGHT_COUNT; ++i)
-            v->title_nights[i] = load_id(r, IMG_NIGHT_FIRST + i);
     }
-    FNAE_LOAD_PCT(93);
-    /* Frame 8 Customize screen (see src/fnae_assets.h for the mapping).
-     * Loaded in both sets: custom night shows on the GamePad too. Small
-     * art (~1 MB), worth it. */
-    v->cust_bg[0] = load_id(r, IMG_CUST_BG_FIRST);
-    v->cust_bg[1] = load_id(r, IMG_CUST_BG_2);
-    v->cust_bg[2] = load_id(r, IMG_CUST_BG_3);
-    {
-        static const int ids[7] = {IMG_CUST_FREDDY, IMG_CUST_MANGLE,
-            IMG_CUST_FOXY, IMG_CUST_GOLDEN, IMG_CUST_SPRING,
-            IMG_CUST_BB, IMG_CUST_PUPPET};
-        for (int i = 0; i < 7; ++i)
-            v->cust_portrait[i] = load_id(r, ids[i]);
-    }
-    v->cust_select = load_id(r, IMG_CUST_SELECT);
-    v->cust_arrow = load_id(r, IMG_CUST_ARROW);
-    v->cust_go = load_id(r, IMG_CUST_GO);
-    v->cust_set20 = load_id(r, IMG_CUST_SET20);
-    v->cust_add1 = load_id(r, IMG_CUST_ADD1);
-    v->cust_check = load_id(r, IMG_CUST_CHECK);
-
+    v->death = load_id(r, IMG_DEATH);
     FNAE_LOAD_PCT(100);
-    /* Full set validates on the title card; the subset (no title_bg by
-     * design) validates on the first camera feed instead. */
     if (subset)
         return v->cams[0][0] ? 0 : -1;
-    return v->title_bg ? 0 : -1;
+    return v->office ? 0 : -1;
+}
+
+/* Full init (desktop/headless): title phase then night phase into one set. */
+int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, void *pctx, int subset) {
+    if (visuals_init_title(v, r, progress, pctx, subset) != 0)
+        return -1;
+    return visuals_init_night(v, r, progress, pctx, subset);
 }
 
 static void destroy_texture(SDL_Texture **t) {
@@ -478,7 +489,9 @@ static void draw_text(SDL_Renderer *r, const char *s, int x, int y, int scale);
 /* Frame 6 interstitial: black screen with the night card centered
  * (Fusion parks Which Night at (640,360)). Reuses the 246-252 night
  * cards, which already read "12:00 AM / Nth Night". */
-static void draw_which_night(SDL_Renderer *r, FnaeVisuals *v, int night) {
+/* Which Night card (Frame 6), centered: shared with the loading hook so
+ * the night-transition load shows the same card as the game loop. */
+void draw_which_night(SDL_Renderer *r, FnaeVisuals *v, int night) {
     int n = night < 1 ? 1 : night > 7 ? 7 : night;
     int rw, rh;
     SDL_GetRendererOutputSize(r, &rw, &rh);
