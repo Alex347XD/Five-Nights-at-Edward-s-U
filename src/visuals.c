@@ -207,25 +207,25 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, voi
             v->title_nights[i] = load_id(r, IMG_NIGHT_FIRST + i);
     }
     FNAE_LOAD_PCT(93);
-    /* Frame 8 Customize screen (see src/fnae_assets.h for the mapping). */
-    if (!subset) {
-        v->cust_bg[0] = load_id(r, IMG_CUST_BG_FIRST);
-        v->cust_bg[1] = load_id(r, IMG_CUST_BG_2);
-        v->cust_bg[2] = load_id(r, IMG_CUST_BG_3);
-        {
-            static const int ids[7] = {IMG_CUST_FREDDY, IMG_CUST_MANGLE,
-                IMG_CUST_FOXY, IMG_CUST_GOLDEN, IMG_CUST_SPRING,
-                IMG_CUST_BB, IMG_CUST_PUPPET};
-            for (int i = 0; i < 7; ++i)
-                v->cust_portrait[i] = load_id(r, ids[i]);
-        }
-        v->cust_select = load_id(r, IMG_CUST_SELECT);
-        v->cust_arrow = load_id(r, IMG_CUST_ARROW);
-        v->cust_go = load_id(r, IMG_CUST_GO);
-        v->cust_set20 = load_id(r, IMG_CUST_SET20);
-        v->cust_add1 = load_id(r, IMG_CUST_ADD1);
-        v->cust_check = load_id(r, IMG_CUST_CHECK);
+    /* Frame 8 Customize screen (see src/fnae_assets.h for the mapping).
+     * Loaded in both sets: custom night shows on the GamePad too. Small
+     * art (~1 MB), worth it. */
+    v->cust_bg[0] = load_id(r, IMG_CUST_BG_FIRST);
+    v->cust_bg[1] = load_id(r, IMG_CUST_BG_2);
+    v->cust_bg[2] = load_id(r, IMG_CUST_BG_3);
+    {
+        static const int ids[7] = {IMG_CUST_FREDDY, IMG_CUST_MANGLE,
+            IMG_CUST_FOXY, IMG_CUST_GOLDEN, IMG_CUST_SPRING,
+            IMG_CUST_BB, IMG_CUST_PUPPET};
+        for (int i = 0; i < 7; ++i)
+            v->cust_portrait[i] = load_id(r, ids[i]);
     }
+    v->cust_select = load_id(r, IMG_CUST_SELECT);
+    v->cust_arrow = load_id(r, IMG_CUST_ARROW);
+    v->cust_go = load_id(r, IMG_CUST_GO);
+    v->cust_set20 = load_id(r, IMG_CUST_SET20);
+    v->cust_add1 = load_id(r, IMG_CUST_ADD1);
+    v->cust_check = load_id(r, IMG_CUST_CHECK);
 
     FNAE_LOAD_PCT(100);
     /* Full set validates on the title card; the subset (no title_bg by
