@@ -51,13 +51,13 @@ typedef enum {
     FNAE_PAD_A = 0,    /* confirm / advance */
     FNAE_PAD_B = 1,    /* flashlight (hold) */
     FNAE_PAD_X = 2,    /* audio lure (camera up) */
-    FNAE_PAD_Y = 3,    /* mask */
+    FNAE_PAD_Y = 3,    /* music-box wind (hold, Cam 04) */
     FNAE_PAD_STICK_L = 4,
     FNAE_PAD_STICK_R = 5,
     FNAE_PAD_L = 6,    /* left door */
     FNAE_PAD_R = 7,    /* right door */
     FNAE_PAD_ZL = 8,   /* cameras open/close */
-    FNAE_PAD_ZR = 9,   /* music-box wind (hold, Cam 04) */
+    FNAE_PAD_ZR = 9,   /* mask */
     FNAE_PAD_PLUS = 10,  /* confirm / advance */
     FNAE_PAD_MINUS = 11, /* mute phone call */
     FNAE_PAD_LEFT = 12,
@@ -66,29 +66,36 @@ typedef enum {
     FNAE_PAD_DOWN = 15
 } FnaePadButton;
 
-/* Asset root probe (Wii U only): the unpacked folder title
- * (code/content/meta) mounts its content dir AT fs:/vol/content, while the
- * .wuhb bundle packs that whole title folder INSIDE content (wuhbtool logs
- * assets at /content/content/assets), so the prefix differs by layout.
- * Probe once for the title card under each candidate and pin whichever
- * hits, so the game boots from the folder, the .wuhb, or next to the
- * binary (dev working dir). Everywhere else this is "" — the desktop
+/* Asset root probe (Wii U only): returns the full prefix of the assets dir
+ * itself (trailing slash included), probed once and pinned. Layouts:
+ * folder title / legacy nested .wuhb mount it at
+ * fs:/vol/content/content/assets/, while the current .wuhb
+ * (CONTENT=assets/) mounts it flat at fs:/vol/content/. A bare .rpx next
+ * to an assets/ dir (dev working dir, HBL CWD) falls back to the relative
+ * "assets/" prefix. Callers append "images/..." / "audio/..." with no
+ * "assets/" infix. Everywhere else this is "assets/" -- the desktop
  * layout never changes. */
 static inline const char *fnae_asset_root(void) {
 #ifdef __WIIU__
     static char root[64] = {0};
     static int probed = 0;
     if (!probed) {
+        int i;
         probed = 1;
         static const char *cands[] = {
+            "fs:/vol/content/content/assets/",
+            "fs:/vol/content/assets/",
             "fs:/vol/content/",
-            "fs:/vol/content/content/",
+            "fs:/vol/external01/wiiu/apps/FNaE_U/assets/",
+            "fs:/vol/external01/apps/FNaE_U/assets/",
+            "assets/",
             NULL,
         };
-        for (int i = 0; cands[i]; ++i) {
+        for (i = 0; cands[i]; ++i) {
             char p[128];
-            snprintf(p, sizeof p, "%sassets/images/515.png", cands[i]);
-            FILE *f = fopen(p, "rb");
+            FILE *f;
+            snprintf(p, sizeof p, "%simages/515.png", cands[i]);
+            f = fopen(p, "rb");
             if (f) {
                 fclose(f);
                 strcpy(root, cands[i]);
@@ -98,7 +105,7 @@ static inline const char *fnae_asset_root(void) {
     }
     return root;
 #else
-    return "";
+    return "assets/";
 #endif
 }
 
@@ -115,8 +122,9 @@ static inline void fnae_pad_button(FnaeGame *g, int btn, int down) {
     case FNAE_PAD_R: /* right door (D key equivalent) */
         if (down) fnae_key(g, 'd');
         break;
-    case FNAE_PAD_Y: /* mask (M key equivalent) */
-        if (down) fnae_key(g, 'm');
+    case FNAE_PAD_Y: /* music-box wind (R key equivalent, hold) */
+        if (down) fnae_key(g, 'r');
+        else fnae_key_up(g, 'r');
         break;
     case FNAE_PAD_B: /* flashlight (Z key equivalent, hold) */
         if (down) fnae_key(g, 'z');
@@ -125,9 +133,8 @@ static inline void fnae_pad_button(FnaeGame *g, int btn, int down) {
     case FNAE_PAD_X: /* audio lure (E key equivalent) */
         if (down) fnae_key(g, 'e');
         break;
-    case FNAE_PAD_ZR: /* music-box wind (R key equivalent, hold) */
-        if (down) fnae_key(g, 'r');
-        else fnae_key_up(g, 'r');
+    case FNAE_PAD_ZR: /* mask (M key equivalent) */
+        if (down) fnae_key(g, 'm');
         break;
     case FNAE_PAD_A: /* confirm / advance */
     case FNAE_PAD_PLUS:

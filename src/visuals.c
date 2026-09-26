@@ -25,7 +25,9 @@ static SDL_Texture *load_png(SDL_Renderer *r, const char *path) {
 }
 
 static void path_for(char *dst, size_t n, int id) {
-    snprintf(dst, n, "%sassets/images/%d.png", fnae_asset_root(), id);
+    /* fnae_asset_root() already ends at the assets dir (or "assets/" on
+     * desktop), so no "assets/" infix here. */
+    snprintf(dst, n, "%simages/%d.png", fnae_asset_root(), id);
 }
 
 static SDL_Texture *load_id(SDL_Renderer *r, int id) {
@@ -34,11 +36,18 @@ static SDL_Texture *load_id(SDL_Renderer *r, int id) {
     return load_png(r, p);
 }
 
-int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
+/* Report staged-init progress (see visuals.h); abort on hook request. */
+#define FNAE_LOAD_PCT(p) do { \
+    if (progress && progress((p), pctx)) return -1; \
+} while (0)
+
+int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, void *pctx, int subset) {
     memset(v, 0, sizeof *v);
 
-    /* Real extracted gameplay assets (see src/fnae_assets.h). */
-    v->office = load_id(r, IMG_OFFICE);
+    /* Real extracted gameplay assets (see src/fnae_assets.h). The office
+     * view never shows on the GamePad (cams closed = black there). */
+    if (!subset)
+        v->office = load_id(r, IMG_OFFICE);
     /* Cam 01 = Hell, Cam 02 = Mountain, Cam 03 = Forest,
      * Cam 04 = Dinosaur Exhibit. Each camera has an empty base frame
      * plus an occupied frame for its haunting animatronic. */
@@ -52,24 +61,36 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->cams[3][1] = load_id(r, IMG_CAM_DINO_FOXY);
     for (int i = 0; i < IMG_STATIC_COUNT; ++i)
         v->static_frames[i] = load_id(r, IMG_STATIC_FIRST + i);
+    FNAE_LOAD_PCT(16);
     v->connection_lost = load_id(r, IMG_CONNECTION_LOST);
     for (int i = 0; i < IMG_CAMFLIP_COUNT; ++i)
         v->cam_flip[i] = load_id(r, IMG_CAMFLIP_FIRST + i);
+    FNAE_LOAD_PCT(20);
     /* Frame 9 "which AM" odometer (see fnae_assets.h): Stopped "5"
-     * first, then the roll up to "6" in bank order. */
-    {
+     * first, then the roll up to "6" in bank order, plus the "AM" card.
+     * TV-only (Frame 9 never shows on the GamePad). */
+    if (!subset) {
         static const int ids[IMG_WHICH_AM_COUNT] = {389, 403, 406, 423,
             424, 425, 426, 428, 429, 430, 431, 432, 433, 434, 435, 436,
             437, 438, 439, 440, 441, 442, 462, 487, 489, 491, 492};
         for (int i = 0; i < IMG_WHICH_AM_COUNT; ++i)
             v->which_am[i] = load_id(r, ids[i]);
+        v->am_text = load_id(r, IMG_AM_TEXT);
     }
-    v->final_n6 = load_id(r, IMG_FINAL_N6);
-    v->final_n7 = load_id(r, IMG_FINAL_N7);
+    FNAE_LOAD_PCT(28);
+    /* TV-only results screens (6AM odometer, night-end cards). The death
+     * card stays: a death with cameras up still overlays it on the DRC. */
+    if (!subset) {
+        v->final_n6 = load_id(r, IMG_FINAL_N6);
+        v->final_n7 = load_id(r, IMG_FINAL_N7);
+    }
     v->death = load_id(r, IMG_DEATH);
-    v->newspaper = load_id(r, IMG_NEWSPAPER);
-    v->final_screen = load_id(r, IMG_GOODJOB);
+    if (!subset) {
+        v->newspaper = load_id(r, IMG_NEWSPAPER);
+        v->final_screen = load_id(r, IMG_GOODJOB);
+    }
     v->warning = load_id(r, IMG_WARNING);
+    FNAE_LOAD_PCT(32);
 
     /*
      * Frame 2 (Title) assets mapped from the exported object layout
@@ -77,25 +98,33 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
      *
      * The three Star objects all use the same source image in Fusion.
      */
-    v->title_bg = load_id(r, IMG_TITLE_BG);
-    for (int i = 0; i < IMG_TITLE_BG_ANIM_COUNT; ++i)
-        v->title_bg_anim[i] = load_id(r, IMG_TITLE_BG_ANIM_FIRST + i);
-    v->desk = load_id(r, IMG_DESK_SCENE);
-    for (int i = 0; i < IMG_DOOR_FRAMES; ++i) {
-        v->door_left[i] = load_id(r, IMG_DOOR_LEFT_FIRST + i);
-        v->door_right[i] = load_id(r, IMG_DOOR_RIGHT_FIRST + i);
+    /* Title scene, desk, doors and doorway figures: the office view
+     * never shows on the GamePad. */
+    if (!subset) {
+        v->title_bg = load_id(r, IMG_TITLE_BG);
+        for (int i = 0; i < IMG_TITLE_BG_ANIM_COUNT; ++i)
+            v->title_bg_anim[i] = load_id(r, IMG_TITLE_BG_ANIM_FIRST + i);
+        v->desk = load_id(r, IMG_DESK_SCENE);
+        for (int i = 0; i < IMG_DOOR_FRAMES; ++i) {
+            v->door_left[i] = load_id(r, IMG_DOOR_LEFT_FIRST + i);
+            v->door_right[i] = load_id(r, IMG_DOOR_RIGHT_FIRST + i);
+        }
     }
+    FNAE_LOAD_PCT(44);
     /* Door buttons (off = Stopped, on = Animation 12) + doorway figures. */
-    v->door_btn[0] = load_id(r, IMG_DOORBTN_OFF);
-    v->door_btn[1] = load_id(r, IMG_DOORBTN_ON);
-    v->freddy_door = load_id(r, IMG_FREDDY_DOOR);
-    v->foxy_stand = load_id(r, IMG_FOXY_STAND);
+    if (!subset) {
+        v->door_btn[0] = load_id(r, IMG_DOORBTN_OFF);
+        v->door_btn[1] = load_id(r, IMG_DOORBTN_ON);
+        v->freddy_door = load_id(r, IMG_FREDDY_DOOR);
+        v->foxy_stand = load_id(r, IMG_FOXY_STAND);
+    }
     /* Camera minimap + buttons (see src/fnae_assets.h for layout). */
     v->minimap = load_id(r, IMG_MINIMAP);
     v->cam_btn_off = load_id(r, IMG_CAMBTN_OFF);
     v->cam_btn_on = load_id(r, IMG_CAMBTN_ON);
     for (int i = 0; i < IMG_CAMBTN_COUNT; ++i)
         v->cam_txt[i] = load_id(r, IMG_CAMTXT_FIRST + i);
+    FNAE_LOAD_PCT(50);
     v->lure_button = load_id(r, IMG_LURE_BUTTON);
     v->lure_cd[0] = load_id(r, IMG_LURE_CD_1);
     v->lure_cd[1] = load_id(r, IMG_LURE_CD_2);
@@ -109,6 +138,7 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->music_hold = load_id(r, IMG_MUSIC_CLICKHOLD);
     for (int i = 0; i < IMG_MUSIC_PIE_COUNT; ++i)
         v->music_pie[i] = load_id(r, IMG_MUSIC_PIE_FIRST + i);
+    FNAE_LOAD_PCT(56);
     v->warn_out_steady = load_id(r, IMG_WARN_OUT_STEADY);
     v->warn_out_flash = load_id(r, IMG_WARN_OUT_FLASH);
     v->warn_out_blank = load_id(r, IMG_WARN_OUT_BLANK);
@@ -116,71 +146,92 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r) {
     v->warn_in_flash = load_id(r, IMG_WARN_IN_FLASH);
     v->warn_in_blank = load_id(r, IMG_WARN_IN_BLANK);
     v->mutecall = load_id(r, IMG_MUTECALL);
+    FNAE_LOAD_PCT(60);
     /* Mask overlay (see fnae_assets.h): put-on 134-140, worn 129,
      * take-off 141-143. All frames use per-pixel alpha (transparent
      * eye holes / fade edges), so force BLEND like the lure-area
      * marker: without it the holes render as stored black on
-     * renderers that honor BLENDMODE_NONE strictly. */
-    for (int i = 0; i < IMG_MASK_FLIPDN_COUNT; ++i)
-        v->mask_anim[i] = load_id(r, IMG_MASK_FLIPDN_FIRST + i);
-    v->mask_anim[IMG_MASK_FLIPDN_COUNT] = load_id(r, IMG_MASK_WORN);
-    for (int i = 0; i < IMG_MASK_FLIPUP_COUNT; ++i)
-        v->mask_anim[IMG_MASK_FLIPDN_COUNT + 1 + i] = load_id(r, IMG_MASK_FLIPUP_FIRST + i);
-    for (int i = 0; i < IMG_MASK_FRAMES; ++i)
-        if (v->mask_anim[i]) SDL_SetTextureBlendMode(v->mask_anim[i], SDL_BLENDMODE_BLEND);
+     * renderers that honor BLENDMODE_NONE strictly. Office-only. */
+    if (!subset) {
+        for (int i = 0; i < IMG_MASK_FLIPDN_COUNT; ++i)
+            v->mask_anim[i] = load_id(r, IMG_MASK_FLIPDN_FIRST + i);
+        v->mask_anim[IMG_MASK_FLIPDN_COUNT] = load_id(r, IMG_MASK_WORN);
+        for (int i = 0; i < IMG_MASK_FLIPUP_COUNT; ++i)
+            v->mask_anim[IMG_MASK_FLIPDN_COUNT + 1 + i] = load_id(r, IMG_MASK_FLIPUP_FIRST + i);
+        for (int i = 0; i < IMG_MASK_FRAMES; ++i)
+            if (v->mask_anim[i]) SDL_SetTextureBlendMode(v->mask_anim[i], SDL_BLENDMODE_BLEND);
+    }
+    FNAE_LOAD_PCT(66);
     v->phmangle_cam = load_id(r, IMG_PHMANGLE_CAM);
     v->phmangle_annoy = load_id(r, IMG_PHMANGLE_ANNOY);
     v->phbb_cam = load_id(r, IMG_PHBB_CAM);
     v->phbb_scare = load_id(r, IMG_PHBB_SCARE);
+    FNAE_LOAD_PCT(68);
     /* Jumpscare runs (see fnae_assets.h for the verified bank ranges).
      * Freddy skips the 35x75 UI dot at 364: 353-363 + 365. Foxy is two
-     * runs back to back: 536-539 then 562-572. */
-    for (int i = 0; i < IMG_SCARE_SPRING_COUNT; ++i)
-        v->scare_spring[i] = load_id(r, IMG_SCARE_SPRING_FIRST + i);
-    for (int i = 0; i < 11; ++i)
-        v->scare_freddy[i] = load_id(r, IMG_SCARE_FREDDY_FIRST + i);
-    v->scare_freddy[11] = load_id(r, IMG_SCARE_FREDDY_LAST);
-    for (int i = 0; i < IMG_SCARE_PUPPET_COUNT; ++i)
-        v->scare_puppet[i] = load_id(r, IMG_SCARE_PUPPET_FIRST + i);
-    for (int i = 0; i < IMG_SCARE_FOXY_A_COUNT; ++i)
-        v->scare_foxy[i] = load_id(r, IMG_SCARE_FOXY_A_FIRST + i);
-    for (int i = 0; i < IMG_SCARE_FOXY_B_COUNT; ++i)
-        v->scare_foxy[IMG_SCARE_FOXY_A_COUNT + i] = load_id(r, IMG_SCARE_FOXY_B_FIRST + i);
-    v->scare_gf = load_id(r, IMG_SCARE_GF);
-    v->gf_sit = load_id(r, IMG_GF_SIT);
-    v->death_devil[0] = load_id(r, IMG_DEATH_DEVIL_A);
-    v->death_devil[1] = load_id(r, IMG_DEATH_DEVIL_B);
-    v->death_rip = load_id(r, IMG_RIP_TEXT);
-    v->title_new = load_id(r, IMG_TITLE_NEW);
-    v->title_continue = load_id(r, IMG_TITLE_CONTINUE);
-    v->title_6night = load_id(r, IMG_TITLE_6NIGHT);
-    v->title_custom = load_id(r, IMG_TITLE_CUSTOM);
-    v->title_arrow = load_id(r, IMG_TITLE_ARROW);
-    v->title_star = load_id(r, IMG_TITLE_STAR);
-    /* Template Title is the "Five Nights at Edward's" text card (464,
-     * 266x271) at the Template Title position (64,96). The 600x507 devil
-     *  cards (233/460) are the Frame 4 Death Anim backdrop cycle. */
-    v->title_template = load_id(r, IMG_TITLE_TEXT);
-    for (int i = 0; i < IMG_NIGHT_COUNT; ++i)
-        v->title_nights[i] = load_id(r, IMG_NIGHT_FIRST + i);
-    /* Frame 8 Customize screen (see src/fnae_assets.h for the mapping). */
-    v->cust_bg[0] = load_id(r, IMG_CUST_BG_FIRST);
-    v->cust_bg[1] = load_id(r, IMG_CUST_BG_2);
-    v->cust_bg[2] = load_id(r, IMG_CUST_BG_3);
-    {
-        static const int ids[7] = {IMG_CUST_FREDDY, IMG_CUST_MANGLE,
-            IMG_CUST_FOXY, IMG_CUST_GOLDEN, IMG_CUST_SPRING,
-            IMG_CUST_BB, IMG_CUST_PUPPET};
-        for (int i = 0; i < 7; ++i)
-            v->cust_portrait[i] = load_id(r, ids[i]);
+     * runs back to back: 536-539 then 562-572. Full-screen scares below
+     * are TV-only (a death with cameras up overlays the death card, kept
+     * above, not these runs). */
+    if (!subset) {
+        for (int i = 0; i < IMG_SCARE_SPRING_COUNT; ++i)
+            v->scare_spring[i] = load_id(r, IMG_SCARE_SPRING_FIRST + i);
+        for (int i = 0; i < 11; ++i)
+            v->scare_freddy[i] = load_id(r, IMG_SCARE_FREDDY_FIRST + i);
+        v->scare_freddy[11] = load_id(r, IMG_SCARE_FREDDY_LAST);
+        for (int i = 0; i < IMG_SCARE_PUPPET_COUNT; ++i)
+            v->scare_puppet[i] = load_id(r, IMG_SCARE_PUPPET_FIRST + i);
+        for (int i = 0; i < IMG_SCARE_FOXY_A_COUNT; ++i)
+            v->scare_foxy[i] = load_id(r, IMG_SCARE_FOXY_A_FIRST + i);
+        for (int i = 0; i < IMG_SCARE_FOXY_B_COUNT; ++i)
+            v->scare_foxy[IMG_SCARE_FOXY_A_COUNT + i] = load_id(r, IMG_SCARE_FOXY_B_FIRST + i);
     }
-    v->cust_select = load_id(r, IMG_CUST_SELECT);
-    v->cust_arrow = load_id(r, IMG_CUST_ARROW);
-    v->cust_go = load_id(r, IMG_CUST_GO);
-    v->cust_set20 = load_id(r, IMG_CUST_SET20);
-    v->cust_add1 = load_id(r, IMG_CUST_ADD1);
-    v->cust_check = load_id(r, IMG_CUST_CHECK);
+    FNAE_LOAD_PCT(84);
+    /* Title menu, night cards and customize UI: TV-only. */
+    if (!subset) {
+        v->scare_gf = load_id(r, IMG_SCARE_GF);
+        v->gf_sit = load_id(r, IMG_GF_SIT);
+        v->death_devil[0] = load_id(r, IMG_DEATH_DEVIL_A);
+        v->death_devil[1] = load_id(r, IMG_DEATH_DEVIL_B);
+        v->death_rip = load_id(r, IMG_RIP_TEXT);
+        v->title_new = load_id(r, IMG_TITLE_NEW);
+        v->title_continue = load_id(r, IMG_TITLE_CONTINUE);
+        v->title_6night = load_id(r, IMG_TITLE_6NIGHT);
+        v->title_custom = load_id(r, IMG_TITLE_CUSTOM);
+        v->title_arrow = load_id(r, IMG_TITLE_ARROW);
+        v->title_star = load_id(r, IMG_TITLE_STAR);
+        /* Template Title is the "Five Nights at Edward's" text card (464,
+         * 266x271) at the Template Title position (64,96). The 600x507 devil
+         *  cards (233/460) are the Frame 4 Death Anim backdrop cycle. */
+        v->title_template = load_id(r, IMG_TITLE_TEXT);
+        for (int i = 0; i < IMG_NIGHT_COUNT; ++i)
+            v->title_nights[i] = load_id(r, IMG_NIGHT_FIRST + i);
+    }
+    FNAE_LOAD_PCT(93);
+    /* Frame 8 Customize screen (see src/fnae_assets.h for the mapping). */
+    if (!subset) {
+        v->cust_bg[0] = load_id(r, IMG_CUST_BG_FIRST);
+        v->cust_bg[1] = load_id(r, IMG_CUST_BG_2);
+        v->cust_bg[2] = load_id(r, IMG_CUST_BG_3);
+        {
+            static const int ids[7] = {IMG_CUST_FREDDY, IMG_CUST_MANGLE,
+                IMG_CUST_FOXY, IMG_CUST_GOLDEN, IMG_CUST_SPRING,
+                IMG_CUST_BB, IMG_CUST_PUPPET};
+            for (int i = 0; i < 7; ++i)
+                v->cust_portrait[i] = load_id(r, ids[i]);
+        }
+        v->cust_select = load_id(r, IMG_CUST_SELECT);
+        v->cust_arrow = load_id(r, IMG_CUST_ARROW);
+        v->cust_go = load_id(r, IMG_CUST_GO);
+        v->cust_set20 = load_id(r, IMG_CUST_SET20);
+        v->cust_add1 = load_id(r, IMG_CUST_ADD1);
+        v->cust_check = load_id(r, IMG_CUST_CHECK);
+    }
 
+    FNAE_LOAD_PCT(100);
+    /* Full set validates on the title card; the subset (no title_bg by
+     * design) validates on the first camera feed instead. */
+    if (subset)
+        return v->cams[0][0] ? 0 : -1;
     return v->title_bg ? 0 : -1;
 }
 
@@ -203,6 +254,7 @@ void visuals_free(FnaeVisuals *v) {
         destroy_texture(&v->cam_flip[i]);
     for (int i = 0; i < IMG_WHICH_AM_COUNT; ++i)
         destroy_texture(&v->which_am[i]);
+    destroy_texture(&v->am_text);
     destroy_texture(&v->final_n6);
     destroy_texture(&v->final_n7);
     destroy_texture(&v->death);
@@ -1121,6 +1173,7 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             if (widx >= IMG_WHICH_AM_COUNT) widx = IMG_WHICH_AM_COUNT - 1;
         }
         draw_texture(r, v->which_am[widx], 533, 324);
+        draw_texture(r, v->am_text, 624, 324);
     } else if (frame == 4) {
         /* Frame 4 Death: fullscreen red flash first (drains back to 0 so
          * the animation owns the rest of the screen). The devil-card Death

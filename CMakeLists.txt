@@ -94,14 +94,14 @@ if(WIIU)
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE"
             "${CMAKE_CURRENT_BINARY_DIR}/content"
         COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_SOURCE_DIR}/assets/wiiu/iconTex.tga"
-            "${CMAKE_CURRENT_BINARY_DIR}/iconTex.tga"
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/iconTex.png"
+            "${CMAKE_CURRENT_BINARY_DIR}/iconTex.png"
         COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootTvTex.tga"
-            "${CMAKE_CURRENT_BINARY_DIR}/bootTvTex.tga"
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootTvTex.png"
+            "${CMAKE_CURRENT_BINARY_DIR}/bootTvTex.png"
         COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.tga"
-            "${CMAKE_CURRENT_BINARY_DIR}/bootDrcTex.tga"
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.png"
+            "${CMAKE_CURRENT_BINARY_DIR}/bootDrcTex.png"
         COMMAND "${CMAKE_COMMAND}" -E remove_directory "${NUSPACKER_OUT}"
         COMMAND java -jar "${NUSPACKER_JAR}"
             -in "${CMAKE_CURRENT_BINARY_DIR}/FNaE"
@@ -113,10 +113,38 @@ if(WIIU)
         NAME "Five Nights at Edward's U"
         SHORTNAME "FNaE U"
         AUTHOR "Alex347_XD"
-        CONTENT "${CMAKE_CURRENT_BINARY_DIR}/content"
-        ICON ${CMAKE_CURRENT_BINARY_DIR}/iconTex.tga
-        TV_SPLASH ${CMAKE_CURRENT_BINARY_DIR}/bootTvTex.tga
-        DRC_SPLASH ${CMAKE_CURRENT_BINARY_DIR}/bootDrcTex.tga
+        # 1. Point this to the STAGED directory so it carries the internal /assets subfolder layout
+        CONTENT "${CMAKE_CURRENT_BINARY_DIR}/FNaE/content" 
+        # 2. Make sure these target the clean, uncompressed PNG files directly
+        ICON "${CMAKE_SOURCE_DIR}/assets/wiiu/iconTex.png"
+        TV_SPLASH "${CMAKE_SOURCE_DIR}/assets/wiiu/bootTvTex.png"
+        DRC_SPLASH "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.png"
+    )
+    # Aroma/HBL drop-in folder: build-wiiu/FNaE_U/ carries the renamed
+    # .wuhb + .rpx plus meta.xml and the PNG icon/splash files.
+    add_custom_target(FNaE_U_bundle ALL
+        DEPENDS FNaE_Native_wuhb
+        COMMAND "${CMAKE_COMMAND}" -E make_directory
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_Native.wuhb"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/FNaE_U.wuhb"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_Native.rpx"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/FNaE_U.rpx"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/meta.xml"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/meta.xml"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/iconTex.png"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/iconTex.png"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootTvTex.png"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/bootTvTex.png"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.png"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/bootDrcTex.png"
+        COMMENT "Staging FNaE_U drop-in folder"
     )
 else()
 # Self-contained run folder: build/FNaE/FNaE_Native.exe + assets + DLLs,

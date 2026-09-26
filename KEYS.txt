@@ -18,13 +18,13 @@ office and everything else stays on the TV)
 
 ZL        = cameras open/close
 L / R     = left / right door
-Y         = mask
+Y (hold)  = wind music box (Cam 04)
 B (hold)  = flashlight
 X         = audio lure (camera up, not Cam 04)
-ZR (hold) = wind music box (Cam 04)
+ZR        = mask
 A / Plus  = start / advance / retry (Enter)
 Minus     = mute phone call
 D-pad Up/Down    = menu navigation
 D-pad Left/Right = switch camera (camera up) / menus otherwise
 Left stick       = look around the office (pan)
-Touchscreen      = camera buttons, lure, music-box crank (tap / hold)
+Touchscreen      = camera buttons and lure (tap)

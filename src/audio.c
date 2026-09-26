@@ -29,6 +29,46 @@
 #define CH_JACK 20
 #define CH_GOBLIN 32
 
+#ifdef __WIIU__
+/* Output-zone routing (Wii U only): the patched SDL port maps SDL-LEFT to
+ * the GamePad (both speakers, mono) and SDL-RIGHT to the TV (both
+ * speakers, mono), so panning steers content per output. Cam UI goes
+ * LEFT (pads); everything else goes RIGHT (TV). Volumes untouched.
+ * Non-WiiU builds keep the original stereo image (untouched). */
+static void wiiu_zone_pans(FnaeGame *g) {
+    /* Cam UI counts as open through the flip transitions too: the flip-up
+     * blip fires while view is still 0 (and flip-down while it drops), so
+     * gate on cam_anim as well or the transitions leak to the TV. */
+    int cams = (g->frame == FRAME_NIGHT &&
+                (g->view > 0 || g->cam_anim != CAM_DOWN));
+    /* CH_CAMAU reuses: title blip (TV) vs night cam loop (pads). CH_FLIP
+     * reuses: mask on/off (office/TV) vs cam flip blips (pads). CH_CHANGE
+     * reuses: title/menu blips (TV) vs cam-switch + connection-lost blips
+     * (pads). */
+    Mix_SetPanning(CH_CAMAU, cams ? 255 : 0, cams ? 0 : 255);
+    Mix_SetPanning(CH_FLIP, cams ? 255 : 0, cams ? 0 : 255);
+    Mix_SetPanning(CH_CHANGE, cams ? 255 : 0, cams ? 0 : 255);
+    Mix_SetPanning(CH_MELODY, 255, 0);
+    Mix_SetPanning(CH_WINDUP, 255, 0);
+    Mix_SetPanning(CH_LURE, 255, 0);
+    Mix_SetPanning(CH_STARE, 255, 0);
+    Mix_SetPanning(CH_FAN, 0, 255);
+    Mix_SetPanning(CH_DEPTHS, 0, 255);
+    Mix_SetPanning(CH_CALL, 0, 255);
+    Mix_SetPanning(CH_WALK, 0, 255);
+    Mix_SetPanning(CH_FOOT, 0, 255);
+    Mix_SetPanning(CH_DOOR, 0, 255);
+    Mix_SetPanning(CH_CLOSE, 0, 255);
+    Mix_SetPanning(CH_BREATH, 0, 255);
+    Mix_SetPanning(CH_BUZZ, 0, 255);
+    Mix_SetPanning(CH_MANGLE, 0, 255);
+    Mix_SetPanning(CH_PHBB, 0, 255);
+    Mix_SetPanning(CH_POWER, 0, 255);
+    Mix_SetPanning(CH_JACK, 0, 255);
+    Mix_SetPanning(CH_GOBLIN, 0, 255);
+}
+#endif
+
 /* Fusion 0-100 volumes mapped to mixer 0-128. */
 #define V(x) ((x)*128/100)
 
@@ -41,15 +81,30 @@ static Mix_Chunk *load_one(const char *dir, const char *name) {
  return c;
 }
 
-int fnae_audio_init(FnaeAudio *a, const char *dir) {
- memset(a, 0, sizeof *a);
- a->prev_frame = -1;
- if (Mix_Init(MIX_INIT_MP3) == 0)
-  fprintf(stderr, "AUDIO: mp3 decoder unavailable: %s\n", Mix_GetError());
- /* Wii U AX runs at 48000 Hz and its SDL driver may reject 44100: try
-  * the desktop rate first (unchanged desktop behavior), then the native
-  * Wii U rate, then 22050. A rejected rate used to mean total silence. */
- static const int freq_try[] = { 44100, 48000, 22050 };
+ /* Staged loading-screen progress (see fnae_core.h); aborting drops into
+ * the silent path (ok/init stay 0) while the caller checks its own flag. */
+#define FNAE_AUDIO_PCT(p) do { \
+  if (progress && progress((p), pctx)) return 0; \
+} while (0)
+
+int fnae_audio_init(FnaeAudio *a, const char *dir, FnaeLoadProgress progress, void *pctx) {
+  memset(a, 0, sizeof *a);
+  a->prev_frame = -1;
+#ifndef __WIIU__
+  /* No MP3s ship anymore (all calls are WAV); desktop keeps the init for
+   * SDL_mixer's decoder setup. Skipped on Wii U, where the static portlib
+   * has no MP3 decoder and this only prints a red-herring error. */
+  if (Mix_Init(MIX_INIT_MP3) == 0)
+   fprintf(stderr, "AUDIO: mp3 decoder unavailable: %s\n", Mix_GetError());
+#endif
+#ifdef __WIIU__
+  /* Native rate first: Wii U AX runs at 48000 Hz, and a 44100 open is
+   * suspected of stalling the SDL driver on hardware -- stuck before the
+   * first frame, i.e. frozen on the OS loading screen. */
+  static const int freq_try[] = { 48000, 44100, 22050 };
+#else
+  static const int freq_try[] = { 44100, 48000, 22050 };
+#endif
  int freq_got = 0;
  for (size_t i = 0; i < sizeof freq_try / sizeof freq_try[0]; ++i) {
   if (Mix_OpenAudio(freq_try[i], MIX_DEFAULT_FORMAT, 2, 2048) == 0) {
@@ -70,9 +125,10 @@ int fnae_audio_init(FnaeAudio *a, const char *dir) {
   fflush(stdout);
  }
   Mix_AllocateChannels(40);
+  FNAE_AUDIO_PCT(10);
 
- /* Wii U content probe (code/content/meta, .wuhb, or flat folder): every
-  * sample dir goes through the pinned asset root ("" on desktop). */
+  /* Wii U content probe (code/content/meta, .wuhb, or flat folder): every
+   * sample dir goes through the pinned asset root ("assets/" on desktop). */
   char fulldir[576];
   snprintf(fulldir, sizeof fulldir, "%s%s", fnae_asset_root(), dir);
   dir = fulldir;
@@ -88,6 +144,7 @@ int fnae_audio_init(FnaeAudio *a, const char *dir) {
  a->breath = load_one(dir, "deepbreaths.wav");
  a->door = load_one(dir, "SFXBible_12478.wav");
  a->melody = load_one(dir, "Music_Box_Melody_Playful.wav");
+  FNAE_AUDIO_PCT(30);
  a->stare = load_one(dir, "stare.wav");
  a->buzz = load_one(dir, "buzzlight.wav");
  a->windup = load_one(dir, "windup2.wav");
@@ -99,6 +156,7 @@ int fnae_audio_init(FnaeAudio *a, const char *dir) {
  a->echo4b = load_one(dir, "echo4b.wav");
  a->stop = load_one(dir, "stop.wav");
  a->walk = load_one(dir, "walk1.wav");
+  FNAE_AUDIO_PCT(50);
  a->garble = load_one(dir, "garble1.wav");
  a->manglebreath = load_one(dir, "breathing.wav");
  a->phbb = load_one(dir, "scream3.wav");
@@ -108,20 +166,24 @@ int fnae_audio_init(FnaeAudio *a, const char *dir) {
  a->freddy = load_one(dir, "XSCREAM.wav");
  a->foxy = load_one(dir, "dinosaur-roar-390283.wav");
  a->spring = load_one(dir, "scream3.wav");
+  FNAE_AUDIO_PCT(70);
  a->gf = load_one(dir, "XScream2.wav");
  a->title_static = load_one(dir, "static.wav");
  a->darkness = load_one(dir, "darkness music.wav");
  a->finalbox = load_one(dir, "music box.wav");
  a->chimes = load_one(dir, "Clock Chimes.wav");
  a->goblin = load_one(dir, "Crying Goblin (Clash Royale) Sound Effect - YTSFX (youtube).wav");
- a->call1 = load_one(dir, "call1b (1).mp3");
- a->call2 = load_one(dir, "call2b (3).mp3");
- a->call3 = load_one(dir, "call3b (3).mp3");
+  a->call1 = load_one(dir, "call-1b-44100hz.wav");
+  a->call2 = load_one(dir, "call-2b-44100hz.wav");
+  a->call3 = load_one(dir, "call-3b-44100hz.wav");
  a->call4 = load_one(dir, "call-4b-44100hz.wav");
  a->call5 = load_one(dir, "call-5b-44100hz.wav");
  a->call6 = load_one(dir, "call-6b-44100hz.wav");
+  FNAE_AUDIO_PCT(90);
 
- /* Footstep knocks come from the left (Fusion pan -100 on ch #12). */
+  FNAE_AUDIO_PCT(100);
+
+  /* Footstep knocks come from the left (Fusion pan -100 on ch #12). */
  Mix_SetPanning(CH_FOOT, 255, 0);
  a->ok = 1;
  a->init = 1;
@@ -255,6 +317,10 @@ static void jumpscare(FnaeAudio *a, int death) {
 void fnae_audio_frame(FnaeAudio *a, FnaeGame *g) {
  if (!a->ok)
   return;
+#ifdef __WIIU__
+ /* Zone routing first: one-shots played below inherit this frame's pan. */
+ wiiu_zone_pans(g);
+#endif
  drain_queue(a, g);
 
  int frame = (int)g->frame;
