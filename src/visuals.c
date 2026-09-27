@@ -61,11 +61,11 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, voi
     v->cams[3][1] = load_id(r, IMG_CAM_DINO_FOXY);
     for (int i = 0; i < IMG_STATIC_COUNT; ++i)
         v->static_frames[i] = load_id(r, IMG_STATIC_FIRST + i);
-    FNAE_LOAD_PCT(16);
+    FNAE_LOAD_PCT(20);
     v->connection_lost = load_id(r, IMG_CONNECTION_LOST);
     for (int i = 0; i < IMG_CAMFLIP_COUNT; ++i)
         v->cam_flip[i] = load_id(r, IMG_CAMFLIP_FIRST + i);
-    FNAE_LOAD_PCT(20);
+    FNAE_LOAD_PCT(23);
     /* Frame 9 "which AM" odometer (see fnae_assets.h): Stopped "5"
      * first, then the roll up to "6" in bank order, plus the "AM" card.
      * TV-only (Frame 9 never shows on the GamePad). */
@@ -77,7 +77,7 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, voi
             v->which_am[i] = load_id(r, ids[i]);
         v->am_text = load_id(r, IMG_AM_TEXT);
     }
-    FNAE_LOAD_PCT(28);
+    FNAE_LOAD_PCT(31);
     /* TV-only results screens (6AM odometer, night-end cards). The death
      * card stays: a death with cameras up still overlays it on the DRC. */
     if (!subset) {
@@ -90,7 +90,7 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, voi
         v->final_screen = load_id(r, IMG_GOODJOB);
     }
     v->warning = load_id(r, IMG_WARNING);
-    FNAE_LOAD_PCT(32);
+    FNAE_LOAD_PCT(35);
 
     /*
      * Frame 2 (Title) assets mapped from the exported object layout
@@ -110,7 +110,7 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, voi
             v->door_right[i] = load_id(r, IMG_DOOR_RIGHT_FIRST + i);
         }
     }
-    FNAE_LOAD_PCT(44);
+    FNAE_LOAD_PCT(49);
     /* Door buttons (off = Stopped, on = Animation 12) + doorway figures. */
     if (!subset) {
         v->door_btn[0] = load_id(r, IMG_DOORBTN_OFF);
@@ -124,7 +124,7 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, voi
     v->cam_btn_on = load_id(r, IMG_CAMBTN_ON);
     for (int i = 0; i < IMG_CAMBTN_COUNT; ++i)
         v->cam_txt[i] = load_id(r, IMG_CAMTXT_FIRST + i);
-    FNAE_LOAD_PCT(50);
+    FNAE_LOAD_PCT(52);
     v->lure_button = load_id(r, IMG_LURE_BUTTON);
     v->lure_cd[0] = load_id(r, IMG_LURE_CD_1);
     v->lure_cd[1] = load_id(r, IMG_LURE_CD_2);
@@ -138,7 +138,7 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, voi
     v->music_hold = load_id(r, IMG_MUSIC_CLICKHOLD);
     for (int i = 0; i < IMG_MUSIC_PIE_COUNT; ++i)
         v->music_pie[i] = load_id(r, IMG_MUSIC_PIE_FIRST + i);
-    FNAE_LOAD_PCT(56);
+    FNAE_LOAD_PCT(61);
     v->warn_out_steady = load_id(r, IMG_WARN_OUT_STEADY);
     v->warn_out_flash = load_id(r, IMG_WARN_OUT_FLASH);
     v->warn_out_blank = load_id(r, IMG_WARN_OUT_BLANK);
@@ -146,7 +146,7 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, voi
     v->warn_in_flash = load_id(r, IMG_WARN_IN_FLASH);
     v->warn_in_blank = load_id(r, IMG_WARN_IN_BLANK);
     v->mutecall = load_id(r, IMG_MUTECALL);
-    FNAE_LOAD_PCT(60);
+    FNAE_LOAD_PCT(63);
     /* Mask overlay (see fnae_assets.h): put-on 134-140, worn 129,
      * take-off 141-143. All frames use per-pixel alpha (transparent
      * eye holes / fade edges), so force BLEND like the lure-area
@@ -161,12 +161,12 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, voi
         for (int i = 0; i < IMG_MASK_FRAMES; ++i)
             if (v->mask_anim[i]) SDL_SetTextureBlendMode(v->mask_anim[i], SDL_BLENDMODE_BLEND);
     }
-    FNAE_LOAD_PCT(66);
+    FNAE_LOAD_PCT(67);
     v->phmangle_cam = load_id(r, IMG_PHMANGLE_CAM);
     v->phmangle_annoy = load_id(r, IMG_PHMANGLE_ANNOY);
     v->phbb_cam = load_id(r, IMG_PHBB_CAM);
     v->phbb_scare = load_id(r, IMG_PHBB_SCARE);
-    FNAE_LOAD_PCT(68);
+    FNAE_LOAD_PCT(69);
     /* Jumpscare runs (see fnae_assets.h for the verified bank ranges).
      * Freddy skips the 35x75 UI dot at 364: 353-363 + 365. Foxy is two
      * runs back to back: 536-539 then 562-572. Full-screen scares below
@@ -185,7 +185,7 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, voi
         for (int i = 0; i < IMG_SCARE_FOXY_B_COUNT; ++i)
             v->scare_foxy[IMG_SCARE_FOXY_A_COUNT + i] = load_id(r, IMG_SCARE_FOXY_B_FIRST + i);
     }
-    FNAE_LOAD_PCT(84);
+    FNAE_LOAD_PCT(90);
     /* Title menu, night cards and customize UI: TV-only. */
     if (!subset) {
         v->scare_gf = load_id(r, IMG_SCARE_GF);
@@ -206,7 +206,7 @@ int visuals_init(FnaeVisuals *v, SDL_Renderer *r, FnaeLoadProgress progress, voi
         for (int i = 0; i < IMG_NIGHT_COUNT; ++i)
             v->title_nights[i] = load_id(r, IMG_NIGHT_FIRST + i);
     }
-    FNAE_LOAD_PCT(93);
+    FNAE_LOAD_PCT(95);
     /* Frame 8 Customize screen (see src/fnae_assets.h for the mapping).
      * Loaded in both sets: custom night shows on the GamePad too. Small
      * art (~1 MB), worth it. */
