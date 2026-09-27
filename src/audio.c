@@ -173,12 +173,12 @@ int fnae_audio_init(FnaeAudio *a, const char *dir, FnaeLoadProgress progress, vo
  a->finalbox = load_one(dir, "music box.wav");
  a->chimes = load_one(dir, "Clock Chimes.wav");
  a->goblin = load_one(dir, "Crying Goblin (Clash Royale) Sound Effect - YTSFX (youtube).wav");
-  a->call1 = load_one(dir, "call-1b-44100hz.wav");
-  a->call2 = load_one(dir, "call-2b-44100hz.wav");
-  a->call3 = load_one(dir, "call-3b-44100hz.wav");
- a->call4 = load_one(dir, "call-4b-44100hz.wav");
- a->call5 = load_one(dir, "call-5b-44100hz.wav");
- a->call6 = load_one(dir, "call-6b-44100hz.wav");
+  a->call1 = load_one(dir, "call-1b.wav");
+  a->call2 = load_one(dir, "call-2b.wav");
+  a->call3 = load_one(dir, "call-3b.wav");
+ a->call4 = load_one(dir, "call-4b.wav");
+ a->call5 = load_one(dir, "call-5b.wav");
+ a->call6 = load_one(dir, "call-6b.wav");
   FNAE_AUDIO_PCT(90);
 
   FNAE_AUDIO_PCT(100);

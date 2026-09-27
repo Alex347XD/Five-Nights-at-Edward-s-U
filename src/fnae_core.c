@@ -846,9 +846,9 @@ void fnae_click(FnaeGame* g,int x,int y){
  }
  if(g->frame!=FRAME_NIGHT)return;
  /* Mute Call button (121x31 center-anchored at [100,55]): stops the
-  * night's phone call while it plays. The button only shows then, so a
-  * click elsewhere here is a no-op for it. */
- if(g->current_call!=0&&x>=40&&x<160&&y>=40&&y<70){g->call_muted=1;fnae_push_sound(g,FNAE_SND_CALL_STOP);return;}
+  * night's phone call while it plays. Camera UI only (pads, cams up),
+  * matching where it draws -- not the office view. */
+ if(g->view>0&&g->current_call!=0&&x>=40&&x<160&&y>=40&&y<70){g->call_muted=1;fnae_push_sound(g,FNAE_SND_CALL_STOP);return;}
   if(g->view==0 && g->hidden_power>0){
    /* Door buttons (Layer #2 world objects, 51x56 center-anchored at
     * [105,500] / [1489,500]): compare in frame space (screen x + scroll)

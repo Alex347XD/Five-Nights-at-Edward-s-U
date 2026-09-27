@@ -1097,7 +1097,9 @@ void visuals_render(FnaeVisuals *v, SDL_Renderer *r, int frame, int camera,
             draw_warning(r, warning, static_frame,
                          v->warn_out_steady, v->warn_out_flash, v->warn_out_blank,
                          1228, 672);
-            if (mute_visible)
+            /* Mute Call lives on the camera UI only (pads, cams up): never
+             * the office/TV view. The cam branch already implies it. */
+            if (mute_visible && camera_up)
                 visuals_draw_anchored(r, v->mutecall, 100, 55,
                                       FNAE_ANCHOR_CENTER);
             /* Power/time/night HUD stays up on the office screen too. */
