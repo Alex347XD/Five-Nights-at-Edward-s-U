@@ -49,7 +49,7 @@ typedef struct {
     * is a brief flash that drains back to 0 (owner) while the text runs. */
    int death_red_peaked;
  int camera; CamAnim cam_anim; MaskAnim mask_anim; int prevent_flip; int force_down; int view;
- int left_door, right_door; int flashlight; int pc_mobile;
+ int left_door, right_door; int pc_mobile;
  int hidden_power; int power_left; float power_tick;
  int movement_out; float movement_timer; int camera_up_check;
  int foxy_stand; int freddy_door;

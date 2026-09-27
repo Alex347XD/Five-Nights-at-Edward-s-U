@@ -13,7 +13,7 @@ struct FnaeAudio {
  /* Wavetable: NULL entries are skipped, never crash. */
  struct Mix_Chunk *fan, *depths, *camau, *change, *flip_up, *flip_down;
  struct Mix_Chunk *mask_on, *mask_off, *breath, *door, *melody, *stare;
- struct Mix_Chunk *buzz, *windup, *thud, *steps, *closeamb, *echo1, *echo3b;
+ struct Mix_Chunk *windup, *thud, *steps, *closeamb, *echo1, *echo3b;
  struct Mix_Chunk *echo4b, *stop, *walk, *garble, *phbb, *powerdown, *jack;
  struct Mix_Chunk *manglebreath; /* breathing.wav: Phantom Mangle annoy end (ch #17) */
  struct Mix_Chunk *puppet, *freddy, *foxy, *spring, *gf;

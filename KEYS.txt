@@ -7,7 +7,6 @@ S      = camera up/down
 A      = left door
 D      = right door
 M      = mask
-Z      = flashlight
 E      = audio lure (camera up, not Cam 04)
 R      = wind music box (hold, Cam 04)
 Click door wall buttons (51x56, beside each door) = toggle that door
@@ -19,7 +18,7 @@ office and everything else stays on the TV)
 ZL        = cameras open/close
 L / R     = left / right door
 Y (hold)  = wind music box (Cam 04)
-B (hold)  = flashlight (back to title on the customize screen)
+B         = back to title on the customize screen (no night use)
 X         = audio lure (camera up, not Cam 04)
 ZR        = mask
 A / Plus  = start / advance / retry (Enter)

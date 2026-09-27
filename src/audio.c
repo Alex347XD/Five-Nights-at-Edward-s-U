@@ -16,7 +16,6 @@
 #define CH_DOOR 7
 #define CH_MELODY 8
 #define CH_STARE 9
-#define CH_BUZZ 10
 #define CH_WINDUP 11
 #define CH_FOOT 12
 #define CH_CLOSE 13
@@ -60,7 +59,6 @@ static void wiiu_zone_pans(FnaeGame *g) {
     Mix_SetPanning(CH_DOOR, 0, 255);
     Mix_SetPanning(CH_CLOSE, 0, 255);
     Mix_SetPanning(CH_BREATH, 0, 255);
-    Mix_SetPanning(CH_BUZZ, 0, 255);
     Mix_SetPanning(CH_MANGLE, 0, 255);
     Mix_SetPanning(CH_PHBB, 0, 255);
     Mix_SetPanning(CH_POWER, 0, 255);
@@ -146,7 +144,6 @@ int fnae_audio_init(FnaeAudio *a, const char *dir, FnaeLoadProgress progress, vo
  a->melody = load_one(dir, "Music_Box_Melody_Playful.wav");
   FNAE_AUDIO_PCT(30);
  a->stare = load_one(dir, "stare.wav");
- a->buzz = load_one(dir, "buzzlight.wav");
  a->windup = load_one(dir, "windup2.wav");
  a->thud = load_one(dir, "videogame_or_not-metallic-thud-449652 (1).wav");
  a->steps = load_one(dir, "deep steps.wav");
@@ -190,7 +187,7 @@ int fnae_audio_init(FnaeAudio *a, const char *dir, FnaeLoadProgress progress, vo
  {
    Mix_Chunk *cs[] = { a->fan, a->depths, a->camau, a->change, a->flip_up,
     a->flip_down, a->mask_on, a->mask_off, a->breath, a->door, a->melody,
-    a->stare, a->buzz, a->windup, a->thud, a->steps, a->closeamb, a->echo1,
+    a->stare, a->windup, a->thud, a->steps, a->closeamb, a->echo1,
     a->echo3b, a->echo4b, a->stop, a->walk, a->garble, a->phbb, a->powerdown,
     a->jack, a->puppet, a->freddy, a->foxy, a->spring, a->gf, a->title_static,
     a->darkness, a->finalbox, a->chimes, a->goblin, a->call1, a->call2,
@@ -208,7 +205,7 @@ int fnae_audio_init(FnaeAudio *a, const char *dir, FnaeLoadProgress progress, vo
 static void free_all(FnaeAudio *a) {
  Mix_Chunk *cs[] = { a->fan, a->depths, a->camau, a->change, a->flip_up,
    a->flip_down, a->mask_on, a->mask_off, a->breath, a->door, a->melody,
-   a->stare, a->buzz, a->windup, a->thud, a->steps, a->closeamb, a->echo1,
+   a->stare, a->windup, a->thud, a->steps, a->closeamb, a->echo1,
    a->echo3b, a->echo4b, a->stop, a->walk, a->garble, a->phbb, a->powerdown,
    a->jack, a->puppet, a->freddy, a->foxy, a->spring, a->gf, a->title_static,
    a->darkness, a->finalbox, a->chimes, a->goblin, a->call1, a->call2,
@@ -243,12 +240,11 @@ static void start_night(FnaeAudio *a) {
  play(a, CH_FAN, a->fan, -1, V(30));
  play(a, CH_DEPTHS, a->depths, -1, V(50));
  play(a, CH_CAMAU, a->camau, -1, 0);
- /* deepbreaths/stare/buzzlight start silent: the Fusion edge events set
-  * them to 50/50/70 only once the mask is down / signal is lost /
-  * flashlight is on. Starting them loud blasts for a tick. */
+ /* deepbreaths/stare start silent: the Fusion edge events set
+  * them to 50 only once the mask is down / signal is lost.
+  * Starting them loud blasts for a tick. */
  play(a, CH_BREATH, a->breath, -1, 0);
  play(a, CH_STARE, a->stare, -1, 0);
- play(a, CH_BUZZ, a->buzz, -1, 0);
  play(a, CH_CLOSE, a->closeamb, -1, 0);
  play(a, CH_MELODY, a->melody, -1, 0);
   Mix_Volume(CH_WINDUP, V(75));
@@ -458,8 +454,6 @@ void fnae_audio_frame(FnaeAudio *a, FnaeGame *g) {
    /* stare loops under the Connection Lost overlay (ch #9): silent
     * while the feed is live, 50 on signal loss. */
    Mix_Volume(CH_STARE, g->movement_out > 0 ? V(50) : 0);
-   /* buzzlight (ch #10): silent until the flashlight is on (70). */
-   Mix_Volume(CH_BUZZ, g->flashlight ? V(70) : 0);
   }
 
   a->prev_death = g->death;

@@ -49,7 +49,7 @@
 /* GamePad joystick button indices (vpad_button_map order). */
 typedef enum {
     FNAE_PAD_A = 0,    /* confirm / advance */
-    FNAE_PAD_B = 1,    /* flashlight (hold) */
+    FNAE_PAD_B = 1,    /* back to title on customize (no night use) */
     FNAE_PAD_X = 2,    /* audio lure (camera up) */
     FNAE_PAD_Y = 3,    /* music-box wind (hold, Cam 04) */
     FNAE_PAD_STICK_L = 4,
@@ -109,9 +109,27 @@ static inline const char *fnae_asset_root(void) {
 #endif
 }
 
-/* Pads that act as held states (flashlight / wind) report down=1 on press
+/* Pads that act as held states (music-box wind) report down=1 on press
  * and down=0 on release; every other pad only fires on press (down=1). */
 static inline void fnae_pad_button(FnaeGame *g, int btn, int down) {
+    /* Title screen takes D-pad, A (confirm) and B only: every other pad
+     * button does nothing here (ZL's 's' used to walk the arrow down).
+     * B is inert on title itself; its back function lives on the
+     * customize screen below. Touchscreen taps are untouched. */
+    if (g->frame == FRAME_TITLE) {
+        if (down) {
+            switch (btn) {
+            case FNAE_PAD_UP: fnae_key(g, SDLK_UP); break;
+            case FNAE_PAD_DOWN: fnae_key(g, SDLK_DOWN); break;
+            case FNAE_PAD_LEFT: fnae_key(g, SDLK_LEFT); break;
+            case FNAE_PAD_RIGHT: fnae_key(g, SDLK_RIGHT); break;
+            case FNAE_PAD_A:
+            case FNAE_PAD_PLUS: fnae_key(g, SDLK_RETURN); break;
+            default: break;
+            }
+        }
+        return;
+    }
     switch (btn) {
     case FNAE_PAD_ZL: /* cameras (S key equivalent) */
         if (down) fnae_key(g, 's');
@@ -126,19 +144,18 @@ static inline void fnae_pad_button(FnaeGame *g, int btn, int down) {
         if (down) fnae_key(g, 'r');
         else fnae_key_up(g, 'r');
         break;
-    case FNAE_PAD_B: /* flashlight (Z key equivalent, hold); on the
-     * customize screen the pad has no Escape key, so B goes back to
-     * the title instead (desktop ESC behavior). */
+    case FNAE_PAD_B: /* back to title on the customize screen (the pad
+     * has no Escape key: desktop ESC behavior). No function in night. */
         if (g->frame == FRAME_CUSTOMIZE) {
             if (down) fnae_key(g, SDLK_ESCAPE);
-        } else if (down) fnae_key(g, 'z');
-        else fnae_key_up(g, 'z');
+        }
         break;
     case FNAE_PAD_X: /* audio lure (E key equivalent) */
         if (down) fnae_key(g, 'e');
         break;
-    case FNAE_PAD_ZR: /* mask (M key equivalent) */
-        if (down) fnae_key(g, 'm');
+    case FNAE_PAD_ZR: /* mask (M key equivalent), night gameplay only:
+     * never menus/title (core gates it to the office besides). */
+        if (down && g->frame == FRAME_NIGHT) fnae_key(g, 'm');
         break;
     case FNAE_PAD_A: /* confirm / advance */
     case FNAE_PAD_PLUS:

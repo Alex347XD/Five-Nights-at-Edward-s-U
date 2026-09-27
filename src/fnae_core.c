@@ -55,7 +55,6 @@ static void enter_death(FnaeGame* g,int who){
  if(g->cam_anim==CAM_UP){g->cam_anim=CAM_DOWN_ANIM;g->cam_anim_timer=0;}
  g->view=0; g->camera_up_check=0;
  if(g->mask_anim==MASK_DOWN){g->mask_anim=MASK_DOWN_ANIM;g->mask_anim_timer=0;}
- g->flashlight=0;
 }
 
 static void trip_movement(FnaeGame* g){
@@ -416,7 +415,7 @@ void fnae_start_night(FnaeGame* g,int night){
   g->death_tick_acc=0; g->gf_tick_acc=0;
  g->death_red=0; g->death_red_peaked=0; g->death_rip_a=255; g->death_rip_b=0; g->death_timer=0; g->death_ticks=0;
  g->cam_anim=CAM_DOWN; g->mask_anim=MASK_UP; g->prevent_flip=0; g->force_down=0; g->view=0; g->camera=1;
-  g->left_door=0; g->right_door=0; g->flashlight=0; g->hidden_power=10000; g->power_left=1; g->power_tick=0;
+  g->left_door=0; g->right_door=0; g->hidden_power=10000; g->power_left=1; g->power_tick=0;
   g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2;
   g->cam_scroll=FNAE_CAM_SCROLL_MIN; g->cam_scroll_dir=0;
    g->left_door_frame=0; g->right_door_frame=0; g->title_bg_frame=0; g->title_bg_timer=0;
@@ -640,14 +639,14 @@ void fnae_update(FnaeGame* g,float dt){
  g->time_to_hour+=dt;
  if(g->time_to_hour>=50){g->time_to_hour-=50;hour(g);if(g->frame!=FRAME_NIGHT)return;}
 
- g->power_left=1+g->camera_up_check+(g->left_door>0)+(g->right_door>0)+(g->flashlight?1:0)+(g->ph_mangle_c*2);
+ g->power_left=1+g->camera_up_check+(g->left_door>0)+(g->right_door>0)+(g->ph_mangle_c*2);
  if(g->power_left<1)g->power_left=1;if(g->power_left>5)g->power_left=5;
  static const float intervals[6]={0,2,.5,.25,.15,.10};
  g->power_tick+=dt;
  if(g->power_tick>=intervals[g->power_left]){g->power_tick=0;int sub=10*((g->night/5)+1);g->hidden_power-=sub;if(g->hidden_power<0)g->hidden_power=0;}
 
   if(g->hidden_power<=0){
-   g->force_down=5;g->cam_anim=CAM_DOWN;g->view=0;g->camera_up_check=0;g->mask_anim=MASK_UP;g->flashlight=0;
+   g->force_down=5;g->cam_anim=CAM_DOWN;g->view=0;g->camera_up_check=0;g->mask_anim=MASK_UP;
    /* Closed doors swing open on power loss (door A 2 -> 3). */
    if(g->left_door==2){g->left_door=3;g->left_door_timer=0;}
    if(g->right_door==2){g->right_door=3;g->right_door_timer=0;}
@@ -656,7 +655,6 @@ void fnae_update(FnaeGame* g,float dt){
    g->power_out_timer+=dt;
    if(g->power_out_alpha<=0 && g->death==0 && g->power_out_timer>=5){g->power_out_timer=0;enter_death(g,rnd(4));}
   }
-   if(g->death) g->flashlight=0;
    /* [ Force Down ] (Fusion: Sub 1, then while >0 force Anim 2 -> 3).
     * This is what actually drops the cameras on the phantom scares
     * (BB B>80, Mangle B>60). View clears immediately like the Fusion
@@ -747,8 +745,8 @@ void fnae_key(FnaeGame* g,int key){
     else if(g->arrow==1){g->six_or_seven=0;enter_which_night(g);}
    else if(g->arrow==2){g->six_or_seven=1;enter_which_night(g);}
    else if(g->arrow==3){g->six_or_seven=2;enter_customize(g);}
-  } else if(key==SDLK_UP || key=='w'){if(g->arrow>0){g->arrow--;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);} }
-  else if(key==SDLK_DOWN || key=='s'){int max=g->progress+1;if(max>3)max=3;if(g->arrow<max){g->arrow++;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);} }
+  } else if(key==SDLK_UP){if(g->arrow>0){g->arrow--;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);} }
+  else if(key==SDLK_DOWN){int max=g->progress+1;if(max>3)max=3;if(g->arrow<max){g->arrow++;fnae_push_sound(g,FNAE_SND_TITLE_CHANGE);} }
   if(g->arrow<0)g->arrow=0;{int max=g->progress+1;if(max>3)max=3;if(g->arrow>max)g->arrow=max;}return;
  }
  if(g->frame==FRAME_NEWSPAPER){if(key==SDLK_RETURN)enter_which_night(g);return;}
@@ -785,7 +783,6 @@ void fnae_key(FnaeGame* g,int key){
   else if(g->cam_anim==CAM_UP && g->mask_anim==MASK_UP){g->cam_anim=CAM_DOWN_ANIM;g->cam_anim_timer=0;fnae_push_sound(g,FNAE_SND_CAM_DOWN);}
  }
  if(key=='m'&&g->hidden_power>0&&g->cam_anim==CAM_DOWN){if(g->mask_anim==MASK_UP){g->mask_anim=MASK_UP_ANIM;g->mask_anim_timer=0;fnae_push_sound(g,FNAE_SND_MASK_ON);}else if(g->mask_anim==MASK_DOWN){g->mask_anim=MASK_DOWN_ANIM;g->mask_anim_timer=0;fnae_push_sound(g,FNAE_SND_MASK_OFF);} }
- if(key=='z'||key==SDLK_LALT)g->flashlight=1;
  if(g->cam_anim==CAM_UP){if(key>='1'&&key<='4')g->camera=key-'0';}
   /* Audio lure: E while watching a camera feed (never from the music-box cam)
    * places a Lure Area on the viewed camera; Springtrap may follow (see update).
@@ -800,7 +797,6 @@ void fnae_key(FnaeGame* g,int key){
 }
 
 void fnae_key_up(FnaeGame* g,int key){
- if((key=='z'||key==SDLK_LALT) && g->frame==FRAME_NIGHT)g->flashlight=0;
  if(key=='r' && g->frame==FRAME_NIGHT)g->key_wind=0;
 }
 
