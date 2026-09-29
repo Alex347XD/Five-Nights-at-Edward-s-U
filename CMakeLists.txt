@@ -120,31 +120,42 @@ if(WIIU)
         TV_SPLASH "${CMAKE_SOURCE_DIR}/assets/wiiu/bootTvTex.png"
         DRC_SPLASH "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.png"
     )
-    # Aroma/HBL drop-in folder: build-wiiu/FNaE_U/ carries the renamed
-    # .wuhb + .rpx plus meta.xml and the PNG icon/splash files.
+    # Aroma/HBL drop-in: build-wiiu/wiiu/apps/FNaE_U/ mirrors the SD
+    # layout (copy wiiu/ to the card root). The top-level .wuhb is renamed
+    # to FNaE_U.wuhb, and wiiu/ ships zipped as FNaE_U.zip too (folder
+    # kept): single place to grab either form.
     add_custom_target(FNaE_U_bundle ALL
         DEPENDS FNaE_Native_wuhb
-        COMMAND "${CMAKE_COMMAND}" -E make_directory
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+        COMMAND "${CMAKE_COMMAND}" -E remove_directory
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U"
+        COMMAND "${CMAKE_COMMAND}" -E make_directory
+            "${CMAKE_CURRENT_BINARY_DIR}/wiiu/apps/FNaE_U"
         COMMAND "${CMAKE_COMMAND}" -E copy
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE_Native.wuhb"
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/FNaE_U.wuhb"
+            "${CMAKE_CURRENT_BINARY_DIR}/wiiu/apps/FNaE_U/FNaE_U.wuhb"
         COMMAND "${CMAKE_COMMAND}" -E copy
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE_Native.rpx"
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/FNaE_U.rpx"
+            "${CMAKE_CURRENT_BINARY_DIR}/wiiu/apps/FNaE_U/FNaE_U.rpx"
         COMMAND "${CMAKE_COMMAND}" -E copy
             "${CMAKE_SOURCE_DIR}/assets/wiiu/meta.xml"
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/meta.xml"
+            "${CMAKE_CURRENT_BINARY_DIR}/wiiu/apps/FNaE_U/meta.xml"
         COMMAND "${CMAKE_COMMAND}" -E copy
             "${CMAKE_SOURCE_DIR}/assets/wiiu/iconTex.png"
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/iconTex.png"
+            "${CMAKE_CURRENT_BINARY_DIR}/wiiu/apps/FNaE_U/iconTex.png"
         COMMAND "${CMAKE_COMMAND}" -E copy
             "${CMAKE_SOURCE_DIR}/assets/wiiu/bootTvTex.png"
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/bootTvTex.png"
+            "${CMAKE_CURRENT_BINARY_DIR}/wiiu/apps/FNaE_U/bootTvTex.png"
         COMMAND "${CMAKE_COMMAND}" -E copy
             "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.png"
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U/bootDrcTex.png"
-        COMMENT "Staging FNaE_U drop-in folder"
+            "${CMAKE_CURRENT_BINARY_DIR}/wiiu/apps/FNaE_U/bootDrcTex.png"
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_Native.wuhb"
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U.wuhb"
+        COMMAND "${CMAKE_COMMAND}" -E rm -f
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_Native.wuhb"
+        COMMAND "${CMAKE_COMMAND}" -E tar "cf" "FNaE_U.zip" "--format=zip" "--" "wiiu"
+        COMMENT "Staging FNaE_U drop-in folder + zip"
     )
 else()
 # Self-contained run folder: build/FNaE/FNaE_Native.exe + assets + DLLs,

@@ -152,8 +152,11 @@ cannot build Wii U in-tree — copy the tree to a clean path (CI uses `/x`)
 and build there, then copy the `.rpx`/`.wuhb`/`FNaE/` outputs back.
 
 This produces `build-wiiu/FNaE_Native.rpx` and the Aroma bundle
-`build-wiiu/FNaE_Native.wuhb` (game + `assets/` in one file, installed to
-`sd:/wiiu/apps/`). A homebrew-folder bundle also lands in `build-wiiu/FNaE/` with only
+`build-wiiu/FNaE_U.wuhb` (game + `assets/` in one file, installed to
+`sd:/wiiu/apps/`). A ready-to-copy drop-in also lands in
+`build-wiiu/wiiu/apps/FNaE_U/` (`FNaE_U.wuhb`, `FNaE_U.rpx`, `meta.xml`,
+`iconTex.png`, `bootTvTex.png`, `bootDrcTex.png` — copy `wiiu/` to the
+card root), plus the same tree zipped as `build-wiiu/FNaE_U.zip`. A homebrew-folder bundle also lands in `build-wiiu/FNaE/` with only
 `code/` (`FNaE_Native.rpx`, `app.xml`, `cos.xml`), `content/` (`assets/`), and `meta/`
 (`meta.xml`, `iconTex.tga`, `bootTvTex.tga`, `bootDrcTex.tga`) — nothing loose at the root. Point Cemu's
 File > Load at `code/FNaE_Native.rpx` (or copy the folder to
