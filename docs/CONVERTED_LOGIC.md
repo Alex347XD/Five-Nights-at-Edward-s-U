@@ -58,9 +58,11 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
 - Wii U GamePad (`src/wiiu.h`, hardware only): ZL = S (cameras), L/R = A/D
   (doors), Y = M (mask), B-hold = Z (flashlight), X = E (lure),
   ZR-hold = R (wind), A/Plus = Return, Minus = Mute-Call click zone,
-  D-pad Up/Down = menu arrows, D-pad Left/Right = camera switch while
+  D-pad Up/Down = menu arrows,   D-pad Left/Right = camera switch while
   viewing (title/customize arrows otherwise), left stick = office pan via
-  the mouse zones, touchscreen = press/click/release in 1280x720 space.
+  the mouse zones, touchscreen = camera-UI-only taps (cam buttons, lure,
+  mute, crank hold while cams are up; full press/click on customize) that
+  never touch the office (no door buttons, no cam-open strip, no pan).
   Dual screen: TV window renders with cameras forced down (office always),
   GamePad window renders the live camera UI while `CAM_UP`, black
   otherwise (owner: cams on gamepad, everything else on tv, black DRC
@@ -118,9 +120,14 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   or leaving Cam 04 stops the wind (no latch). Warnings: <600 low (Stopped
   badge), <200 critical (flashing Animation 12), <=0 empty (hidden).
 - Empty music box can trigger Puppet death while camera is up or mask is down.
+  Rolled Every 01'' at Random(5)==1 like the source (per-frame rolls here
+  used to kill within frames of the music emptying).
 - Freddy route: Cam 01 -> Cam 03 -> left door -> pending death / back to Cam 01.
 - Foxy route: Cam 02 -> Cam 04 -> right door -> pending death / back to Cam 02.
-- Freddy death id = 2; Foxy death id = 3.
+- Freddy death id = 2; Foxy death id = 3. Pending-death kills (inside +
+  cams up + power) are checked every tick like the source, never on the
+  5 s AI tick — batched there, quick cam peeks dodged death entirely
+  (movement itself stays on the 5 s tick).
 - Springtrap death id = 4.
 - Golden Freddy death id = 5.
 - Puppet death id = 1.

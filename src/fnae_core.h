@@ -89,6 +89,10 @@ typedef struct {
    int custom_cool; /* Cool Background frame 0-2 (Random(3) on entry) */
    int custom_check[4]; /* challenge completion flags [1..3] cached from save */
   int mouse_x, mouse_y;   /* last known pointer position (1280x720 space) */
+  int touch_down, touch_x, touch_y; /* GamePad touchscreen state (Wii U):
+   * kept apart from the mouse so touch never pans the TV office or hits
+   * office click zones -- it only drives the camera UI (cam buttons,
+   * lure, mute, music-box crank) while cams are up. */
    float office_scroll;    /* office pan in source px, 0 = leftmost.
                             * Mirrors the Fusion Office Center Object X minus
                             * Game Width / 2; clamped to [0, FNAE_OFFICE_SCROLL_MAX]. */
@@ -104,6 +108,7 @@ typedef struct {
  int all20; int left_challenge, left_challenge_active;
  float cam_anim_timer, mask_anim_timer, left_door_timer, right_door_timer;
  float ai_timer, power_out_timer, springtrap_timer, phantom_timer;
+ float puppet_timer; /* empty-music death rolls run Every 01'' (Fusion), not per-frame */
  int hour_events[13][13];
 } FnaeGame;
 
@@ -127,6 +132,14 @@ void fnae_click(FnaeGame* g, int x, int y);
 void fnae_press(FnaeGame* g, int x, int y);
 void fnae_release(FnaeGame* g);
 void fnae_mouse_move(FnaeGame* g, int x, int y);
+/* GamePad touchscreen (Wii U only, 1280x720 space): camera-UI-only taps.
+ * Touch down on the customize screen behaves like press+click (that UI
+ * shows on the GamePad); on night screens it only hits camera controls
+ * while cams are up (cam buttons, lure, mute, crank hold) and never the
+ * office (no door buttons, no cam-open zone, no office pan). */
+void fnae_touch_down(FnaeGame* g, int x, int y);
+void fnae_touch_move(FnaeGame* g, int x, int y);
+void fnae_touch_up(FnaeGame* g);
 const char* fnae_frame_name(FnaeFrame f);
 /* Pushes a one-shot sound request (drops it when the queue is full). */
 void fnae_push_sound(FnaeGame* g, int snd);

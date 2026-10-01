@@ -90,10 +90,12 @@ power-out fade into a death screen.
    the blip opens the cams, so the GamePad shows just the blip over
    black through the 0.55 s flip transitions (no feed until it lands).
 - GamePad mapping (`src/wiiu.h`, expressed through the desktop
-  `fnae_key`/`fnae_click` API so it stays headless-testable): ZL cameras,
-  L/R doors, Y mask, B-hold flashlight, X lure, ZR-hold wind, A/Plus
-  confirm, Minus mute call, D-pad menus (+ camera switch while viewing),
-  left stick office pan, touchscreen taps for the camera UI. Desktop and
+  `fnae_key`/`fnae_click`/`fnae_touch_*` API so it stays headless-testable):
+  ZL cameras, L/R doors, Y mask, B-hold flashlight, X lure, ZR-hold wind,
+  A/Plus confirm, Minus mute call, D-pad menus (+ camera switch while viewing),
+  left stick office pan, touchscreen taps for the camera UI only (never the
+  office: no door buttons, no cam-open strip, no office pan — crank hold
+  still winds on Cam 04). Desktop and
   headless builds are unchanged (single window, keyboard+mouse).
 - Wii U caveat: each screen needs its own renderer + texture set (SDL
   textures can't cross renderers), so VRAM use roughly doubles. The frame

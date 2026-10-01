@@ -75,7 +75,6 @@ static void ai_move(FnaeGame* g){
   if(g->foxy.pos!=before) trip_movement(g);
   g->foxy.move=0;
  }
- if(g->foxy.pos==6 && g->view>0 && g->hidden_power>0) enter_death(g,3);
  if(rnd(30)<g->freddy_ai && g->freddy.move==0) g->freddy.move=1;
  if(g->freddy.move){
   int before=g->freddy.pos;
@@ -85,8 +84,18 @@ static void ai_move(FnaeGame* g){
   if(g->freddy.pos!=before) trip_movement(g);
   g->freddy.move=0;
  }
- if(g->freddy.pos==7 && g->view>0 && g->hidden_power>0) enter_death(g,2);
  if(g->springtrap_ai>0 && rnd(30)+1<g->springtrap_ai && g->springtrap_a==0)g->springtrap_a=1;
+}
+
+/* Pending-death kills (Frame 3 "[ Freddy ]" / "[ Foxy ]"): Fusion checks
+ * overlapping-Pending-Death + View>0 + death==0 + power EVERY tick, so the
+ * 5 s AI tick must NOT own them -- batched there, quick cam peeks dodged
+ * death entirely and kills felt late or never came. Runs per-tick from
+ * fnae_update (movement itself stays on the 5 s tick, like the source). */
+static void update_pending_deaths(FnaeGame* g){
+ if(g->death!=0||g->hidden_power<=0) return;
+ if(g->freddy.pos==7 && g->view>0) enter_death(g,2);
+ if(g->foxy.pos==6 && g->view>0) enter_death(g,3);
 }
 
 static void update_phantoms(FnaeGame* g,float dt){
@@ -166,15 +175,19 @@ static void update_gf(FnaeGame* g,float dt){
 /* Music-box crank hover: the button is center-anchored (156x65) at
  * its [569,497] hotspot, so the pointer is over it in
  * x 491..647, y 465..529 (matches the renderer math). */
+static int over_music_button_xy(int x,int y){
+ return x>=491&&x<647&&y>=465&&y<529;
+}
 static int over_music_button(FnaeGame* g){
- return g->mouse_x>=491&&g->mouse_x<647&&g->mouse_y>=465&&g->mouse_y<529;
+ return over_music_button_xy(g->mouse_x,g->mouse_y);
 }
 
 static void update_music(FnaeGame* g,float dt){
  /* Fusion holds Alterable A while the crank is held: pointer over the
-  * button with the mouse down, or the R test key — evaluated every tick,
-  * so releasing (or leaving the button or the cam) stops the wind. */
- if(g->view==4&&g->death==0&&(g->key_wind||(g->mouse_down&&over_music_button(g))))
+  * button with the mouse down, the R test key, or the GamePad touch held
+  * on the button — evaluated every tick, so releasing (or leaving the
+  * button or the cam) stops the wind. */
+ if(g->view==4&&g->death==0&&(g->key_wind||(g->mouse_down&&over_music_button(g))||(g->touch_down&&over_music_button_xy(g->touch_x,g->touch_y))))
   g->music_winding=1;
  else
   g->music_winding=0;
@@ -189,7 +202,13 @@ static void update_music(FnaeGame* g,float dt){
   g->windup_snd_tick+=dt;
   if(g->windup_snd_tick>=0.5f){g->windup_snd_tick=0;fnae_push_sound(g,FNAE_SND_WINDUP);}
  } else g->windup_snd_tick=0;
- if(g->music_left<=0 && g->hidden_power>0 && g->death==0 && ((g->cam_anim==CAM_UP&&rnd(5)==1)||(g->mask_anim==MASK_DOWN&&rnd(5)==1))) enter_death(g,1);
+ /* Empty music box (Frame 3 "[ Music Box ]"): Every 01'' + Random(5)==1
+  * with cameras up (Alterable Camera Animation == 2) or mask down ==
+  * Puppet death. Rolled per-second like the source -- per-frame here used
+  * to kill ~60x too fast (within frames of the music emptying). */
+ g->puppet_timer+=dt;
+ if(g->puppet_timer>=1.0f){g->puppet_timer-=1.0f;
+  if(g->music_left<=0 && g->hidden_power>0 && g->death==0 && ((g->cam_anim==CAM_UP&&rnd(5)==1)||(g->mask_anim==MASK_DOWN&&rnd(5)==1))) enter_death(g,1);}
 }
 
 void fnae_init(FnaeGame* g){ memset(g,0,sizeof(*g)); g->running=1; g->frame=FRAME_WARNING; { FnaeSave s; fnae_save_load(&s); g->night=s.night; g->progress=s.progress; } g->arrow=0; g->pc_mobile=0; g->static_frame=0; g->static_alpha=200; g->mouse_x=640; g->mouse_y=360; g->office_scroll=FNAE_OFFICE_SCROLL_MAX/2; g->cam_scroll=FNAE_CAM_SCROLL_MIN; g->cam_scroll_dir=0; g->cam_static_alpha=185; g->power_out_alpha=255;
@@ -428,10 +447,10 @@ void fnae_start_night(FnaeGame* g,int night){
   g->lure_cd=0; g->lure_cd_timer=0;
   g->foxy_stand=0; g->freddy_door=0;
  g->music_left=2000; g->music_winding=0; g->music_tick=0; g->current_call=0; g->call_muted=0;
- g->mouse_down=0; g->key_wind=0;
+ g->mouse_down=0; g->key_wind=0; g->touch_down=0; g->touch_x=640; g->touch_y=360;
  g->windup_snd_tick=0; g->snd_head=g->snd_tail=0;
  g->cam_anim_timer=g->mask_anim_timer=g->left_door_timer=g->right_door_timer=0; g->mask_frame=-1; g->cam_flip_frame=-1;
- g->ai_timer=g->power_out_timer=g->springtrap_timer=g->phantom_timer=0;
+ g->ai_timer=g->power_out_timer=g->springtrap_timer=g->phantom_timer=0; g->puppet_timer=0;
  ai_reset(&g->foxy,0,2); ai_reset(&g->freddy,0,1); g->springtrap_a=0;g->springtrap_b=0;
     g->ph_mangle_a=g->ph_mangle_b=g->ph_mangle_c=0;g->ph_annoy_a=g->ph_annoy_b=0;g->ph_bb_a=g->ph_bb_b=0;
     g->ph_prev_view=0;g->ph_prev_cam=0;
@@ -731,7 +750,7 @@ void fnae_update(FnaeGame* g,float dt){
  g->foxy_stand=(g->foxy.pos==5 && g->hidden_power>0)?1:0;
  g->freddy_door=(g->freddy.pos==6 && g->hidden_power>0)?1:0;
  g->springtrap_stand=(g->view>0 && g->view==g->springtrap_pos && g->hidden_power>0)?1:0;
-   update_phantoms(g,dt); update_gf(g,dt); update_music(g,dt);
+   update_phantoms(g,dt); update_gf(g,dt); update_music(g,dt); update_pending_deaths(g);
  if(g->springtrap_pos==3 && g->view==3 && g->hidden_power>0 && g->death==0){g->springtrap_timer+=dt;if(g->springtrap_timer>=4){g->springtrap_timer=0;if(rnd(2)==1)enter_death(g,4);}}
  if(g->current_call==0 && g->time_to_hour>=3)g->current_call=g->night;
  if(g->cam_anim==CAM_UP)g->view=g->camera; else if(g->cam_anim==CAM_DOWN)g->view=0;
@@ -818,6 +837,38 @@ void fnae_press(FnaeGame* g,int x,int y){
 void fnae_release(FnaeGame* g){
  g->mouse_down=0;
  g->custom_arrow_dir=0; g->custom_arrow_tick=0;
+}
+
+/* GamePad touchscreen tap (camera UI only -- never the office). The touch
+ * keeps its own held state so it can't pan the TV office (update_office_pan
+ * reads mouse_x/mouse_y) or trip office click zones (door buttons,
+ * cam-open strip). While cams are up it hits the same controls as the
+ * camera branch of fnae_click: mute, cam-select buttons (which also dismiss
+ * Phantom BB), the lure button, and the music-box crank hold (passive via
+ * update_music). Cams down = GamePad shows black/blip: taps do nothing. */
+void fnae_touch_down(FnaeGame* g, int x, int y){
+ g->touch_x=x; g->touch_y=y; g->touch_down=1;
+ if(g->frame!=FRAME_NIGHT||g->view<=0||g->hidden_power<=0) return;
+ if(g->current_call!=0&&x>=40&&x<160&&y>=40&&y<70){g->call_muted=1;fnae_push_sound(g,FNAE_SND_CALL_STOP);return;}
+ static const int btn_x[4]={1016,1179,953,1161};
+ static const int btn_y[4]={307,371,469,505};
+ for(int i=0;i<4;i++){
+  if(x>=btn_x[i]-30&&x<btn_x[i]+30&&y>=btn_y[i]-20&&y<btn_y[i]+20){
+   g->camera=i+1;
+   if(g->view>0){g->ph_bb_a=0;g->ph_bb_b=0;}
+   break;}
+ }
+ if(g->view>0&&g->view!=4&&g->death==0&&g->lure_cd==0){
+  if(x>=744-64&&x<744+64&&y>=296-32&&y<296+32){g->lure_area=1;g->lure_cam=g->view;g->lure_timer=0;g->lure_cd=1;g->lure_cd_timer=0;fnae_push_sound(g,FNAE_SND_LURE1+rnd(3));}
+ }
+}
+
+void fnae_touch_move(FnaeGame* g, int x, int y){
+ if(g->touch_down){g->touch_x=x;g->touch_y=y;}
+}
+
+void fnae_touch_up(FnaeGame* g){
+ g->touch_down=0;
 }
 
 void fnae_click(FnaeGame* g,int x,int y){

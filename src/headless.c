@@ -443,9 +443,11 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
         );
         SDL_RenderPresent(r);
         if ((f + 1) % 60 == 0) {
-            printf("HEADLESS frame=%d game_frame=%s night=%d tod=%d power=%d death=%d music=%d\n",
+            printf("HEADLESS frame=%d game_frame=%s night=%d tod=%d power=%d death=%d music=%d fred=%d fox=%d spring=%d doors=%d/%d view=%d\n",
                 f + 1, fnae_frame_name(game->frame),
-                game->night, game->time_of_day, game->hidden_power, game->death, game->music_left);
+                game->night, game->time_of_day, game->hidden_power, game->death, game->music_left,
+                game->freddy.pos, game->foxy.pos, game->springtrap_pos,
+                game->left_door, game->right_door, game->view);
             fflush(stdout);
         }
     }

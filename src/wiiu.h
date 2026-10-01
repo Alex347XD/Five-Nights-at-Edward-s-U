@@ -208,15 +208,29 @@ static inline void fnae_pad_stick(FnaeGame *g, int x) {
     else fnae_mouse_move(g, 640, 360);
 }
 
-/* GamePad touchscreen taps (1280x720 space): press+click on touch down,
- * pointer tracking while held (music-box crank), release on lift. */
+/* GamePad touchscreen taps (1280x720 space). The touchscreen shows the
+ * cameras (never the office), so touch drives the camera UI only: cam
+ * buttons, lure, mute, crank hold while cams are up, and the customize
+ * screen (which also shows on the GamePad). It never touches the office
+ * (no door buttons, no cam-open strip, no office pan) -- see
+ * fnae_touch_down in fnae_core.c. */
 static inline void fnae_pad_touch(FnaeGame *g, int phase, int x, int y) {
+    if (g->frame == FRAME_CUSTOMIZE) {
+        if (phase == 0) { /* down */
+            fnae_press(g, x, y);
+            fnae_click(g, x, y);
+        } else if (phase == 1) { /* motion */
+            fnae_mouse_move(g, x, y);
+        } else { /* up */
+            fnae_release(g);
+        }
+        return;
+    }
     if (phase == 0) { /* down */
-        fnae_press(g, x, y);
-        fnae_click(g, x, y);
+        fnae_touch_down(g, x, y);
     } else if (phase == 1) { /* motion */
-        fnae_mouse_move(g, x, y);
+        fnae_touch_move(g, x, y);
     } else { /* up */
-        fnae_release(g);
+        fnae_touch_up(g);
     }
 }
