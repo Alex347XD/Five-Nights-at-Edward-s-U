@@ -185,8 +185,9 @@ termination notice, not the newspaper.)
   gray-circle Lure Area (`390.png`, 256x256) sits over the lured
   camera's minimap button. Springtrap (full-body blue Edward with stars,
   `236.png`, 299x715 stand at [416,-24]) starts on Cam 02 and steps the
-  exported routes (Cam 03 kill room); its stand overlays the feed while
-  viewed.
+  exported routes (Cam 03 kill room: sitting there rolls death every 4 s
+  at 50% with no view gate, suppressed only while he sits on the placed
+  lure); its stand overlays the feed while viewed.
  - Music box (Cam 04 view): crank box (`133.png` dark-slate released /
   `178.png` olive held, 156x65 center-anchored at [569,497]) with
   Stopped↔Animation-12 swap on the held crank, Wind Text (`210.png`

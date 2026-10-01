@@ -19,8 +19,9 @@ typedef struct {
  *   <frame> mouse <X> <Y> move the pointer (no click; drives office panning)
  *   <frame> shot <PATH>   save the current frame (extra screenshots mid-run)
   *   <frame> ai <WHO> <POS> debug pose: place an animatronic (WHO: freddy,
-  *                             foxy) at route position POS (freddy 6 = left
-  *                             door, foxy 5 = right door)
+  *                             foxy, spring) at route position POS (freddy 6
+  *                             = left door, foxy 5 = right door, spring 3 =
+  *                             Cam 03 kill room)
   *   <frame> clock <HOUR> debug warp: jump the night clock to HOUR with 5 s
   *                             left in it (captures 6 AM without playing the
   *                             full shift)

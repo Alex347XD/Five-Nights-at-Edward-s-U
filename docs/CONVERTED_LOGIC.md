@@ -196,7 +196,10 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   steps between cameras on its move flag: Cam 01 -> Cam 03 (B=0) / Cam 02
   (B=1), Cam 02 -> Cam 04 (B=0) / Cam 01 (B=1), Cam 03 -> Cam 01,
   Cam 04 -> Cam 02, with B re-rolled on Cam 01/02 like the Fusion
-  RRandom(0,1) sets. Cam 03 is the kill room (4 s watch -> 50% death id 4).
+  RRandom(0,1) sets. Cam 03 is the kill room: Springtrap sitting on it rolls
+  Every 04'' at 50% (death id 4) with no view gate -- watching is not
+  required. Rolls are suppressed while he sits on the placed lure
+  (overlapping Lure Area); a lure elsewhere, or no lure at all, lets them run.
   The Stand figure reappears while viewing Springtrap's camera.
 - Camera Out ("Connection Lost"): any Freddy/Foxy/Springtrap step while viewing
   (plus the audio-lure pull) raises Movement Out, which cuts the feed to black

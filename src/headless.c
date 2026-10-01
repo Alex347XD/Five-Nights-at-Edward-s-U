@@ -205,6 +205,7 @@ int headless_load_script(const char *path, HeadlessScript *out) {
             ev->type = HEV_AI;
             if (strcmp(arg1, "freddy") == 0) ev->x = 0;
             else if (strcmp(arg1, "foxy") == 0) ev->x = 1;
+            else if (strcmp(arg1, "spring") == 0) ev->x = 2;
             else {
                 fprintf(stderr, "HEADLESS: %s:%d: unknown ai '%s'\n", path, lineno, arg1);
                 rc = 1;
@@ -288,7 +289,8 @@ int headless_run(SDL_Renderer *r, FnaeVisuals *v, FnaeGame *game,
                 case HEV_MOUSE: fnae_mouse_move(game, ev->x, ev->y); break;
                 case HEV_AI:
                     if (ev->x == 0) game->freddy.pos = ev->y;
-                    else game->foxy.pos = ev->y;
+                    else if (ev->x == 1) game->foxy.pos = ev->y;
+                    else game->springtrap_pos = ev->y;
                     break;
                 case HEV_CLOCK:
                     if (game->frame == FRAME_NIGHT) {

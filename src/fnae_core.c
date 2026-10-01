@@ -751,7 +751,15 @@ void fnae_update(FnaeGame* g,float dt){
  g->freddy_door=(g->freddy.pos==6 && g->hidden_power>0)?1:0;
  g->springtrap_stand=(g->view>0 && g->view==g->springtrap_pos && g->hidden_power>0)?1:0;
    update_phantoms(g,dt); update_gf(g,dt); update_music(g,dt); update_pending_deaths(g);
- if(g->springtrap_pos==3 && g->view==3 && g->hidden_power>0 && g->death==0){g->springtrap_timer+=dt;if(g->springtrap_timer>=4){g->springtrap_timer=0;if(rnd(2)==1)enter_death(g,4);}}
+ /* Kill room (Frame 3 "[ Springtrap (Audio Lure) ]"): Springtrap sitting on
+  * Cam 03 rolls Every 04'' at Random(2)==1 with NO view gate -- watching is
+  * not required. Rolls are suppressed while he sits ON the placed lure
+  * (overlapping Lure Area): with a lure elsewhere, or no lure at all, the
+  * kill rolls run. The timer free-runs like the Fusion Every timer and the
+  * conditions are sampled when it fires. */
+ g->springtrap_timer+=dt;
+ if(g->springtrap_timer>=4.0f){g->springtrap_timer-=4.0f;
+  if(g->springtrap_pos==3 && !(g->lure_area && g->springtrap_pos==g->lure_cam) && g->hidden_power>0 && g->death==0 && rnd(2)==1) enter_death(g,4);}
  if(g->current_call==0 && g->time_to_hour>=3)g->current_call=g->night;
  if(g->cam_anim==CAM_UP)g->view=g->camera; else if(g->cam_anim==CAM_DOWN)g->view=0;
  g->camera_up_check=(g->view>0);
