@@ -28,10 +28,12 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   [119,0], right art is `160.png`–`175.png` (248x720) at [1263,0].
 - Door buttons (Button Left [105,500] / Button Right [1489,500], Layer #2
   world objects): clicking one toggles its door exactly like the A/D keys
-  (Fusion `[ Doors ]` click events, same death/power/view gates as the keys
-  via the shared toggle path). Native click zones are the 51x56 button
+  (Fusion `[ Doors ]` click events). Native click zones are the 51x56 button
   frames (center-anchored) plus 2px grace: left fx 77–133, right fx
-  1461–1517, y 470–530 in frame space (screen x + office scroll). The button
+  1461–1517, y 470–530 in frame space (screen x + office scroll), office
+  view only (the feed covers them single-screen). The A/D keys (GamePad
+  L/R) intentionally drop the Fusion View==0 gate so doors work while the
+  cams are up on dual-screen (death/power gates kept). The button
   shows Stopped (`176.png` dark red) while A is 0/3 and Animation 12
   (`177.png` olive) while A is 1/2; buttons hide with the doors when the
   cameras are up (office branch only).
@@ -42,12 +44,17 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   (`228.png` @1.1, drawn at [1387,331], centered in the right doorway)
   mirrors it for the right
   door (Fusion `[ Freddy ]` / `[ Foxy ]` visibility events, View > 0 hides
-  both). Each figure draws behind its door shutter in Layer #2 order, so a
+  both — dropped native-side so the Wii U TV office stays live behind the
+  GamePad feed; desktop still covers the office with the feed, and the
+  close-ambience that keys off these flags now persists while viewing).
+  Each figure draws behind its door shutter in Layer #2 order, so a
   closed door covers the character. Freddy's verbatim Objects.txt spot [260,788] sits below the 720
   screen and showed antennae only, so he is centered on the left door
   (door `[119,0]` is 223 wide, center x~230) per owner request. The native
   `freddy_door` / `foxy_stand` flags reuse the route positions (freddy
-  pos 6, foxy pos 5) with the same office-view + power gates.
+  pos 6, foxy pos 5) with the power gate only. Cam-gated survivals are
+  untouched: Springtrap Stand still needs View on its cam, the music-box
+  crank still needs View 4, the lure still needs a feed up.
 - Wii U GamePad (`src/wiiu.h`, hardware only): ZL = S (cameras), L/R = A/D
   (doors), Y = M (mask), B-hold = Z (flashlight), X = E (lure),
   ZR-hold = R (wind), A/Plus = Return, Minus = Mute-Call click zone,
@@ -67,7 +74,8 @@ This build is based on the **Fusion Export As Text** dump uploaded with the proj
   (X 225/168/119) scrolls left at 2/4/6 px per tick, Right 1/2/3 zones
   (X 1025/1088/1143) scroll right at 2/4/6 px per tick; clamped so the
   1280-wide view stays inside the 1600-wide office scene. Desktop hover only
-  (PC/Mobile = 0), office view only (View = 0), no pan while dead. Starts
+  (PC/Mobile = 0), no pan while dead. The Fusion office-view-only (View =
+  0) gate is dropped so the Wii U TV keeps panning with cams up. Starts
   centered (Fusion starts at the left edge, X 640).
 - Camera flip uses S; camera 1-4 are Hell, Mountain, Forest, Dinosaur Exhibit.
   The flip transitions play the Cam Up/Down Animation flash (`573.png`–

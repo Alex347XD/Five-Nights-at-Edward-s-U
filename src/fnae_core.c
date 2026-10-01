@@ -457,10 +457,13 @@ void fnae_mouse_move(FnaeGame* g, int x, int y){
  * Fusion scrolls the display by moving the Office Center Object while the
  * pointer hovers the Left 1/2/3 / Right 1/2/3 edge zones (at X 225/168/119
  * and 1025/1088/1143) at 2/4/6 px per tick, clamped so the 1280-wide view
- * stays inside the frame. Desktop only (PC/Mobile = 0), office view only.
- * Speeds are per 1/60 tick, hence the dt*60 scaling. */
+ * stays inside the frame. Desktop only (PC/Mobile = 0).
+ * Dual-screen: the TV always shows the office (even with cams up on the
+ * GamePad), so the pan keeps running while viewing -- the single-screen
+ * View==0 gate is intentionally dropped. Speeds are per 1/60 tick, hence
+ * the dt*60 scaling. */
 static void update_office_pan(FnaeGame* g, float dt){
- if(g->death || g->view!=0 || g->cam_anim!=CAM_DOWN) return;
+ if(g->death) return;
  if(g->hidden_power<=0 || g->pc_mobile!=0) return;
  float speed=0;
  if(g->mouse_x<120) speed=-6; else if(g->mouse_x<170) speed=-4; else if(g->mouse_x<230) speed=-2;
@@ -720,9 +723,13 @@ void fnae_update(FnaeGame* g,float dt){
  else if(g->music_left<200) g->warning=2;
  else if(g->music_left<600) g->warning=1;
  else g->warning=0;
- /* Doorway figures: Freddy at the left door, Foxy at the right, Springtrap on its viewed cam. */
- g->foxy_stand=(g->foxy.pos==5 && g->view==0 && g->hidden_power>0)?1:0;
- g->freddy_door=(g->freddy.pos==6 && g->view==0 && g->hidden_power>0)?1:0;
+ /* Doorway figures: Freddy at the left door, Foxy at the right, Springtrap on its viewed cam.
+  * Dual-screen: the TV renders the office even with cams up on the GamePad,
+  * so the Fusion View>0 hide is dropped -- the figures (and the
+  * close-ambience that keys off them) persist while viewing. The desktop
+  * cam branch still covers the office visually, so nothing draws twice. */
+ g->foxy_stand=(g->foxy.pos==5 && g->hidden_power>0)?1:0;
+ g->freddy_door=(g->freddy.pos==6 && g->hidden_power>0)?1:0;
  g->springtrap_stand=(g->view>0 && g->view==g->springtrap_pos && g->hidden_power>0)?1:0;
    update_phantoms(g,dt); update_gf(g,dt); update_music(g,dt);
  if(g->springtrap_pos==3 && g->view==3 && g->hidden_power>0 && g->death==0){g->springtrap_timer+=dt;if(g->springtrap_timer>=4){g->springtrap_timer=0;if(rnd(2)==1)enter_death(g,4);}}
@@ -776,8 +783,11 @@ void fnae_key(FnaeGame* g,int key){
  if(g->frame==FRAME_FINAL){if(key==SDLK_RETURN)enter_title(g);return;}
  if(g->frame!=FRAME_NIGHT)return;
 
- if(key=='a'&&g->view==0&&g->hidden_power>0){if(g->left_door==0){g->left_door=1;fnae_push_sound(g,FNAE_SND_DOOR);}else if(g->left_door==2){g->left_door=3;fnae_push_sound(g,FNAE_SND_DOOR);} }
- if(key=='d'&&g->view==0&&g->hidden_power>0){if(g->right_door==0){g->right_door=1;fnae_push_sound(g,FNAE_SND_DOOR);}else if(g->right_door==2){g->right_door=3;fnae_push_sound(g,FNAE_SND_DOOR);} }
+ /* Dual-screen: doors (A/D keys, GamePad L/R) work while cams are up --
+  * the TV office stays live behind the GamePad feed. Click zones stay
+  * office-view-only (the feed covers them on single-screen). */
+ if(key=='a'&&g->hidden_power>0&&g->death==0){if(g->left_door==0){g->left_door=1;fnae_push_sound(g,FNAE_SND_DOOR);}else if(g->left_door==2){g->left_door=3;fnae_push_sound(g,FNAE_SND_DOOR);} }
+ if(key=='d'&&g->hidden_power>0&&g->death==0){if(g->right_door==0){g->right_door=1;fnae_push_sound(g,FNAE_SND_DOOR);}else if(g->right_door==2){g->right_door=3;fnae_push_sound(g,FNAE_SND_DOOR);} }
  if(key=='s' && g->hidden_power>0){
   if(g->cam_anim==CAM_DOWN && g->mask_anim==MASK_UP){g->cam_anim=CAM_UP_ANIM;g->cam_anim_timer=0;fnae_push_sound(g,FNAE_SND_CAM_UP);}
   else if(g->cam_anim==CAM_UP && g->mask_anim==MASK_UP){g->cam_anim=CAM_DOWN_ANIM;g->cam_anim_timer=0;fnae_push_sound(g,FNAE_SND_CAM_DOWN);}
@@ -844,7 +854,9 @@ void fnae_click(FnaeGame* g,int x,int y){
  /* Mute Call button (121x31 center-anchored at [100,55]): stops the
   * night's phone call while it plays. Camera UI only (pads, cams up),
   * matching where it draws -- not the office view. */
- if(g->view>0&&g->current_call!=0&&x>=40&&x<160&&y>=40&&y<70){g->call_muted=1;fnae_push_sound(g,FNAE_SND_CALL_STOP);return;}
+  if(g->view>0&&g->current_call!=0&&x>=40&&x<160&&y>=40&&y<70){g->call_muted=1;fnae_push_sound(g,FNAE_SND_CALL_STOP);return;}
+  /* Click zones stay office-view-only (the feed covers them single-screen);
+   * keys/pad L/R above still toggle doors while cams are up for dual-screen. */
   if(g->view==0 && g->hidden_power>0){
    /* Door buttons (Layer #2 world objects, 51x56 center-anchored at
     * [105,500] / [1489,500]): compare in frame space (screen x + scroll)

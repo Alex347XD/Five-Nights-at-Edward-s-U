@@ -82,7 +82,10 @@ power-out fade into a death screen.
   everything else render on the TV (`SDL_WINDOW_WIIU_TV_ONLY`), the camera
   feeds render on the GamePad screen (`SDL_WINDOW_WIIU_GAMEPAD_ONLY`,
    values from the sdl-wiiu port, with fallbacks in `src/wiiu.h`). Cameras
-   closed = just a black GamePad screen, per owner request. The camera
+   closed = just a black GamePad screen, per owner request. The TV office
+   stays live while cams are up (doorway figures, panning, A/D doors keep
+   running; only cam-gated survivals — Springtrap watch, music-box wind,
+   lure — still need the feed). The camera
    flip-flash blip (573-581) plays on the GamePad only, never the TV:
    the blip opens the cams, so the GamePad shows just the blip over
    black through the 0.55 s flip transitions (no feed until it lands).
