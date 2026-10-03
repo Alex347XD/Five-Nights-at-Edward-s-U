@@ -109,12 +109,14 @@ power-out fade into a death screen.
   `build-wiiu` after updating portlibs. RPX + WUHB
   build verified with devkitPPC/wut (`powerpc-eabi-cmake -S . -B build-wiiu`
   then `--build build-wiiu`; needs the wiiu SDL2 portlibs); not yet run on
-hardware. `build-wiiu/FNaE/` holds the unpacked-title layout (`code/` with the
-rpx plus `app.xml`/`cos.xml`, `content/`, `meta/` with `meta.xml` plus the
-`iconTex`/`bootTvTex`/`bootDrcTex` TGAs, nothing else) and every image/audio
+hardware. `build-wiiu/` holds just the deliverables: `FNaE_U.wuhb`
+(Aroma single file, game + `assets/` in one file) and `FNaE_U.zip` (HBL SD
+drop-in: `wiiu/apps/FNaE_U/` with the `.wuhb`, `.rpx`, `meta.xml` and icons
+— copy `wiiu/` to the card root), plus the `.elf`/`.rpx` link products.
+Staging dirs are cleaned after the build. Every image/audio
 path goes through the
   `fs:/vol/content` probe (`fnae_asset_root` in `src/wiiu.h`), so the game
-  finds its assets from the folder bundle, the `.wuhb`, or a flat folder.
+  finds its assets from the `.wuhb` or a flat folder.
 
 ### Frame 6 Which Night
 

@@ -52,63 +52,19 @@ target_link_libraries(FNaE_Native PRIVATE
 if(WIIU)
     wut_create_rpx(FNaE_Native)
 
-    set(NUSPACKER_JAR "${CMAKE_SOURCE_DIR}/NUSPacker/NUSPacker.jar")
-    set(NUSPACKER_OUT "${CMAKE_CURRENT_BINARY_DIR}/FNaE_WUP")
-
-    # wuhbtool reads the content dir at build time, so make sure it exists
-    # at configure time (it is filled by the staging step below, which is
-    # ordered before the .wuhb via the RPX target dependency).
-    # Unpacked-title folder bundle: build-wiiu/FNaE holds ONLY code/,
-    # content/, and meta/ — nothing loose at the root. Cemu boots
-    # code/main.rpx; the game's vol/content asset probe (src/wiiu.h)
-    # resolves content/assets no matter the working directory, so a bare
-    # .rpx elsewhere can no longer die on missing assets.
+    # wuhbtool reads the content dir at build time, so stage the assets
+    # tree it bundles (FNaE/content/assets) here, ordered before the .wuhb
+    # via the RPX target dependency. Nothing else is staged: deliverables
+    # are just FNaE_U.wuhb + FNaE_U.zip (plus the .elf/.rpx link products).
     add_custom_command(TARGET FNaE_Native POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_Native.rpx"
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/code/main.rpx"
-        COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_SOURCE_DIR}/assets/wiiu/app.xml"
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/code/app.xml"
-        COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_SOURCE_DIR}/assets/wiiu/cos.xml"
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/code/cos.xml"
         COMMAND "${CMAKE_COMMAND}" -E copy_directory
             "${CMAKE_SOURCE_DIR}/assets"
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE/content/assets"
-        COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_SOURCE_DIR}/assets/wiiu/meta.xml"
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/meta/meta.xml"
-        COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_SOURCE_DIR}/assets/wiiu/iconTex.tga"
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/meta/iconTex.tga"
-        COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootTvTex.tga"
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/meta/bootTvTex.tga"
-        COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.tga"
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE/meta/bootDrcTex.tga"
-        # Mirror of the FNaE bundle plus icons at the exact build-root
-        # paths the .wuhb step references (CONTENT/ICON/TV_SPLASH/DRC_SPLASH).
-        COMMAND "${CMAKE_COMMAND}" -E copy_directory
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE"
-            "${CMAKE_CURRENT_BINARY_DIR}/content"
-        COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_SOURCE_DIR}/assets/wiiu/iconTex.png"
-            "${CMAKE_CURRENT_BINARY_DIR}/iconTex.png"
-        COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootTvTex.png"
-            "${CMAKE_CURRENT_BINARY_DIR}/bootTvTex.png"
-        COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.png"
-            "${CMAKE_CURRENT_BINARY_DIR}/bootDrcTex.png"
-        COMMAND "${CMAKE_COMMAND}" -E remove_directory "${NUSPACKER_OUT}"
-        COMMAND java -jar "${NUSPACKER_JAR}"
-            -in "${CMAKE_CURRENT_BINARY_DIR}/FNaE"
-            -out "${NUSPACKER_OUT}"
-            -encryptKeyWith "D7B00402659BA2ABD2CB0DB27FA2B656"
-        COMMENT "Staging Wii U folder bundle (FNaE/{code,content,meta})"
+        COMMENT "Staging Wii U content (assets for .wuhb)"
     )
+    # wuhbtool requires the content dir to exist at configure time; it is
+    # filled by the staging step above (and cleaned after each build).
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/FNaE/content")
     wut_create_wuhb(FNaE_Native
         NAME "Five Nights at Edward's U"
         SHORTNAME "FNaE U"
@@ -120,15 +76,17 @@ if(WIIU)
         TV_SPLASH "${CMAKE_SOURCE_DIR}/assets/wiiu/bootTvTex.png"
         DRC_SPLASH "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.png"
     )
-    # Aroma/HBL drop-in: build-wiiu/wiiu/apps/FNaE_U/ mirrors the SD
-    # layout (copy wiiu/ to the card root). The top-level .wuhb is renamed
-    # to FNaE_U.wuhb, and wiiu/ ships zipped as FNaE_U.zip too (folder
-    # kept): single place to grab either form.
+    # Deliverables: FNaE_U.wuhb (Aroma single file) + FNaE_U.zip (HBL SD
+    # drop-in: wiiu/apps/FNaE_U/). The wiiu/ staging dir is zipped first,
+    # then removed along with the other intermediates, so only the two
+    # files (plus the .elf/.rpx link products) remain in build-wiiu/.
     add_custom_target(FNaE_U_bundle ALL
         DEPENDS FNaE_Native_wuhb
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         COMMAND "${CMAKE_COMMAND}" -E remove_directory
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U"
+        COMMAND "${CMAKE_COMMAND}" -E remove_directory
+            "${CMAKE_CURRENT_BINARY_DIR}/wiiu"
         COMMAND "${CMAKE_COMMAND}" -E make_directory
             "${CMAKE_CURRENT_BINARY_DIR}/wiiu/apps/FNaE_U"
         COMMAND "${CMAKE_COMMAND}" -E copy
@@ -155,7 +113,15 @@ if(WIIU)
         COMMAND "${CMAKE_COMMAND}" -E rm -f
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE_Native.wuhb"
         COMMAND "${CMAKE_COMMAND}" -E tar "cf" "FNaE_U.zip" "--format=zip" "--" "wiiu"
-        COMMENT "Staging FNaE_U drop-in folder + zip"
+        COMMAND "${CMAKE_COMMAND}" -E remove_directory
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE"
+        COMMAND "${CMAKE_COMMAND}" -E remove_directory
+            "${CMAKE_CURRENT_BINARY_DIR}/content"
+        COMMAND "${CMAKE_COMMAND}" -E remove_directory
+            "${CMAKE_CURRENT_BINARY_DIR}/wiiu"
+        COMMAND "${CMAKE_COMMAND}" -E remove_directory
+            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_WUP"
+        COMMENT "Staging FNaE_U.wuhb + FNaE_U.zip, cleaning intermediates"
     )
 else()
 # Self-contained run folder: build/FNaE/FNaE_Native.exe + assets + DLLs,

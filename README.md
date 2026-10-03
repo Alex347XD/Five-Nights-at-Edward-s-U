@@ -148,32 +148,27 @@ Run these from an MSYS2 shell (not PowerShell — `powerpc-eabi-cmake` and
 `make` must resolve to the MSYS2/devkitPro ones). The build-tree path must
 not contain spaces or apostrophes: devkitPPC's Windows-native gcc chokes on
 MSYS path conversion, so a checkout at e.g. `Five Nights at Edward's U`
-cannot build Wii U in-tree — copy the tree to a clean path (CI uses `/x`)
-and build there, then copy the `.rpx`/`.wuhb`/`FNaE/` outputs back.
+cannot build Wii U in-tree — either copy the tree to a clean path (CI uses
+`/x`) and build there, or map a clean drive letter at the repo root
+(`subst U: .` from the repo, then configure with `-S . -B build-wiiu`
+from `/u`) and build in place.
 
-This produces `build-wiiu/FNaE_Native.rpx` and the Aroma bundle
-`build-wiiu/FNaE_U.wuhb` (game + `assets/` in one file, installed to
-`sd:/wiiu/apps/`). A ready-to-copy drop-in also lands in
-`build-wiiu/wiiu/apps/FNaE_U/` (`FNaE_U.wuhb`, `FNaE_U.rpx`, `meta.xml`,
-`iconTex.png`, `bootTvTex.png`, `bootDrcTex.png` — copy `wiiu/` to the
-card root), plus the same tree zipped as `build-wiiu/FNaE_U.zip`. A homebrew-folder bundle also lands in `build-wiiu/FNaE/` with only
-`code/` (`FNaE_Native.rpx`, `app.xml`, `cos.xml`), `content/` (`assets/`), and `meta/`
-(`meta.xml`, `iconTex.tga`, `bootTvTex.tga`, `bootDrcTex.tga`) — nothing loose at the root. Point Cemu's
-File > Load at `code/FNaE_Native.rpx` (or copy the folder to
-`sd:/wiiu/apps/FNaE/` for the Homebrew Launcher); the game probes
-`fs:/vol/content` for its assets, so it boots from any of these layouts. On hardware the office runs on
+This produces `build-wiiu/FNaE_U.wuhb` (Aroma single file: game +
+`assets/` in one file) and `build-wiiu/FNaE_U.zip` (HBL SD drop-in:
+`wiiu/apps/FNaE_U/` with the `.wuhb`, `.rpx`, `meta.xml` and icons —
+copy `wiiu/` to the card root). Staging dirs are cleaned after the build,
+so only the two files (plus the `.elf`/`.rpx` link products) remain in
+`build-wiiu/`. On hardware the office runs on
 the TV while the camera feeds run on the GamePad screen — see `KEYS.txt`
 for the GamePad controls.
 
 ### Wii U saves (NAND/USB)
 
-Pack `build-wiiu/FNaE/` (`code/`, `content/`, `meta/`) with NUSPacker and
-install it with WUP Installer GX2 to NAND or USB: progress is kept in the
-title's own save dir (`fs:/vol/save/common/Edward`, 128 KiB common save
-declared in `assets/wiiu/meta.xml`), shared across accounts, in the same
-INI format as the desktop save — back it up or inject an old file with
-SaveMii. HBL / `.wuhb` runs (no installed title save) fall back to the SD
-copy `sd:/wiiu/apps/FNaE/Edward`, then the working directory.
+Progress is kept in the title's own save dir (`fs:/vol/save/common/Edward`,
+128 KiB common save declared in `assets/wiiu/meta.xml`), shared across
+accounts, in the same INI format as the desktop save — back it up or inject
+an old file with SaveMii. HBL / `.wuhb` runs (no installed title save) fall
+back to the SD copy `sd:/wiiu/apps/FNaE/Edward`, then the working directory.
 
 ---
 
