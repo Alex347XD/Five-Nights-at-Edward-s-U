@@ -1,8 +1,8 @@
-# Five Nights at Edward's — Native Port
+# Five Nights at Edward's — Wii U Port
 
-This project is the native C/SDL2 port of **Five Nights at Edward's**.
+This project is the native C/SDL2 and Wii U port of **Five Nights at Edward's**.
 
-The goal is to recreate the original Clickteam Fusion game in native code, with the eventual goal of supporting platforms including Windows and Wii U.
+The goal is to recreate my original Clickteam Fusion game in native code, with the eventual goal of supporting platforms including Wii U.
 
 ---
 
