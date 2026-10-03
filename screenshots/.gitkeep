@@ -1,4 +1,0 @@
-# Headless screenshots land here (see --screenshot, default
-# screenshots/headless.png). Generated images are git-ignored;
-# this file keeps the directory tracked. Clean up with:
-#   cmake --build build --target clean-screenshots

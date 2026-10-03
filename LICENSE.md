@@ -1,0 +1,25 @@
+# LICENSE
+
+Copyright (c) 2026 Edward's Povince
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, and distribute the Software for personal, non-commercial, and
+educational purposes on a Nintendo Wii U console, provided it is distributed 
+entirely free of charge. 
+
+Any modified versions or derivative works of the Software must be distributed 
+under these same terms and must also be kept entirely free of charge.
+
+The Software (including any modifications) may NOT be used, distributed, or 
+modified for commercial purposes. It may NOT be sold, rented, bundled with paid 
+hardware or software, placed behind a paywall, or tied to mandatory donations 
+without the express written permission of the copyright holder.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
