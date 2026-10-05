@@ -93,21 +93,6 @@ if(WIIU)
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE_Native.wuhb"
             "${CMAKE_CURRENT_BINARY_DIR}/wiiu/apps/FNaE_U/FNaE_U.wuhb"
         COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_CURRENT_BINARY_DIR}/FNaE_Native.rpx"
-            "${CMAKE_CURRENT_BINARY_DIR}/wiiu/apps/FNaE_U/FNaE_U.rpx"
-        COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_SOURCE_DIR}/assets/wiiu/meta.xml"
-            "${CMAKE_CURRENT_BINARY_DIR}/wiiu/apps/FNaE_U/meta.xml"
-        COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_SOURCE_DIR}/assets/wiiu/iconTex.png"
-            "${CMAKE_CURRENT_BINARY_DIR}/wiiu/apps/FNaE_U/iconTex.png"
-        COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootTvTex.png"
-            "${CMAKE_CURRENT_BINARY_DIR}/wiiu/apps/FNaE_U/bootTvTex.png"
-        COMMAND "${CMAKE_COMMAND}" -E copy
-            "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.png"
-            "${CMAKE_CURRENT_BINARY_DIR}/wiiu/apps/FNaE_U/bootDrcTex.png"
-        COMMAND "${CMAKE_COMMAND}" -E copy
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE_Native.wuhb"
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE_U.wuhb"
         COMMAND "${CMAKE_COMMAND}" -E rm -f
