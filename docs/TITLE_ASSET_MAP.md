@@ -18,7 +18,6 @@ Mapped from the exported Frame 2 object layout and the extracted image bank.
 ## Important correction
 
 `238.png` (1066x511) is an office desk scene, not the title card. The
-600x507 devil cards `233.png` (sad eyes) / `460.png` (wide eyes) look like
-two frames of one object but are currently unassigned — owner to confirm
-which object/sequence they belong to. See `src/fnae_assets.h` for the
-named-ID registry (`IMG_DEVIL_SAD`, `IMG_DEVIL_SHOCKED`).
+600x507 devil cards `233.png` (sad eyes) / `460.png` (wide eyes) are the
+Frame 4 Death Anim backdrop cycle (`IMG_DEATH_DEVIL_A/B` in
+`src/fnae_assets.h`).

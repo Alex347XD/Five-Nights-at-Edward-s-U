@@ -52,19 +52,21 @@ target_link_libraries(FNaE_Native PRIVATE
 if(WIIU)
     wut_create_rpx(FNaE_Native)
 
-    # wuhbtool reads the content dir at build time, so stage the assets
-    # tree it bundles (FNaE/content/assets) here, ordered before the .wuhb
-    # via the RPX target dependency. Nothing else is staged: deliverables
-    # are just FNaE_U.wuhb + FNaE_U.zip (plus the .elf/.rpx link products).
-    add_custom_command(TARGET FNaE_Native POST_BUILD
+    # wuhbtool requires the content dir to exist at configure time; the
+    # staging target below fills it on every build (and the bundle cleans
+    # it afterwards). Nothing else is staged: deliverables are just
+    # FNaE_U.wuhb + FNaE_U.zip (plus the .elf/.rpx link products).
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/FNaE/content")
+    # Stage the assets tree wuhbtool bundles (FNaE/content/assets) on EVERY
+    # build, ordered before the .wuhb via target dependency. A link
+    # POST_BUILD cannot be relied on: FNaE/ is cleaned after each build,
+    # so an up-to-date .rpx would leave wuhbtool with nothing to bundle.
+    add_custom_target(FNaE_wuhb_content ALL
         COMMAND "${CMAKE_COMMAND}" -E copy_directory
             "${CMAKE_SOURCE_DIR}/assets"
             "${CMAKE_CURRENT_BINARY_DIR}/FNaE/content/assets"
         COMMENT "Staging Wii U content (assets for .wuhb)"
     )
-    # wuhbtool requires the content dir to exist at configure time; it is
-    # filled by the staging step above (and cleaned after each build).
-    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/FNaE/content")
     wut_create_wuhb(FNaE_Native
         NAME "Five Nights at Edward's U"
         SHORTNAME "FNaE U"
@@ -76,6 +78,7 @@ if(WIIU)
         TV_SPLASH "${CMAKE_SOURCE_DIR}/assets/wiiu/bootTvTex.png"
         DRC_SPLASH "${CMAKE_SOURCE_DIR}/assets/wiiu/bootDrcTex.png"
     )
+    add_dependencies(FNaE_Native_wuhb FNaE_wuhb_content)
     # Deliverables: FNaE_U.wuhb (Aroma single file) + FNaE_U.zip (HBL SD
     # drop-in: wiiu/apps/FNaE_U/). The wiiu/ staging dir is zipped first,
     # then removed along with the other intermediates, so only the two
@@ -120,7 +123,7 @@ set_target_properties(FNaE_Native PROPERTIES
 )
 endif()
 
-# Assets are loaded via relative paths (e.g. "assets/images/179.png"),
+# Assets are loaded via relative paths (e.g. "assets/images/227.png"),
 # so mirror the repo's assets/ tree next to the executable.
 # On Wii U the assets ride inside the .wuhb content (staged above) instead.
 if(NOT WIIU)

@@ -54,7 +54,6 @@
  * at (0,0) from the "6th or 7th night" counter): night 5 -> 2.png
  * (weekly paycheck), night 6 -> 4.png (overtime paycheck), night 7 ->
  * 7.png (termination notice). */
-#define IMG_FINAL_N5      2   /* = IMG_GOODJOB (kept alias) */
 #define IMG_FINAL_N6      4   /* night-6 win (overtime paycheck) */
 #define IMG_FINAL_N7      7   /* night-7 win (termination notice) */
 #define IMG_NEWSPAPER     520 /* HELP WANTED newspaper (Frame 7) */
@@ -221,10 +220,6 @@
                                  * other sizes, not used). */
 #define IMG_CUST_BG_2       410
 #define IMG_CUST_BG_3       414
-/* Unidentified (owner to confirm object/sequence): */
-#define IMG_UNKNOWN_179   179 /* 1280x720 gray-face frame; NOT the title Background */
-#define IMG_DEVIL_SAD     233 /* = IMG_DEATH_DEVIL_A (kept alias) */
-#define IMG_DEVIL_SHOCKED 460 /* = IMG_DEATH_DEVIL_B (kept alias) */
 
 /* Music-box crank (Frame 3 "[ Music Box ]" group, Cam 04 view only).
  * Layer #5 UI positions from Objects.txt: button box center-anchored at
